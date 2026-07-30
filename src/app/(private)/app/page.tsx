@@ -58,7 +58,7 @@ export default function Home() {
             Resumen de hoy
           </p>
           <h1 className="m-0 text-[clamp(1.8rem,3vw,2.55rem)] leading-[1.1] font-bold tracking-[-0.045em]">
-            Buen día, Dra. Demo
+            Buen día
           </h1>
           <p className="mt-3 mb-0 text-[0.95rem] text-[var(--color-muted)]">
             Organizá tu jornada y accedé rápido a tus herramientas.

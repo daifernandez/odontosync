@@ -5,6 +5,7 @@ import {
   ClipboardList,
   FileText,
   LayoutDashboard,
+  LogOut,
   Menu,
   PanelLeftClose,
   PanelLeftOpen,
@@ -15,6 +16,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
+
+import { logoutAction } from "@/modules/auth/actions";
 
 type NavigationItem = {
   label: string;
@@ -30,9 +33,25 @@ const navigation: NavigationItem[] = [
   { label: "Indicaciones", icon: ClipboardList },
 ];
 
-export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
+function getInitials(fullName: string) {
+  const words = fullName.trim().split(/\s+/).filter(Boolean);
+
+  return words
+    .slice(0, 2)
+    .map((word) => word[0]?.toUpperCase())
+    .join("");
+}
+
+export function AppShell({
+  children,
+  user,
+}: Readonly<{
+  children: ReactNode;
+  user: { fullName: string; email: string };
+}>) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const initials = getInitials(user.fullName);
 
   return (
     <div className="min-h-screen">
@@ -141,7 +160,7 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
               className="grid size-9.5 shrink-0 place-items-center rounded-full bg-[var(--color-foreground)] text-[0.68rem] font-bold text-white"
               aria-hidden="true"
             >
-              DD
+              {initials}
             </span>
             <span
               className={`flex min-w-0 flex-col whitespace-nowrap ${
@@ -149,13 +168,32 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
               }`}
             >
               <strong className="overflow-hidden text-[0.82rem] text-ellipsis">
-                Dra. Demo
+                {user.fullName}
               </strong>
               <small className="mt-0.5 text-[0.72rem] text-[var(--color-muted)]">
-                Cuenta individual
+                {user.email}
               </small>
             </span>
           </div>
+
+          <form action={logoutAction}>
+            <button
+              className={`flex h-11.5 w-full cursor-pointer items-center gap-3.5 rounded-xl border-0 bg-transparent px-3 text-left text-[var(--color-muted)] transition-colors hover:bg-[var(--color-brand-subtle)] hover:text-[var(--color-brand-dark)] ${
+                isCollapsed ? "md:justify-center md:px-0" : ""
+              }`}
+              title={isCollapsed ? "Cerrar sesión" : undefined}
+              type="submit"
+            >
+              <LogOut aria-hidden="true" size={19} strokeWidth={1.8} />
+              <span
+                className={`overflow-hidden whitespace-nowrap ${
+                  isCollapsed ? "md:hidden" : ""
+                }`}
+              >
+                Cerrar sesión
+              </span>
+            </button>
+          </form>
 
           <button
             aria-label={isCollapsed ? "Expandir menú" : "Contraer menú"}
@@ -207,9 +245,9 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
           </div>
           <span
             className="grid size-8.5 place-items-center rounded-full bg-[var(--color-foreground)] text-[0.68rem] font-bold text-white"
-            aria-label="Dra. Demo"
+            aria-label={user.fullName}
           >
-            DD
+            {initials}
           </span>
         </header>
         {children}
