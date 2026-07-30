@@ -274,6 +274,10 @@ cerrado el alcance del primer MVP.
   vacaciones, feriados o asuntos personales.
 - La disponibilidad se calculará mediante reglas determinísticas a partir de
   los horarios habituales, los bloqueos y los turnos que ocupen horario.
+- Los turnos pendientes de confirmación y confirmados ocuparán horario.
+- Los turnos cancelados y reprogramados liberarán el espacio.
+- Los turnos atendidos y ausentes se conservarán como registro administrativo
+  histórico una vez transcurrido su horario.
 - Al crear o reprogramar manualmente un turno superpuesto, la aplicación
   mostrará una advertencia y exigirá una confirmación explícita para continuar.
 - La superposición confirmada quedará como una decisión del usuario.
