@@ -117,3 +117,19 @@ cerrado el alcance del primer MVP.
 - npm será el gestor de paquetes.
 - El archivo `package-lock.json` se versionará para mantener instalaciones
   reproducibles.
+
+## D-012. Estrategia de pruebas
+
+- Vitest será el ejecutor principal para pruebas unitarias y de integración.
+- Las reglas de negocio se probarán sin depender de React ni de la base de
+  datos siempre que sea posible.
+- React Testing Library y `user-event` se utilizarán para componentes con
+  comportamiento relevante desde la perspectiva del usuario.
+- Las integraciones de Prisma, PostgreSQL y RLS se probarán contra una base de
+  datos de prueba.
+- Playwright cubrirá un conjunto pequeño de recorridos críticos de extremo a
+  extremo en un navegador real.
+- Los Server Components asíncronos se verificarán mediante pruebas de extremo
+  a extremo, no intentando simularlos con Vitest.
+- No se impondrá un porcentaje de cobertura arbitrario; se priorizarán reglas
+  críticas, permisos, casos límite y regresiones.
