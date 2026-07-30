@@ -93,3 +93,11 @@ cerrado el alcance del primer MVP.
 - Se podrá incorporar una ORM dentro de los repositorios cuando exista una
   necesidad concreta y su integración con RLS no reduzca las garantías de
   aislamiento.
+
+## D-009. Estilos de la interfaz
+
+- La interfaz utilizará Tailwind CSS.
+- Los colores, tipografías, espaciados y radios se centralizarán mediante
+  variables y tokens de diseño.
+- La interfaz será responsive y deberá mantener criterios básicos de
+  accesibilidad desde el comienzo.
