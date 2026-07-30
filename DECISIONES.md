@@ -284,3 +284,13 @@ cerrado el alcance del primer MVP.
 - La inteligencia artificial solo consultará esta disponibilidad; no definirá
   ni alterará las reglas del calendario.
 - La inteligencia artificial nunca propondrá ni creará turnos superpuestos.
+
+## D-021. Confirmaciones y recordatorios
+
+- La confirmación del turno se gestionará manualmente mediante su estado.
+- El odontólogo podrá consultar qué turnos permanecen pendientes de
+  confirmación y contactar al paciente por fuera de OdontoSync.
+- El MVP no enviará recordatorios ni confirmaciones automáticas por WhatsApp,
+  SMS o correo electrónico.
+- Las integraciones de mensajería se evaluarán en una etapa posterior, con sus
+  requisitos de consentimiento, privacidad, proveedores y costos.
