@@ -257,6 +257,14 @@ cerrado el alcance del primer MVP.
 
 - Cada odontólogo podrá configurar sus horarios semanales habituales.
 - Cada día podrá contener uno o más bloques de atención.
+- Durante la configuración inicial, cada odontólogo elegirá el intervalo visual
+  de su grilla y la duración habitual de sus turnos.
+- Los intervalos iniciales disponibles para la grilla serán 10, 15, 20, 30 y
+  60 minutos.
+- La configuración comenzará con una grilla de 15 minutos y una duración
+  habitual de 30 minutos, y podrá modificarse posteriormente.
+- La duración de un turno concreto podrá ajustarse sin cambiar la preferencia
+  general del odontólogo.
 - Se podrán crear bloqueos excepcionales para períodos no disponibles, como
   vacaciones, feriados o asuntos personales.
 - La disponibilidad se calculará mediante reglas determinísticas a partir de
