@@ -252,3 +252,14 @@ cerrado el alcance del primer MVP.
   administrativa.
 - El MVP no incluirá campos libres para motivo ni observaciones del turno, para
   evitar que se utilicen como registro de información clínica.
+
+## D-020. Horarios y disponibilidad
+
+- Cada odontólogo podrá configurar sus horarios semanales habituales.
+- Cada día podrá contener uno o más bloques de atención.
+- Se podrán crear bloqueos excepcionales para períodos no disponibles, como
+  vacaciones, feriados o asuntos personales.
+- La disponibilidad se calculará mediante reglas determinísticas a partir de
+  los horarios habituales, los bloqueos y los turnos que ocupen horario.
+- La inteligencia artificial solo consultará esta disponibilidad; no definirá
+  ni alterará las reglas del calendario.
