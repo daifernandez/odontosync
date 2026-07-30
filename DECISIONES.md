@@ -18,15 +18,21 @@ cerrado el alcance del primer MVP.
 - Antes de utilizar datos reales se revisarán los requisitos legales, de
   privacidad, seguridad y conservación aplicables.
 
-## D-002. Planes para imprimir
+## D-002. Papelería odontológica imprimible
 
-- El MVP podrá generar planes personalizados para imprimir.
-- Los datos identificatorios del paciente se completarán sobre el documento
-  impreso.
-- La personalización existirá temporalmente en el navegador y no será
-  almacenada por el sistema.
-- No habrá asociación con pacientes, historial, adjuntos ni recuperación.
-- Solo podrán guardarse plantillas completamente genéricas.
+- El MVP ofrecerá formularios vacíos para imprimir y completar enteramente a
+  mano.
+- La papelería inicial incluirá una hoja de planificación profesional, una hoja
+  administrativa para cálculos y odontogramas en blanco.
+- OdontoSync no permitirá escribir datos identificatorios, tratamientos,
+  importes, cálculos ni otra información clínica dentro de estos formularios.
+- Los formularios no se asociarán con pacientes, turnos ni historias clínicas,
+  y no tendrán almacenamiento, historial, adjuntos ni recuperación.
+- Una vez impresos, su cumplimentación, incorporación a documentación física y
+  conservación quedarán fuera del sistema.
+- Antes de presentar estas hojas como documentación apta para uso real, su
+  contenido se someterá a revisión profesional y a la revisión de los
+  requisitos aplicables en Argentina.
 
 ## D-003. Indicaciones genéricas
 
