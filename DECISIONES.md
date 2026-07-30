@@ -230,3 +230,16 @@ cerrado el alcance del primer MVP.
 - La papelería imprimible no se asociará con la ficha del paciente.
 - El uso de datos de pacientes reales permanecerá condicionado a la revisión
   legal, de privacidad y de seguridad prevista antes del lanzamiento real.
+
+## D-019. Datos de los turnos
+
+- Cada turno se asociará con un paciente y con el odontólogo responsable.
+- El turno almacenará fecha y hora de inicio, duración, estado y especialidad.
+- En el consultorio individual, el profesional responsable será el propietario
+  de la cuenta.
+- La palabra «especialidad» se utilizará para identificar el área odontológica
+  correspondiente al turno; este dato no acreditará títulos ni certificaciones
+  del profesional.
+- La especialidad se seleccionará desde un catálogo y no mediante texto libre.
+- El MVP no incluirá campos libres para motivo ni observaciones del turno, para
+  evitar que se utilicen como registro de información clínica.
