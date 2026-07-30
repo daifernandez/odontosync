@@ -24,6 +24,9 @@ cerrado el alcance del primer MVP.
   mano.
 - La papelería inicial incluirá una hoja de planificación profesional, una hoja
   administrativa para cálculos y odontogramas en blanco.
+- Habrá un odontograma para adultos con dentición permanente y otro pediátrico
+  que contemple dentición temporal y permanente para la etapa de dentición
+  mixta.
 - OdontoSync no permitirá escribir datos identificatorios, tratamientos,
   importes, cálculos ni otra información clínica dentro de estos formularios.
 - Los formularios no se asociarán con pacientes, turnos ni historias clínicas,
