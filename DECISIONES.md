@@ -301,3 +301,16 @@ cerrado el alcance del primer MVP.
 - La primera visita abrirá la vista semanal.
 - La aplicación recordará para cada odontólogo la última vista utilizada y la
   restaurará en visitas posteriores.
+
+## D-023. Alcance funcional del primer MVP
+
+- El primer MVP incluirá registro, autenticación y configuración inicial del
+  odontólogo.
+- Incluirá fichas administrativas mínimas de pacientes, agenda, horarios,
+  disponibilidad y gestión de turnos.
+- Incluirá búsqueda de turnos asistida por inteligencia artificial, siempre
+  sujeta a las reglas determinísticas y a confirmación humana.
+- Incluirá indicaciones genéricas imprimibles, papelería odontológica vacía y
+  odontogramas imprimibles.
+- Proveedores, laboratorios, compras, stock y equipos de trabajo quedarán para
+  etapas posteriores.
