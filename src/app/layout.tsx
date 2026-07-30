@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 
+import { AppShell } from "@/components/app-shell";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "OdontoSync",
-  description: "Organización de agenda para odontólogos independientes.",
+  description:
+    "Agenda, organización y materiales imprimibles para odontólogos independientes.",
 };
 
 export default function RootLayout({
@@ -14,7 +17,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es-AR">
-      <body>{children}</body>
+      <body>
+        <AppShell>{children}</AppShell>
+      </body>
     </html>
   );
 }
