@@ -294,3 +294,10 @@ cerrado el alcance del primer MVP.
   SMS o correo electrónico.
 - Las integraciones de mensajería se evaluarán en una etapa posterior, con sus
   requisitos de consentimiento, privacidad, proveedores y costos.
+
+## D-022. Vistas de agenda
+
+- La agenda tendrá vistas de día, semana y mes.
+- La primera visita abrirá la vista semanal.
+- La aplicación recordará para cada odontólogo la última vista utilizada y la
+  restaurará en visitas posteriores.
