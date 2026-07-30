@@ -220,6 +220,10 @@ cerrado el alcance del primer MVP.
   MVP.
 - No se incorporarán diagnósticos, antecedentes, evoluciones, odontogramas
   completados ni otros campos clínicos.
+- La obra social o prepaga, el plan de cobertura y el número de afiliación
+  quedarán fuera del MVP.
+- Estos datos solo se reconsiderarán si una función posterior los necesita y
+  después de revisar su tratamiento legal y de privacidad.
 - La papelería imprimible no se asociará con la ficha del paciente.
 - El uso de datos de pacientes reales permanecerá condicionado a la revisión
   legal, de privacidad y de seguridad prevista antes del lanzamiento real.
