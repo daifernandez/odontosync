@@ -8,6 +8,12 @@ import {
   Printer,
   UserRound,
 } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Inicio | OdontoSync",
+  description: "Resumen de agenda y herramientas de OdontoSync.",
+};
 
 const appointments = [
   {
