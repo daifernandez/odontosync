@@ -133,3 +133,20 @@ cerrado el alcance del primer MVP.
   a extremo, no intentando simularlos con Vitest.
 - No se impondrá un porcentaje de cobertura arbitrario; se priorizarán reglas
   críticas, permisos, casos límite y regresiones.
+
+## D-013. Integración de inteligencia artificial
+
+- La aplicación utilizará Vercel AI SDK mediante Vercel AI Gateway.
+- El despliegue en Vercel utilizará autenticación OIDC; el desarrollo local
+  podrá utilizar una clave propia del Gateway.
+- No se fijará un modelo hasta consultar la disponibilidad y los precios
+  vigentes al implementar la funcionalidad.
+- La IA transformará solicitudes en lenguaje natural en criterios
+  estructurados y validados.
+- La búsqueda de disponibilidad, la detección de superposiciones y la
+  creación de turnos permanecerán como lógica determinística de la aplicación.
+- La IA no creará ni modificará turnos sin confirmación humana.
+- Las pruebas automatizadas utilizarán modelos simulados y no dependerán de
+  llamadas externas pagas.
+- Se registrará consumo por funcionalidad y se configurarán límites de uso y
+  presupuesto.
