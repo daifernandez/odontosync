@@ -265,6 +265,11 @@ cerrado el alcance del primer MVP.
   habitual de 30 minutos, y podrá modificarse posteriormente.
 - La duración de un turno concreto podrá ajustarse sin cambiar la preferencia
   general del odontólogo.
+- Cada odontólogo configurará un margen de acondicionamiento posterior al
+  turno, con un valor inicial de 5 minutos.
+- El margen bloqueará disponibilidad sin formar parte de la duración informada
+  del turno y podrá ajustarse para un turno concreto.
+- La inteligencia artificial tendrá en cuenta este margen al buscar horarios.
 - Se podrán crear bloqueos excepcionales para períodos no disponibles, como
   vacaciones, feriados o asuntos personales.
 - La disponibilidad se calculará mediante reglas determinísticas a partir de
