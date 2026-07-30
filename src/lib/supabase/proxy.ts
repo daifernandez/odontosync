@@ -1,14 +1,40 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { buildContentSecurityPolicy } from "@/lib/security/content-security-policy";
+import { getAuthRedirect } from "@/modules/auth/domain/auth-routing";
+
 import { getSupabaseConfig } from "./config";
 
-const authenticationPaths = new Set(["/ingresar", "/registro"]);
+function applyProtectedResponseHeaders(
+  response: NextResponse,
+  contentSecurityPolicy: string,
+) {
+  response.headers.set("Content-Security-Policy", contentSecurityPolicy);
+  response.headers.set("Cache-Control", "private, no-store");
+
+  return response;
+}
+
+function createNextResponse(
+  requestHeaders: Headers,
+  contentSecurityPolicy: string,
+) {
+  return applyProtectedResponseHeaders(
+    NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    }),
+    contentSecurityPolicy,
+  );
+}
 
 function redirectWithCookies(
   request: NextRequest,
   response: NextResponse,
   pathname: string,
+  contentSecurityPolicy: string,
 ) {
   const url = request.nextUrl.clone();
   url.pathname = pathname;
@@ -20,12 +46,25 @@ function redirectWithCookies(
     redirectResponse.cookies.set(cookie);
   });
 
-  return redirectResponse;
+  return applyProtectedResponseHeaders(
+    redirectResponse,
+    contentSecurityPolicy,
+  );
 }
 
 export async function updateSession(request: NextRequest) {
-  let response = NextResponse.next({ request });
   const { url, publishableKey } = getSupabaseConfig();
+  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+  const contentSecurityPolicy = buildContentSecurityPolicy({
+    nonce,
+    supabaseUrl: url,
+    isDevelopment: process.env.NODE_ENV === "development",
+  });
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-nonce", nonce);
+  requestHeaders.set("Content-Security-Policy", contentSecurityPolicy);
+
+  let response = createNextResponse(requestHeaders, contentSecurityPolicy);
 
   const supabase = createServerClient(url, publishableKey, {
     cookies: {
@@ -37,7 +76,10 @@ export async function updateSession(request: NextRequest) {
           request.cookies.set(name, value);
         });
 
-        response = NextResponse.next({ request });
+        response = createNextResponse(
+          requestHeaders,
+          contentSecurityPolicy,
+        );
 
         cookiesToSet.forEach(({ name, value, options }) => {
           response.cookies.set(name, value, options);
@@ -49,13 +91,15 @@ export async function updateSession(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const claims = data?.claims;
   const pathname = request.nextUrl.pathname;
+  const redirectPath = getAuthRedirect(pathname, Boolean(claims));
 
-  if (!claims && pathname.startsWith("/app")) {
-    return redirectWithCookies(request, response, "/ingresar");
-  }
-
-  if (claims && authenticationPaths.has(pathname)) {
-    return redirectWithCookies(request, response, "/app");
+  if (redirectPath) {
+    return redirectWithCookies(
+      request,
+      response,
+      redirectPath,
+      contentSecurityPolicy,
+    );
   }
 
   return response;

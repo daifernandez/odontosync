@@ -14,7 +14,8 @@ independientes.
 - Prisma ORM
 - Vitest
 
-La base de datos y la autenticación todavía no están conectadas.
+Supabase Auth está conectado. Los modelos de datos de la aplicación todavía no
+fueron creados.
 
 ## Requisitos
 
@@ -25,12 +26,13 @@ La base de datos y la autenticación todavía no están conectadas.
 
 ```bash
 npm install
-cp .env.example .env
+cp .env.example .env.local
 npm run dev
 ```
 
-Las conexiones de ejemplo no permiten acceder a una base real. Deberán
-reemplazarse al configurar el proyecto de Supabase.
+Reemplazá las conexiones de ejemplo por las del proyecto de Supabase. `APP_URL`
+debe contener el origen público canónico de cada entorno autorizado; en
+desarrollo se utiliza `http://localhost:3000`.
 
 ## Verificaciones
 

@@ -1,8 +1,8 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { getAuthCallbackUrl } from "@/lib/app-url";
 import { createClient } from "@/lib/supabase/server";
 
 import {
@@ -35,14 +35,12 @@ export async function registerAction(
     };
   }
 
-  const requestHeaders = await headers();
-  const origin = requestHeaders.get("origin") ?? "http://localhost:3000";
   const supabase = await createClient();
   const { error } = await supabase.auth.signUp({
     email: validation.data.email,
     password: validation.data.password,
     options: {
-      emailRedirectTo: `${origin}/auth/callback`,
+      emailRedirectTo: getAuthCallbackUrl(),
       data: {
         full_name: validation.data.fullName,
         academic_use_accepted_at: new Date().toISOString(),

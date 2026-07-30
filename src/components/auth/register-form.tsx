@@ -86,7 +86,7 @@ export function RegisterForm() {
           aria-invalid={Boolean(state.fieldErrors.password)}
           autoComplete="new-password"
           className={inputClassName}
-          minLength={8}
+          minLength={12}
           name="password"
           type="password"
         />
@@ -99,7 +99,7 @@ export function RegisterForm() {
           id="register-password-help"
         >
           {state.fieldErrors.password ??
-            "Usá al menos 8 caracteres."}
+            "Usá 12 o más caracteres, con mayúscula, minúscula, número y símbolo."}
         </span>
       </label>
 

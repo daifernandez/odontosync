@@ -39,7 +39,7 @@ describe("validateRegistration", () => {
     const result = validateRegistration({
       fullName: "  Daiana   Fernández ",
       email: " DAI@Example.com ",
-      password: "clave-segura",
+      password: "Clave-segura-2026!",
       academicUseAccepted: true,
     });
 
@@ -48,7 +48,7 @@ describe("validateRegistration", () => {
       data: {
         fullName: "Daiana Fernández",
         email: "dai@example.com",
-        password: "clave-segura",
+        password: "Clave-segura-2026!",
         academicUseAccepted: true,
       },
     });
@@ -58,7 +58,7 @@ describe("validateRegistration", () => {
     const result = validateRegistration({
       fullName: "Daiana Fernández",
       email: "dai@example.com",
-      password: "clave-segura",
+      password: "Clave-segura-2026!",
       academicUseAccepted: false,
     });
 
@@ -77,7 +77,7 @@ describe("validateRegistration", () => {
       input: {
         fullName: "D",
         email: "dai@example.com",
-        password: "clave-segura",
+        password: "Clave-segura-2026!",
         academicUseAccepted: true,
       },
       expectedField: "fullName",
@@ -87,7 +87,7 @@ describe("validateRegistration", () => {
       input: {
         fullName: "Daiana Fernández",
         email: "correo-invalido",
-        password: "clave-segura",
+        password: "Clave-segura-2026!",
         academicUseAccepted: true,
       },
       expectedField: "email",
@@ -98,6 +98,16 @@ describe("validateRegistration", () => {
         fullName: "Daiana Fernández",
         email: "dai@example.com",
         password: "1234567",
+        academicUseAccepted: true,
+      },
+      expectedField: "password",
+    },
+    {
+      name: "password without all required character groups",
+      input: {
+        fullName: "Daiana Fernández",
+        email: "dai@example.com",
+        password: "clave-muy-segura",
         academicUseAccepted: true,
       },
       expectedField: "password",

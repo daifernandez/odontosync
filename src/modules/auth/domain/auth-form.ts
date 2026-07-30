@@ -31,6 +31,8 @@ export const initialAuthFormState: AuthFormState = {
 };
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const strongPasswordPattern =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{12,}$/;
 
 function normalizeLoginInput(input: LoginInput) {
   return {
@@ -73,8 +75,9 @@ export function validateRegistration(
     fieldErrors.fullName = "Ingresá tu nombre completo.";
   }
 
-  if (input.password.length < 8) {
-    fieldErrors.password = "La contraseña debe tener al menos 8 caracteres.";
+  if (!strongPasswordPattern.test(input.password)) {
+    fieldErrors.password =
+      "Usá al menos 12 caracteres e incluí mayúscula, minúscula, número y símbolo.";
   }
 
   if (!input.academicUseAccepted) {
