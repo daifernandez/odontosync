@@ -1,0 +1,31 @@
+# Dependencies
+/node_modules
+
+# Tests
+/coverage
+
+# Next.js
+/.next/
+/out/
+
+# Production
+/build
+
+# Environment variables
+.env*
+!.env.example
+
+# Prisma
+/generated/prisma
+
+# Vercel
+.vercel
+
+# Logs
+*.log
+
+# TypeScript
+*.tsbuildinfo
+
+# macOS
+.DS_Store
