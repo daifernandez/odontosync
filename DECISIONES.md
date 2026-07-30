@@ -244,5 +244,11 @@ cerrado el alcance del primer MVP.
 - El catálogo inicial contendrá odontología general, odontopediatría,
   ortodoncia, cirugía, implantología, endodoncia, periodoncia,
   operatoria/restauradora y prótesis/rehabilitación.
+- Los estados iniciales serán pendiente de confirmación, confirmado, atendido,
+  cancelado, ausente y reprogramado.
+- Al reprogramar, el turno original se conservará con estado reprogramado y se
+  creará un nuevo turno pendiente de confirmación.
+- El turno nuevo quedará vinculado con el original para mantener trazabilidad
+  administrativa.
 - El MVP no incluirá campos libres para motivo ni observaciones del turno, para
   evitar que se utilicen como registro de información clínica.
