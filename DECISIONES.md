@@ -314,3 +314,15 @@ cerrado el alcance del primer MVP.
   odontogramas imprimibles.
 - Proveedores, laboratorios, compras, stock y equipos de trabajo quedarán para
   etapas posteriores.
+
+## D-024. Despliegue académico
+
+- El despliegue del TFM se presentará expresamente como prototipo académico.
+- La interfaz mostrará de forma permanente que no deben ingresarse datos de
+  pacientes reales.
+- El usuario deberá aceptar esa condición al registrarse.
+- Existirá una cuenta de demostración con datos completamente ficticios.
+- El aviso no se considerará un reemplazo de la revisión legal, de privacidad y
+  de seguridad.
+- El producto habilitado para datos reales se desplegará en un entorno separado
+  únicamente después de completar esas revisiones.
