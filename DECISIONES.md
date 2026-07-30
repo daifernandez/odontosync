@@ -191,3 +191,13 @@ cerrado el alcance del primer MVP.
 - Si en el futuro se incorporan funciones que requieran acreditar la condición
   profesional, se diseñará un proceso de verificación real acorde con el país
   y la jurisdicción antes de habilitarlas.
+
+## D-017. Mercado inicial
+
+- El primer lanzamiento para usuarios reales estará dirigido a odontólogos de
+  Argentina.
+- Las decisiones iniciales de idioma, formatos y configuración regional se
+  tomarán para ese mercado.
+- La expansión a otros países quedará fuera del alcance del MVP.
+- Antes de utilizar datos reales o incorporar funciones clínicas se revisarán
+  los requisitos legales y de privacidad aplicables en Argentina.
