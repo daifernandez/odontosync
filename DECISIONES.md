@@ -66,3 +66,14 @@ cerrado el alcance del primer MVP.
 - El despliegue académico utilizará Vercel y servicios administrados.
 - Docker, la infraestructura propia y la separación de servicios se evaluarán
   únicamente cuando exista una necesidad concreta.
+
+## D-007. Plataforma de datos y autenticación
+
+- Supabase proporcionará la base de datos PostgreSQL administrada y la
+  autenticación.
+- Las tablas de la aplicación utilizarán Row Level Security para limitar el
+  acceso a los datos de cada usuario.
+- Supabase Storage se incorporará solamente cuando el producto necesite
+  almacenar archivos.
+- No se utilizarán inicialmente Supabase Realtime ni Edge Functions.
+- El proyecto utilizará Node.js 22 o una versión compatible posterior.
