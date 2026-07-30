@@ -150,3 +150,18 @@ cerrado el alcance del primer MVP.
   llamadas externas pagas.
 - Se registrará consumo por funcionalidad y se configurarán límites de uso y
   presupuesto.
+
+## D-014. Métodos de autenticación
+
+- Supabase Auth permitirá acceso mediante correo electrónico y contraseña.
+- También se permitirá iniciar sesión con una cuenta de Google.
+- La aplicación solicitará a Google únicamente identidad, correo y perfil
+  básico; no almacenará tokens para acceder a otros servicios de Google.
+- Las identidades con el mismo correo verificado podrán vincularse al mismo
+  usuario.
+- El perfil interno dependerá del identificador de Supabase Auth y no del
+  proveedor utilizado para iniciar sesión.
+- La demostración académica conservará una cuenta de prueba con contraseña para
+  que la evaluación no dependa de una cuenta personal de Google.
+- Las credenciales OAuth y demás secretos se almacenarán como variables de
+  entorno y nunca en el repositorio.
