@@ -218,6 +218,9 @@ cerrado el alcance del primer MVP.
 - Durante la etapa académica se utilizarán exclusivamente pacientes ficticios.
 - La ficha contendrá el nombre y los datos de contacto que se definan para el
   MVP.
+- El nombre y el apellido serán obligatorios.
+- El teléfono y el correo electrónico serán opcionales.
+- No se solicitarán DNI, domicilio, fecha de nacimiento ni notas libres.
 - No se incorporarán diagnósticos, antecedentes, evoluciones, odontogramas
   completados ni otros campos clínicos.
 - La obra social o prepaga, el plan de cobertura y el número de afiliación
