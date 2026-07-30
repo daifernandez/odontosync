@@ -55,3 +55,14 @@ cerrado el alcance del primer MVP.
   propio consultorio.
 - La colaboración con secretaría, asistentes y otros odontólogos se
   incorporará en etapas posteriores.
+
+## D-006. Arquitectura y despliegue iniciales
+
+- La aplicación utilizará TypeScript, React y Next.js con App Router.
+- Next.js cubrirá la interfaz y el backend sobre el runtime de Node.js.
+- La arquitectura será un monolito modular; no se utilizarán microservicios.
+- Los módulos de negocio se mantendrán separados de las páginas y rutas.
+- La persistencia principal será una base de datos PostgreSQL administrada.
+- El despliegue académico utilizará Vercel y servicios administrados.
+- Docker, la infraestructura propia y la separación de servicios se evaluarán
+  únicamente cuando exista una necesidad concreta.
