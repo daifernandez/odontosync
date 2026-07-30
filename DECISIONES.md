@@ -80,19 +80,21 @@ cerrado el alcance del primer MVP.
 
 ## D-008. Acceso y evolución de la base de datos
 
-- El acceso en tiempo de ejecución utilizará el cliente oficial de Supabase
-  con la sesión autenticada y tipos TypeScript generados desde el esquema.
-- El esquema, las restricciones, los índices y las políticas RLS se
-  versionarán mediante migraciones SQL.
+- La autenticación y la sesión utilizarán el cliente oficial de Supabase.
+- Prisma ORM estable será la capa de acceso a PostgreSQL desde el servidor.
+- El esquema se definirá con Prisma y se versionará mediante Prisma Migrate.
+- Las restricciones, los índices y las políticas que Prisma no pueda expresar
+  se incorporarán como SQL dentro de las migraciones.
 - La aplicación accederá a los datos a través de repositorios internos; las
-  páginas y componentes no consultarán Supabase directamente.
+  páginas y componentes no consultarán Prisma ni Supabase directamente.
+- Las migraciones y la aplicación utilizarán credenciales de base de datos
+  separadas.
+- El usuario de ejecución no tendrá `BYPASSRLS`; cada operación protegida
+  establecerá dentro de una transacción la identidad previamente verificada
+  por Supabase Auth.
 - Las políticas RLS tendrán pruebas automatizadas.
-- No se incorporará inicialmente Prisma ni Drizzle porque no resuelven una
-  necesidad actual y complican la ejecución de consultas bajo la identidad RLS
-  del usuario.
-- Se podrá incorporar una ORM dentro de los repositorios cuando exista una
-  necesidad concreta y su integración con RLS no reduzca las garantías de
-  aislamiento.
+- El acceso serverless utilizará el pool de conexiones de Supabase.
+- No se utilizará Prisma Next mientras permanezca en Early Access.
 
 ## D-009. Estilos de la interfaz
 
@@ -109,3 +111,9 @@ cerrado el alcance del primer MVP.
 - Solo se agregarán los componentes que tengan un uso concreto.
 - Las personalizaciones conservarán los tokens visuales y los comportamientos
   accesibles definidos por el sistema de componentes.
+
+## D-011. Gestión de dependencias
+
+- npm será el gestor de paquetes.
+- El archivo `package-lock.json` se versionará para mantener instalaciones
+  reproducibles.
