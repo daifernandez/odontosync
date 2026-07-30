@@ -261,5 +261,9 @@ cerrado el alcance del primer MVP.
   vacaciones, feriados o asuntos personales.
 - La disponibilidad se calculará mediante reglas determinísticas a partir de
   los horarios habituales, los bloqueos y los turnos que ocupen horario.
+- Al crear o reprogramar manualmente un turno superpuesto, la aplicación
+  mostrará una advertencia y exigirá una confirmación explícita para continuar.
+- La superposición confirmada quedará como una decisión del usuario.
 - La inteligencia artificial solo consultará esta disponibilidad; no definirá
   ni alterará las reglas del calendario.
+- La inteligencia artificial nunca propondrá ni creará turnos superpuestos.
