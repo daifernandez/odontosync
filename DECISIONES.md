@@ -241,5 +241,8 @@ cerrado el alcance del primer MVP.
   correspondiente al turno; este dato no acreditará títulos ni certificaciones
   del profesional.
 - La especialidad se seleccionará desde un catálogo y no mediante texto libre.
+- El catálogo inicial contendrá odontología general, odontopediatría,
+  ortodoncia, cirugía, implantología, endodoncia, periodoncia,
+  operatoria/restauradora y prótesis/rehabilitación.
 - El MVP no incluirá campos libres para motivo ni observaciones del turno, para
   evitar que se utilicen como registro de información clínica.
