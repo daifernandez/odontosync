@@ -210,3 +210,16 @@ cerrado el alcance del primer MVP.
 - La expansión a otros países quedará fuera del alcance del MVP.
 - Antes de utilizar datos reales o incorporar funciones clínicas se revisarán
   los requisitos legales y de privacidad aplicables en Argentina.
+
+## D-018. Ficha administrativa de pacientes
+
+- El MVP académico almacenará fichas administrativas mínimas para asociar
+  pacientes con sus turnos.
+- Durante la etapa académica se utilizarán exclusivamente pacientes ficticios.
+- La ficha contendrá el nombre y los datos de contacto que se definan para el
+  MVP.
+- No se incorporarán diagnósticos, antecedentes, evoluciones, odontogramas
+  completados ni otros campos clínicos.
+- La papelería imprimible no se asociará con la ficha del paciente.
+- El uso de datos de pacientes reales permanecerá condicionado a la revisión
+  legal, de privacidad y de seguridad prevista antes del lanzamiento real.
