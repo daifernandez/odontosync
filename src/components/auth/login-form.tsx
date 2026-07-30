@@ -85,6 +85,19 @@ export function LoginForm({
         Ingresar a OdontoSync
       </SubmitButton>
 
+      <div className="flex items-center gap-3" aria-hidden="true">
+        <span className="h-px flex-1 bg-[var(--color-border)]" />
+        <span className="text-xs text-[var(--color-muted)]">o</span>
+        <span className="h-px flex-1 bg-[var(--color-border)]" />
+      </div>
+
+      <Link
+        className="inline-flex min-h-12 items-center justify-center rounded-xl border border-[var(--color-border)] bg-white px-5 text-sm font-bold text-[var(--color-brand-dark)] no-underline transition-colors hover:border-[var(--color-brand)]"
+        href="/demo"
+      >
+        Entrar como demo
+      </Link>
+
       <p className="m-0 text-center text-sm text-[var(--color-muted)]">
         ¿Todavía no tenés cuenta?{" "}
         <Link

@@ -122,12 +122,12 @@ export default function LandingPage() {
               Crear cuenta
               <ArrowRight aria-hidden="true" size={17} />
             </Link>
-            <a
+            <Link
               className="inline-flex min-h-12 items-center justify-center rounded-xl border border-[var(--color-border)] bg-white px-5 text-sm font-bold text-[var(--color-foreground)] transition-colors hover:border-[var(--color-brand)]"
-              href="#funciones"
+              href="/demo"
             >
-              Conocer las funciones
-            </a>
+              Entrar como demo
+            </Link>
           </div>
 
           <p className="mt-5 flex items-center gap-2 text-xs text-[var(--color-muted)]">
