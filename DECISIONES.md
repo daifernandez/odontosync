@@ -170,8 +170,9 @@ cerrado el alcance del primer MVP.
   usuario.
 - El perfil interno dependerá del identificador de Supabase Auth y no del
   proveedor utilizado para iniciar sesión.
-- La demostración académica conservará una cuenta de prueba con contraseña para
-  que la evaluación no dependa de una cuenta personal de Google.
+- La evaluación podrá utilizar un modo de demostración público y aislado; si
+  fuera necesario probar la autenticación real, se proporcionará además una
+  cuenta de evaluación independiente.
 - Las credenciales OAuth y demás secretos se almacenarán como variables de
   entorno y nunca en el repositorio.
 
@@ -321,8 +322,28 @@ cerrado el alcance del primer MVP.
 - La interfaz mostrará de forma permanente que no deben ingresarse datos de
   pacientes reales.
 - El usuario deberá aceptar esa condición al registrarse.
-- Existirá una cuenta de demostración con datos completamente ficticios.
+- Existirá un modo de demostración público con datos completamente ficticios.
 - El aviso no se considerará un reemplazo de la revisión legal, de privacidad y
   de seguridad.
 - El producto habilitado para datos reales se desplegará en un entorno separado
   únicamente después de completar esas revisiones.
+
+## D-025. Modo demostración y protección de imprimibles
+
+- El acceso «Entrar como demo» abrirá una ruta pública aislada y no una cuenta
+  compartida de Supabase.
+- El demo utilizará datos ficticios incorporados en la aplicación, no accederá
+  a datos productivos y no conservará cambios.
+- Las credenciales de usuarios, claves secretas y recursos privados nunca se
+  incluirán en el código enviado al navegador.
+- Cuando existan imprimibles, el demo mostrará únicamente muestras claramente
+  identificadas con una marca de agua «DEMO / MUESTRA».
+- Los archivos originales no se incorporarán al bundle público. Si necesitan
+  almacenamiento, se servirán desde un bucket privado y solo a usuarios reales
+  autorizados.
+- El control de acceso reducirá la copia casual, pero no se considerará una
+  garantía contra la reproducción de un material que ya fue visualizado o
+  descargado legítimamente.
+- Si el demo necesitara persistencia en el futuro, se evaluarán usuarios
+  anónimos aislados, RLS específica, CAPTCHA, limpieza periódica y, de ser
+  necesario, un proyecto Supabase separado.

@@ -85,9 +85,9 @@ export default function LandingPage() {
 
         <Link
           className="rounded-xl border border-[var(--color-border)] bg-white px-3 py-2.5 text-[0.68rem] font-bold text-[var(--color-brand-dark)] no-underline transition-colors hover:border-[var(--color-brand)] sm:px-4 sm:text-xs"
-          href="/app"
+          href="/ingresar"
         >
-          Explorar prototipo
+          Ingresar
         </Link>
       </header>
 
@@ -117,17 +117,17 @@ export default function LandingPage() {
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
             <Link
               className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[var(--color-brand)] px-5 text-sm font-bold text-white no-underline shadow-[0_0.65rem_1.8rem_rgb(20_125_115/18%)] transition-colors hover:bg-[var(--color-brand-dark)]"
-              href="/app"
+              href="/registro"
             >
-              Explorar prototipo
+              Crear cuenta
               <ArrowRight aria-hidden="true" size={17} />
             </Link>
-            <a
+            <Link
               className="inline-flex min-h-12 items-center justify-center rounded-xl border border-[var(--color-border)] bg-white px-5 text-sm font-bold text-[var(--color-foreground)] transition-colors hover:border-[var(--color-brand)]"
-              href="#funciones"
+              href="/demo"
             >
-              Conocer las funciones
-            </a>
+              Entrar como demo
+            </Link>
           </div>
 
           <p className="mt-5 flex items-center gap-2 text-xs text-[var(--color-muted)]">
@@ -276,9 +276,9 @@ export default function LandingPage() {
           </div>
           <Link
             className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-5 text-sm font-bold text-[var(--color-foreground)] no-underline hover:bg-[var(--color-brand-soft)]"
-            href="/app"
+            href="/registro"
           >
-            Abrir prototipo
+            Crear cuenta
             <ArrowRight aria-hidden="true" size={17} />
           </Link>
         </div>
