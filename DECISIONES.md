@@ -101,3 +101,11 @@ cerrado el alcance del primer MVP.
   variables y tokens de diseño.
 - La interfaz será responsive y deberá mantener criterios básicos de
   accesibilidad desde el comienzo.
+
+## D-010. Componentes de interfaz
+
+- La aplicación utilizará shadcn/ui con Base UI como base de componentes.
+- Los componentes se incorporarán como código fuente dentro del proyecto.
+- Solo se agregarán los componentes que tengan un uso concreto.
+- Las personalizaciones conservarán los tokens visuales y los comportamientos
+  accesibles definidos por el sistema de componentes.
