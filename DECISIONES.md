@@ -177,3 +177,17 @@ cerrado el alcance del primer MVP.
   adicionales.
 - La verificación del correo será obligatoria antes de acceder a información
   protegida.
+
+## D-016. Identidad y perfil profesional
+
+- El acceso se realizará mediante correo y contraseña o mediante Google.
+- El nombre completo será obligatorio como dato del perfil, pero no se
+  utilizará como credencial de acceso.
+- No se incorporará un nombre de usuario independiente en el MVP.
+- La matrícula profesional y su jurisdicción serán datos opcionales del perfil.
+- Informar una matrícula no otorgará permisos especiales ni se presentará como
+  una verificación profesional.
+- El MVP no restringirá funcionalidades según la matrícula.
+- Si en el futuro se incorporan funciones que requieran acreditar la condición
+  profesional, se diseñará un proceso de verificación real acorde con el país
+  y la jurisdicción antes de habilitarlas.
