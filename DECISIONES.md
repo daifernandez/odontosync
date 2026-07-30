@@ -77,3 +77,19 @@ cerrado el alcance del primer MVP.
   almacenar archivos.
 - No se utilizarán inicialmente Supabase Realtime ni Edge Functions.
 - El proyecto utilizará Node.js 22 o una versión compatible posterior.
+
+## D-008. Acceso y evolución de la base de datos
+
+- El acceso en tiempo de ejecución utilizará el cliente oficial de Supabase
+  con la sesión autenticada y tipos TypeScript generados desde el esquema.
+- El esquema, las restricciones, los índices y las políticas RLS se
+  versionarán mediante migraciones SQL.
+- La aplicación accederá a los datos a través de repositorios internos; las
+  páginas y componentes no consultarán Supabase directamente.
+- Las políticas RLS tendrán pruebas automatizadas.
+- No se incorporará inicialmente Prisma ni Drizzle porque no resuelven una
+  necesidad actual y complican la ejecución de consultas bajo la identidad RLS
+  del usuario.
+- Se podrá incorporar una ORM dentro de los repositorios cuando exista una
+  necesidad concreta y su integración con RLS no reduzca las garantías de
+  aislamiento.
