@@ -165,3 +165,15 @@ cerrado el alcance del primer MVP.
   que la evaluación no dependa de una cuenta personal de Google.
 - Las credenciales OAuth y demás secretos se almacenarán como variables de
   entorno y nunca en el repositorio.
+
+## D-015. Registro autónomo
+
+- Cualquier odontólogo podrá crear su propia cuenta sin invitación ni
+  aprobación administrativa previa.
+- Al completar el registro se creará su espacio de consultorio individual.
+- El usuario inicial recibirá los permisos de propietario y odontólogo de ese
+  espacio.
+- El consultorio podrá utilizarse sin configurar miembros ni roles
+  adicionales.
+- La verificación del correo será obligatoria antes de acceder a información
+  protegida.
