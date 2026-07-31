@@ -6,3 +6,44 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum AgendaView {
+  DAY   @map("day")
+  WEEK  @map("week")
+  MONTH @map("month")
+
+  @@map("agenda_view")
+}
+
+model Profile {
+  id                  String          @id @db.Uuid
+  fullName            String          @map("full_name")
+  licenseNumber       String?         @map("license_number")
+  licenseJurisdiction String?         @map("license_jurisdiction")
+  agendaSettings      AgendaSettings?
+
+  @@map("profiles")
+}
+
+model AgendaSettings {
+  userId                            String                    @id @map("user_id") @db.Uuid
+  gridIntervalMinutes               Int                       @default(15) @map("grid_interval_minutes") @db.SmallInt
+  defaultAppointmentDurationMinutes Int                       @default(30) @map("default_appointment_duration_minutes") @db.SmallInt
+  defaultCleanupMinutes             Int                       @default(5) @map("default_cleanup_minutes") @db.SmallInt
+  lastAgendaView                    AgendaView                @default(WEEK) @map("last_agenda_view")
+  profile                           Profile                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weeklyAvailabilityBlocks          WeeklyAvailabilityBlock[]
+
+  @@map("agenda_settings")
+}
+
+model WeeklyAvailabilityBlock {
+  userId         String         @map("user_id") @db.Uuid
+  dayOfWeek      Int            @map("day_of_week") @db.SmallInt
+  startTime      DateTime       @map("start_time") @db.Time(0)
+  endTime        DateTime       @map("end_time") @db.Time(0)
+  agendaSettings AgendaSettings @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@id([userId, dayOfWeek, startTime])
+  @@map("weekly_availability_blocks")
+}

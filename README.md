@@ -14,8 +14,9 @@ independientes.
 - Prisma ORM
 - Vitest
 
-Supabase Auth está conectado. Los modelos de datos de la aplicación todavía no
-fueron creados.
+Supabase Auth está conectado. El primer esquema de perfiles y configuración de
+agenda se administra con Prisma Migrate y aplica aislamiento por usuario con
+Row Level Security.
 
 ## Requisitos
 
@@ -41,8 +42,13 @@ npm run lint
 npm run typecheck
 npm run test:run
 npm run prisma:validate
+npm run test:security:linked
 npm run build
 ```
+
+La verificación enlazada ejecuta ataques de lectura y escritura contra las
+políticas RLS dentro de una transacción que siempre termina con `ROLLBACK`, y
+luego consulta los asesores de seguridad de Supabase.
 
 ## Documentación
 
