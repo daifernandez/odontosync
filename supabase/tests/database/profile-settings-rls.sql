@@ -63,6 +63,22 @@ BEGIN
         RAISE EXCEPTION 'The signup trigger function is callable by API roles';
     END IF;
 
+    IF NOT has_function_privilege(
+        'authenticated',
+        'public.save_initial_configuration(text,text,text,integer,integer,integer,jsonb)',
+        'EXECUTE'
+    ) OR has_function_privilege(
+        'anon',
+        'public.save_initial_configuration(text,text,text,integer,integer,integer,jsonb)',
+        'EXECUTE'
+    ) OR has_function_privilege(
+        'service_role',
+        'public.save_initial_configuration(text,text,text,integer,integer,integer,jsonb)',
+        'EXECUTE'
+    ) THEN
+        RAISE EXCEPTION 'Initial configuration RPC privileges are too broad or incomplete';
+    END IF;
+
     IF has_table_privilege('anon', 'public.profiles', 'SELECT')
        OR has_table_privilege('anon', 'public.agenda_settings', 'SELECT')
        OR has_table_privilege('anon', 'public.weekly_availability_blocks', 'SELECT')
@@ -173,6 +189,21 @@ BEGIN
     EXCEPTION
         WHEN insufficient_privilege THEN NULL;
     END;
+
+    BEGIN
+        PERFORM public.save_initial_configuration(
+            'Anonymous attacker',
+            '',
+            '',
+            15,
+            30,
+            5,
+            '[{"day_of_week": 1, "start_time": "09:00", "end_time": "13:00"}]'::jsonb
+        );
+        RAISE EXCEPTION 'Anonymous access executed the configuration RPC';
+    EXCEPTION
+        WHEN insufficient_privilege THEN NULL;
+    END;
 END;
 $$;
 
@@ -247,6 +278,21 @@ BEGIN
     EXCEPTION
         WHEN insufficient_privilege THEN NULL;
     END;
+
+    BEGIN
+        PERFORM public.save_initial_configuration(
+            'Forged configuration',
+            '',
+            '',
+            15,
+            30,
+            5,
+            '[{"day_of_week": 1, "start_time": "09:00", "end_time": "13:00"}]'::jsonb
+        );
+        RAISE EXCEPTION 'An unknown authenticated identity created a configuration';
+    EXCEPTION
+        WHEN foreign_key_violation THEN NULL;
+    END;
 END;
 $$;
 
@@ -270,6 +316,55 @@ BEGIN
        OR (SELECT count(*) FROM public.agenda_settings) <> 1
        OR NOT EXISTS (SELECT 1 FROM public.weekly_availability_blocks) THEN
         RAISE EXCEPTION 'The owner cannot read their complete configuration';
+    END IF;
+
+    PERFORM public.save_initial_configuration(
+        'RLS owner RPC verification',
+        'MP 1234',
+        'Buenos Aires',
+        15,
+        30,
+        5,
+        '[
+            {"day_of_week": 1, "start_time": "09:00", "end_time": "13:00"},
+            {"day_of_week": 1, "start_time": "14:00", "end_time": "18:00"}
+        ]'::jsonb
+    );
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM public.profiles
+        WHERE full_name = 'RLS owner RPC verification'
+          AND license_number = 'MP 1234'
+          AND license_jurisdiction = 'Buenos Aires'
+    ) OR (SELECT count(*) FROM public.weekly_availability_blocks) <> 2 THEN
+        RAISE EXCEPTION 'The owner configuration RPC did not save every section';
+    END IF;
+
+    BEGIN
+        PERFORM public.save_initial_configuration(
+            'This update must roll back',
+            '',
+            '',
+            15,
+            30,
+            5,
+            '[
+                {"day_of_week": 2, "start_time": "09:00", "end_time": "13:00"},
+                {"day_of_week": 2, "start_time": "12:00", "end_time": "18:00"}
+            ]'::jsonb
+        );
+        RAISE EXCEPTION 'The RPC accepted overlapping availability';
+    EXCEPTION
+        WHEN exclusion_violation THEN NULL;
+    END;
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM public.profiles
+        WHERE full_name = 'RLS owner RPC verification'
+    ) OR (SELECT count(*) FROM public.weekly_availability_blocks) <> 2 THEN
+        RAISE EXCEPTION 'A failed RPC did not roll back atomically';
     END IF;
 
     UPDATE public.profiles SET full_name = 'RLS owner verification';

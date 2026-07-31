@@ -62,7 +62,8 @@ de restringir por IP las conexiones directas a PostgreSQL.
   cifrado.
 - Corrección: se activó Database SSL Enforcement.
 - Verificación: `pg_stat_ssl` confirma TLS 1.3 con
-  `TLS_AES_256_GCM_SHA384`; Prisma y las pruebas enlazadas siguen conectando.
+  `TLS_AES_256_GCM_SHA384`; las migraciones Prisma y las pruebas enlazadas
+  siguen conectando.
 - Falso positivo: el servidor ya soportaba TLS, pero no lo exigía.
 
 ### SEC-004 — Privilegios implícitos para objetos futuros

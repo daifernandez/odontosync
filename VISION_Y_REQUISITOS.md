@@ -244,8 +244,8 @@ la arquitectura inicial salvo que una necesidad real lo justifique.
 
 - Los datos de cada usuario estarán aislados mediante autenticación,
   autorización y Row Level Security.
-- La aplicación y las migraciones usarán credenciales de base de datos
-  separadas.
+- La aplicación usará la sesión del usuario y la Data API; la credencial de
+  conexión PostgreSQL directa se reservará para migraciones.
 - Los secretos se almacenarán en variables de entorno y no se versionarán.
 - La interfaz será responsive y mantendrá criterios básicos de accesibilidad.
 - Las reglas de agenda, permisos y aislamiento tendrán pruebas automatizadas.
@@ -264,7 +264,7 @@ OdontoSync comenzará como un monolito modular:
 - shadcn/ui con Base UI, incorporando solo componentes necesarios;
 - PostgreSQL administrado por Supabase;
 - Supabase Auth;
-- Prisma ORM estable y Prisma Migrate;
+- Prisma Schema y Prisma Migrate;
 - Vitest, React Testing Library y Playwright;
 - Vercel AI SDK mediante Vercel AI Gateway;
 - npm como gestor de paquetes;

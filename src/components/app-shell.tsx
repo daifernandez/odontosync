@@ -134,12 +134,12 @@ export function AppShell({
         </nav>
 
         <div className="flex flex-col gap-1 border-t border-[var(--color-border)] pt-4">
-          <button
+          <Link
             className={`flex h-11.5 w-full cursor-pointer items-center gap-3.5 rounded-xl border-0 bg-transparent px-3 text-left text-[var(--color-muted)] transition-colors hover:bg-[var(--color-brand-subtle)] hover:text-[var(--color-brand-dark)] ${
               isCollapsed ? "md:justify-center md:px-0" : ""
             }`}
+            href="/app/configuracion"
             title={isCollapsed ? "Configuración" : undefined}
-            type="button"
           >
             <Settings aria-hidden="true" size={20} strokeWidth={1.8} />
             <span
@@ -149,7 +149,7 @@ export function AppShell({
             >
               Configuración
             </span>
-          </button>
+          </Link>
 
           <div
             className={`mt-1 flex items-center gap-3 px-2.5 py-2.5 ${

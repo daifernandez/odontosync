@@ -90,20 +90,23 @@ cerrado el alcance del primer MVP.
 ## D-008. Acceso y evolución de la base de datos
 
 - La autenticación y la sesión utilizarán el cliente oficial de Supabase.
-- Prisma ORM estable será la capa de acceso a PostgreSQL desde el servidor.
 - El esquema se definirá con Prisma y se versionará mediante Prisma Migrate.
 - Las restricciones, los índices y las políticas que Prisma no pueda expresar
   se incorporarán como SQL dentro de las migraciones.
-- La aplicación accederá a los datos a través de repositorios internos; las
-  páginas y componentes no consultarán Prisma ni Supabase directamente.
-- Las migraciones y la aplicación utilizarán credenciales de base de datos
-  separadas.
-- El usuario de ejecución no tendrá `BYPASSRLS`; cada operación protegida
-  establecerá dentro de una transacción la identidad previamente verificada
-  por Supabase Auth.
+- Por el momento, las operaciones de cada usuario accederán a PostgreSQL
+  mediante la Data API de Supabase, usando su sesión y las políticas RLS. La
+  aplicación no tendrá una contraseña PostgreSQL de ejecución.
+- La conexión PostgreSQL directa quedará reservada para Prisma CLI y las
+  migraciones.
+- El acceso a datos quedará detrás de repositorios internos; las páginas y los
+  componentes no consultarán Prisma ni Supabase directamente.
+- Las escrituras que deban ser atómicas se resolverán mediante funciones
+  PostgreSQL `SECURITY INVOKER`, con permisos explícitos y sin usar
+  `service_role`.
 - Las políticas RLS tendrán pruebas automatizadas.
-- El acceso serverless utilizará el pool de conexiones de Supabase.
-- No se utilizará Prisma Next mientras permanezca en Early Access.
+- Si una necesidad futura exige acceso PostgreSQL directo desde la aplicación,
+  se diseñará antes un rol de ejecución restringido y una conexión separada de
+  la utilizada por migraciones.
 
 ## D-009. Estilos de la interfaz
 
