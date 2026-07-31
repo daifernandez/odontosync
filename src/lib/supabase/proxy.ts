@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { getAppOrigin } from "@/lib/app-url";
 import { buildContentSecurityPolicy } from "@/lib/security/content-security-policy";
 import { getAuthRedirect } from "@/modules/auth/domain/auth-routing";
 
@@ -31,14 +32,11 @@ function createNextResponse(
 }
 
 function redirectWithCookies(
-  request: NextRequest,
   response: NextResponse,
   pathname: string,
   contentSecurityPolicy: string,
 ) {
-  const url = request.nextUrl.clone();
-  url.pathname = pathname;
-  url.search = "";
+  const url = new URL(pathname, `${getAppOrigin()}/`);
 
   const redirectResponse = NextResponse.redirect(url);
 
@@ -95,7 +93,6 @@ export async function updateSession(request: NextRequest) {
 
   if (redirectPath) {
     return redirectWithCookies(
-      request,
       response,
       redirectPath,
       contentSecurityPolicy,

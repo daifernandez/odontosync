@@ -15,6 +15,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 
 import { BrandMark } from "@/components/brand-mark";
@@ -23,11 +24,11 @@ import { logoutAction } from "@/modules/auth/actions";
 type NavigationItem = {
   label: string;
   icon: LucideIcon;
-  active?: boolean;
+  href?: string;
 };
 
 const navigation: NavigationItem[] = [
-  { label: "Inicio", icon: LayoutDashboard, active: true },
+  { label: "Inicio", icon: LayoutDashboard, href: "/app" },
   { label: "Agenda", icon: CalendarDays },
   { label: "Pacientes", icon: UsersRound },
   { label: "Imprimibles", icon: FileText },
@@ -54,7 +55,9 @@ export function AppShell({
 }>) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const pathname = usePathname();
   const initials = getInitials(user.fullName);
+  const isConfigurationActive = pathname.startsWith("/app/configuracion");
 
   return (
     <div className="min-h-screen">
@@ -109,37 +112,61 @@ export function AppShell({
           >
             Consultorio
           </p>
-          {navigation.map(({ label, icon: Icon, active }) => (
-            <button
-              aria-current={active ? "page" : undefined}
-              className={`flex h-11.5 w-full cursor-pointer items-center gap-3.5 rounded-xl border-0 px-3 text-left transition-colors ${
-                active
-                  ? "bg-[var(--color-brand-soft)] font-semibold text-[var(--color-brand-dark)]"
-                  : "bg-transparent text-[var(--color-muted)] hover:bg-[var(--color-brand-subtle)] hover:text-[var(--color-brand-dark)]"
-              } ${isCollapsed ? "md:justify-center md:px-0" : ""}`}
-              key={label}
-              title={isCollapsed ? label : undefined}
-              type="button"
-            >
-              <Icon aria-hidden="true" size={20} strokeWidth={1.8} />
-              <span
-                className={`overflow-hidden whitespace-nowrap ${
-                  isCollapsed ? "md:hidden" : ""
-                }`}
+          {navigation.map(({ label, icon: Icon, href }) => {
+            const isActive = pathname === href;
+            const className = `flex h-11.5 w-full cursor-pointer items-center gap-3.5 rounded-xl border-0 px-3 text-left no-underline transition-colors ${
+              isActive
+                ? "bg-[var(--color-brand-soft)] font-semibold text-[var(--color-brand-dark)]"
+                : "bg-transparent text-[var(--color-muted)] hover:bg-[var(--color-brand-subtle)] hover:text-[var(--color-brand-dark)]"
+            } ${isCollapsed ? "md:justify-center md:px-0" : ""}`;
+            const content = (
+              <>
+                <Icon aria-hidden="true" size={20} strokeWidth={1.8} />
+                <span
+                  className={`overflow-hidden whitespace-nowrap ${
+                    isCollapsed ? "md:hidden" : ""
+                  }`}
+                >
+                  {label}
+                </span>
+              </>
+            );
+
+            return href ? (
+              <Link
+                aria-current={isActive ? "page" : undefined}
+                className={className}
+                href={href}
+                key={label}
+                title={isCollapsed ? label : undefined}
               >
-                {label}
-              </span>
-            </button>
-          ))}
+                {content}
+              </Link>
+            ) : (
+              <button
+                className={className}
+                key={label}
+                title={isCollapsed ? label : undefined}
+                type="button"
+              >
+                {content}
+              </button>
+            );
+          })}
         </nav>
 
         <div className="flex flex-col gap-1 border-t border-[var(--color-border)] pt-4">
-          <button
-            className={`flex h-11.5 w-full cursor-pointer items-center gap-3.5 rounded-xl border-0 bg-transparent px-3 text-left text-[var(--color-muted)] transition-colors hover:bg-[var(--color-brand-subtle)] hover:text-[var(--color-brand-dark)] ${
+          <Link
+            aria-current={isConfigurationActive ? "page" : undefined}
+            className={`flex h-11.5 w-full cursor-pointer items-center gap-3.5 rounded-xl border-0 px-3 text-left no-underline transition-colors ${
+              isConfigurationActive
+                ? "bg-[var(--color-brand-soft)] font-semibold text-[var(--color-brand-dark)]"
+                : "bg-transparent text-[var(--color-muted)] hover:bg-[var(--color-brand-subtle)] hover:text-[var(--color-brand-dark)]"
+            } ${
               isCollapsed ? "md:justify-center md:px-0" : ""
             }`}
+            href="/app/configuracion"
             title={isCollapsed ? "Configuración" : undefined}
-            type="button"
           >
             <Settings aria-hidden="true" size={20} strokeWidth={1.8} />
             <span
@@ -149,7 +176,7 @@ export function AppShell({
             >
               Configuración
             </span>
-          </button>
+          </Link>
 
           <div
             className={`mt-1 flex items-center gap-3 px-2.5 py-2.5 ${

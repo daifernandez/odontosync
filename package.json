@@ -14,6 +14,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:db:linked": "supabase db query --linked --file supabase/tests/database/profile-settings-rls.sql",
+    "security:advisors:linked": "supabase db advisors --linked --type security --level info --fail-on error",
+    "test:security:linked": "npm run test:db:linked && npm run security:advisors:linked",
     "prisma:generate": "prisma generate",
     "prisma:validate": "prisma validate"
   },
@@ -39,5 +42,9 @@
     "tailwindcss": "^4.3.3",
     "typescript": "^5",
     "vitest": "^4.1.10"
+  },
+  "overrides": {
+    "postcss": "8.5.25",
+    "sharp": "0.35.3"
   }
 }

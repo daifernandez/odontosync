@@ -1,5 +1,6 @@
 import { AppShell } from "@/components/app-shell";
 import { createClient } from "@/lib/supabase/server";
+import { getProfile } from "@/modules/initial-configuration/repository";
 import { redirect } from "next/navigation";
 
 function readFullName(
@@ -32,11 +33,14 @@ export default async function PrivateLayout({
     redirect("/ingresar");
   }
 
+  const profile = await getProfile();
   const email =
     typeof claims.email === "string" ? claims.email : "Cuenta individual";
 
   return (
-    <AppShell user={{ fullName: readFullName(claims, email), email }}>
+    <AppShell
+      user={{ fullName: profile?.fullName ?? readFullName(claims, email), email }}
+    >
       {children}
     </AppShell>
   );
