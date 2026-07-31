@@ -38,7 +38,11 @@ function FieldError({ id, message }: { id: string; message?: string }) {
 
 export function InitialConfigurationForm({
   initialConfiguration,
-}: Readonly<{ initialConfiguration: InitialConfiguration }>) {
+  isInitialSetup,
+}: Readonly<{
+  initialConfiguration: InitialConfiguration;
+  isInitialSetup: boolean;
+}>) {
   const [state, action] = useActionState(
     saveInitialConfigurationAction,
     initialConfigurationFormState,
@@ -75,9 +79,13 @@ export function InitialConfigurationForm({
         </p>
       ) : null}
 
-      <section className={cardClassName} aria-labelledby="profile-title">
+      <section
+        className={`${cardClassName} scroll-mt-5`}
+        aria-labelledby="profile-title"
+        id="perfil"
+      >
         <p className="mb-2 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
-          Paso 1
+          {isInitialSetup ? "Paso 1" : "Perfil"}
         </p>
         <h2 className="m-0 text-xl" id="profile-title">
           Perfil profesional
@@ -160,9 +168,13 @@ export function InitialConfigurationForm({
         </div>
       </section>
 
-      <section className={cardClassName} aria-labelledby="agenda-settings-title">
+      <section
+        className={`${cardClassName} scroll-mt-5`}
+        aria-labelledby="agenda-settings-title"
+        id="agenda"
+      >
         <p className="mb-2 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
-          Paso 2
+          {isInitialSetup ? "Paso 2" : "Agenda"}
         </p>
         <h2 className="m-0 text-xl" id="agenda-settings-title">
           Preferencias de agenda
@@ -248,7 +260,7 @@ export function InitialConfigurationForm({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="mb-2 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
-              Paso 3
+              {isInitialSetup ? "Paso 3" : "Agenda"}
             </p>
             <h2 className="m-0 text-xl" id="availability-title">
               Horarios habituales
