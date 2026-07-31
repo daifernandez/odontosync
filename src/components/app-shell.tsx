@@ -25,11 +25,12 @@ type NavigationItem = {
   label: string;
   icon: LucideIcon;
   href?: string;
+  demoHref?: string;
 };
 
 const navigation: NavigationItem[] = [
-  { label: "Inicio", icon: LayoutDashboard, href: "/app" },
-  { label: "Agenda", icon: CalendarDays },
+  { label: "Inicio", icon: LayoutDashboard, href: "/app", demoHref: "/demo" },
+  { label: "Agenda", icon: CalendarDays, href: "/app/agenda" },
   { label: "Pacientes", icon: UsersRound },
   { label: "Imprimibles", icon: FileText },
   { label: "Indicaciones", icon: ClipboardList },
@@ -112,8 +113,9 @@ export function AppShell({
           >
             Consultorio
           </p>
-          {navigation.map(({ label, icon: Icon, href }) => {
-            const isActive = pathname === href;
+          {navigation.map(({ label, icon: Icon, href, demoHref }) => {
+            const resolvedHref = mode === "demo" ? demoHref : href;
+            const isActive = pathname === resolvedHref;
             const className = `flex h-11.5 w-full cursor-pointer items-center gap-3.5 rounded-xl border-0 px-3 text-left no-underline transition-colors ${
               isActive
                 ? "bg-[var(--color-brand-soft)] font-semibold text-[var(--color-brand-dark)]"
@@ -132,11 +134,11 @@ export function AppShell({
               </>
             );
 
-            return href ? (
+            return resolvedHref ? (
               <Link
                 aria-current={isActive ? "page" : undefined}
                 className={className}
-                href={href}
+                href={resolvedHref}
                 key={label}
                 title={isCollapsed ? label : undefined}
               >
