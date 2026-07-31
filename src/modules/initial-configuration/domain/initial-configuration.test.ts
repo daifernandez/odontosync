@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { validateInitialConfiguration } from "./initial-configuration";
+import {
+  initialConfigurationFormState,
+  validateInitialConfiguration,
+} from "./initial-configuration";
 
 const validInput = {
   fullName: "  Daiana   Fernández ",
@@ -16,6 +19,13 @@ const validInput = {
 };
 
 describe("validateInitialConfiguration", () => {
+  it("provides a serializable initial form state", () => {
+    expect(initialConfigurationFormState).toEqual({
+      status: "idle",
+      fieldErrors: {},
+    });
+  });
+
   it("normalizes a complete valid configuration", () => {
     expect(validateInitialConfiguration(validInput)).toEqual({
       success: true,

@@ -4,14 +4,12 @@ import { Plus, Trash2 } from "lucide-react";
 import { useActionState, useState } from "react";
 
 import { SubmitButton } from "@/components/auth/submit-button";
-import {
-  initialConfigurationFormState,
-  saveInitialConfigurationAction,
-} from "@/modules/initial-configuration/actions";
+import { saveInitialConfigurationAction } from "@/modules/initial-configuration/actions";
 import {
   type AvailabilityBlock,
   type InitialConfiguration,
   gridIntervalOptions,
+  initialConfigurationFormState,
 } from "@/modules/initial-configuration/domain/initial-configuration";
 
 const days = [

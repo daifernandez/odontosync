@@ -29,6 +29,17 @@ export type InitialConfigurationFieldErrors = Partial<
   >
 >;
 
+export type InitialConfigurationFormState = {
+  status: "idle" | "error";
+  message?: string;
+  fieldErrors: InitialConfigurationFieldErrors;
+};
+
+export const initialConfigurationFormState: InitialConfigurationFormState = {
+  status: "idle",
+  fieldErrors: {},
+};
+
 type InitialConfigurationInput = {
   fullName: unknown;
   licenseNumber: unknown;

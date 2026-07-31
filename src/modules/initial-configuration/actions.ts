@@ -6,21 +6,10 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 import {
-  type InitialConfigurationFieldErrors,
+  type InitialConfigurationFormState,
   validateInitialConfiguration,
 } from "./domain/initial-configuration";
 import { saveInitialConfiguration } from "./repository";
-
-export type InitialConfigurationFormState = {
-  status: "idle" | "error";
-  message?: string;
-  fieldErrors: InitialConfigurationFieldErrors;
-};
-
-export const initialConfigurationFormState: InitialConfigurationFormState = {
-  status: "idle",
-  fieldErrors: {},
-};
 
 function readText(formData: FormData, field: string) {
   const value = formData.get(field);
