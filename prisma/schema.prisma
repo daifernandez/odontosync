@@ -21,8 +21,22 @@ model Profile {
   licenseNumber       String?         @map("license_number")
   licenseJurisdiction String?         @map("license_jurisdiction")
   agendaSettings      AgendaSettings?
+  patients            Patient[]
 
   @@map("profiles")
+}
+
+model Patient {
+  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String  @map("user_id") @db.Uuid
+  firstName String  @map("first_name")
+  lastName  String  @map("last_name")
+  phone     String?
+  email     String?
+  profile   Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, lastName, firstName])
+  @@map("patients")
 }
 
 model AgendaSettings {

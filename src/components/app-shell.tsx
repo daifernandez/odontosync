@@ -31,7 +31,7 @@ type NavigationItem = {
 const navigation: NavigationItem[] = [
   { label: "Inicio", icon: LayoutDashboard, href: "/app", demoHref: "/demo" },
   { label: "Agenda", icon: CalendarDays, href: "/app/agenda" },
-  { label: "Pacientes", icon: UsersRound },
+  { label: "Pacientes", icon: UsersRound, href: "/app/pacientes" },
   { label: "Imprimibles", icon: FileText },
   { label: "Indicaciones", icon: ClipboardList },
 ];
