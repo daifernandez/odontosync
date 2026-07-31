@@ -6,10 +6,11 @@ import {
   Clock3,
   FileText,
   Printer,
-  SmilePlus,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+
+import { BrandMark } from "@/components/brand-mark";
 
 export const metadata: Metadata = {
   title: "OdontoSync | Organización para odontólogos independientes",
@@ -52,12 +53,10 @@ export default function LandingPage() {
           className="flex items-center gap-3 text-[var(--color-foreground)] no-underline"
           href="/"
         >
-          <span className="grid size-10 place-items-center rounded-[0.8rem] bg-[var(--color-brand)] text-white">
-            <SmilePlus aria-hidden="true" size={22} strokeWidth={1.8} />
-          </span>
+          <BrandMark aria-hidden="true" className="size-10 shrink-0" />
           <span className="flex flex-col">
             <strong className="text-[0.95rem] tracking-[-0.02em]">
-              OdontoSync
+              Odonto<span className="text-[var(--color-brand)]">Sync</span>
             </strong>
             <small className="text-[0.65rem] text-[var(--color-muted)]">
               Gestión odontológica

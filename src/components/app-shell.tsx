@@ -10,7 +10,6 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Settings,
-  SmilePlus,
   UsersRound,
   X,
   type LucideIcon,
@@ -18,6 +17,7 @@ import {
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 
+import { BrandMark } from "@/components/brand-mark";
 import { logoutAction } from "@/modules/auth/actions";
 
 type NavigationItem = {
@@ -78,18 +78,15 @@ export function AppShell({
             isCollapsed ? "md:justify-center md:px-0" : ""
           }`}
         >
-          <div
-            className="grid size-11 shrink-0 place-items-center rounded-[0.9rem] bg-[var(--color-brand)] text-white"
-            aria-hidden="true"
-          >
-            <SmilePlus size={24} strokeWidth={1.8} />
-          </div>
+          <BrandMark aria-hidden="true" className="size-11 shrink-0" />
           <div
             className={`flex min-w-0 flex-col whitespace-nowrap ${
               isCollapsed ? "md:hidden" : ""
             }`}
           >
-            <strong className="text-base tracking-[-0.02em]">OdontoSync</strong>
+            <strong className="text-base tracking-[-0.02em]">
+              Odonto<span className="text-[var(--color-brand)]">Sync</span>
+            </strong>
             <span className="mt-0.5 text-[0.72rem] text-[var(--color-muted)]">
               Gestión odontológica
             </span>
@@ -257,13 +254,10 @@ export function AppShell({
             <Menu size={22} />
           </button>
           <div className="flex items-center gap-2.5 text-sm">
-            <span
-              className="grid size-9 place-items-center rounded-xl bg-[var(--color-brand)] text-white"
-              aria-hidden="true"
-            >
-              <SmilePlus size={19} strokeWidth={1.8} />
-            </span>
-            <strong>OdontoSync</strong>
+            <BrandMark aria-hidden="true" className="size-9" />
+            <strong>
+              Odonto<span className="text-[var(--color-brand)]">Sync</span>
+            </strong>
           </div>
           <span
             className="grid size-8.5 place-items-center rounded-full bg-[var(--color-foreground)] text-[0.68rem] font-bold text-white"

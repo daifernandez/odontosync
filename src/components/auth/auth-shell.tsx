@@ -1,6 +1,8 @@
-import { FileText, ShieldCheck, SmilePlus } from "lucide-react";
+import { FileText, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
+
+import { BrandMark } from "@/components/brand-mark";
 
 export function AuthShell({
   children,
@@ -24,11 +26,13 @@ export function AuthShell({
           className="relative flex items-center gap-3 text-white no-underline"
           href="/"
         >
-          <span className="grid size-11 place-items-center rounded-[0.9rem] bg-[var(--color-brand)]">
-            <SmilePlus aria-hidden="true" size={24} strokeWidth={1.8} />
+          <span className="grid size-11 place-items-center rounded-[0.9rem] bg-white">
+            <BrandMark aria-hidden="true" className="size-9" />
           </span>
           <span>
-            <strong className="block">OdontoSync</strong>
+            <strong className="block">
+              Odonto<span className="text-[#91d8d0]">Sync</span>
+            </strong>
             <small className="text-[#b9ccc9]">Gestión odontológica</small>
           </span>
         </Link>
@@ -71,10 +75,10 @@ export function AuthShell({
             className="mb-10 flex items-center gap-3 text-[var(--color-foreground)] no-underline lg:hidden"
             href="/"
           >
-            <span className="grid size-10 place-items-center rounded-[0.8rem] bg-[var(--color-brand)] text-white">
-              <SmilePlus aria-hidden="true" size={22} strokeWidth={1.8} />
-            </span>
-            <strong>OdontoSync</strong>
+            <BrandMark aria-hidden="true" className="size-10" />
+            <strong>
+              Odonto<span className="text-[var(--color-brand)]">Sync</span>
+            </strong>
           </Link>
 
           <p className="mb-3 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
