@@ -37,6 +37,13 @@ BEGIN
         SELECT 1 FROM pg_policy
         WHERE polrelid = 'public.patients'::regclass
           AND polname = 'patients_insert_own'
+    ) OR NOT EXISTS (
+        SELECT 1 FROM pg_policy
+        WHERE polrelid = 'public.patients'::regclass
+          AND polname = 'patients_update_own'
+          AND polcmd = 'w'
+          AND polqual IS NOT NULL
+          AND polwithcheck IS NOT NULL
     ) THEN
         RAISE EXCEPTION 'Patients ownership policies are incomplete';
     END IF;
@@ -48,7 +55,14 @@ BEGIN
        OR NOT has_table_privilege('authenticated', 'public.patients', 'SELECT')
        OR NOT has_table_privilege('authenticated', 'public.patients', 'INSERT')
        OR has_table_privilege('authenticated', 'public.patients', 'UPDATE')
-       OR has_table_privilege('authenticated', 'public.patients', 'DELETE') THEN
+       OR has_table_privilege('authenticated', 'public.patients', 'DELETE')
+       OR NOT has_column_privilege('authenticated', 'public.patients', 'first_name', 'UPDATE')
+       OR NOT has_column_privilege('authenticated', 'public.patients', 'last_name', 'UPDATE')
+       OR NOT has_column_privilege('authenticated', 'public.patients', 'phone', 'UPDATE')
+       OR NOT has_column_privilege('authenticated', 'public.patients', 'email', 'UPDATE')
+       OR NOT has_column_privilege('authenticated', 'public.patients', 'is_active', 'UPDATE')
+       OR has_column_privilege('authenticated', 'public.patients', 'id', 'UPDATE')
+       OR has_column_privilege('authenticated', 'public.patients', 'user_id', 'UPDATE') THEN
         RAISE EXCEPTION 'Patient table privileges do not follow least privilege';
     END IF;
 END;
@@ -96,6 +110,13 @@ BEGIN
     EXCEPTION
         WHEN insufficient_privilege THEN NULL;
     END;
+
+    BEGIN
+        UPDATE public.patients SET is_active = false;
+        RAISE EXCEPTION 'Anonymous access updated a patient';
+    EXCEPTION
+        WHEN insufficient_privilege THEN NULL;
+    END;
 END;
 $$;
 
@@ -114,6 +135,8 @@ $$;
 SET LOCAL ROLE authenticated;
 
 DO $$
+DECLARE
+    changed_rows integer;
 BEGIN
     IF EXISTS (
         SELECT 1
@@ -131,12 +154,22 @@ BEGIN
     EXCEPTION
         WHEN insufficient_privilege THEN NULL;
     END;
+
+    UPDATE public.patients
+    SET first_name = 'Ataque'
+    WHERE id = (SELECT seeded_patient_id FROM patients_rls_test_context);
+
+    GET DIAGNOSTICS changed_rows = ROW_COUNT;
+
+    IF changed_rows <> 0 THEN
+        RAISE EXCEPTION 'Patient RLS allowed another user to update owner data';
+    END IF;
 END;
 $$;
 
 RESET ROLE;
 
--- The owner can read and create valid patients, without update or delete access.
+-- The owner can read, create, edit, deactivate and reactivate without deleting.
 DO $$
 BEGIN
     PERFORM set_config(
@@ -185,9 +218,55 @@ BEGIN
         RAISE EXCEPTION 'The owner could not create a complete patient';
     END IF;
 
+    UPDATE public.patients
+    SET
+        first_name = 'Paciente editado',
+        last_name = 'Actualizado',
+        phone = NULL,
+        email = 'actualizado@example.com',
+        is_active = false
+    WHERE id = (SELECT created_patient_id FROM patients_rls_test_context);
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM public.patients
+        WHERE id = (SELECT created_patient_id FROM patients_rls_test_context)
+          AND first_name = 'Paciente editado'
+          AND last_name = 'Actualizado'
+          AND phone IS NULL
+          AND email = 'actualizado@example.com'
+          AND NOT is_active
+    ) THEN
+        RAISE EXCEPTION 'The owner could not edit and deactivate their patient';
+    END IF;
+
+    UPDATE public.patients
+    SET is_active = true
+    WHERE id = (SELECT created_patient_id FROM patients_rls_test_context);
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM public.patients
+        WHERE id = (SELECT created_patient_id FROM patients_rls_test_context)
+          AND is_active
+    ) THEN
+        RAISE EXCEPTION 'The owner could not reactivate their patient';
+    END IF;
+
     BEGIN
-        UPDATE public.patients SET first_name = 'Modificado';
-        RAISE EXCEPTION 'Patient updates should not be available yet';
+        UPDATE public.patients
+        SET user_id = (SELECT other_id FROM patients_rls_test_context)
+        WHERE id = (SELECT created_patient_id FROM patients_rls_test_context);
+        RAISE EXCEPTION 'The patient owner column was updateable';
+    EXCEPTION
+        WHEN insufficient_privilege THEN NULL;
+    END;
+
+    BEGIN
+        UPDATE public.patients
+        SET id = gen_random_uuid()
+        WHERE id = (SELECT created_patient_id FROM patients_rls_test_context);
+        RAISE EXCEPTION 'The patient identifier was updateable';
     EXCEPTION
         WHEN insufficient_privilege THEN NULL;
     END;
