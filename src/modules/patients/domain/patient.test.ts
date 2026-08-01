@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import {
   normalizePatientSearch,
+  normalizePatientStatus,
   patientFormState,
+  validatePatientId,
   validatePatient,
 } from "./patient";
 
@@ -87,5 +89,28 @@ describe("normalizePatientSearch", () => {
 
   it("limits the search term length", () => {
     expect(normalizePatientSearch("a".repeat(100))).toHaveLength(80);
+  });
+});
+
+describe("validatePatientId", () => {
+  it("accepts a UUID patient identifier", () => {
+    expect(validatePatientId("f49d2f79-e3a1-4bb5-9554-75877735c17f")).toBe(
+      "f49d2f79-e3a1-4bb5-9554-75877735c17f",
+    );
+  });
+
+  it("rejects malformed patient identifiers", () => {
+    expect(validatePatientId("not-a-patient-id")).toBeNull();
+  });
+});
+
+describe("normalizePatientStatus", () => {
+  it("shows active patients by default", () => {
+    expect(normalizePatientStatus(undefined)).toBe("active");
+    expect(normalizePatientStatus("unknown")).toBe("active");
+  });
+
+  it("recognizes the inactive patient filter", () => {
+    expect(normalizePatientStatus("inactivos")).toBe("inactive");
   });
 });

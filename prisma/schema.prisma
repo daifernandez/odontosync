@@ -33,9 +33,10 @@ model Patient {
   lastName  String  @map("last_name")
   phone     String?
   email     String?
+  isActive  Boolean @default(true) @map("is_active")
   profile   Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId, lastName, firstName])
+  @@index([userId, isActive, lastName, firstName])
   @@map("patients")
 }
 

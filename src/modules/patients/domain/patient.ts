@@ -4,9 +4,15 @@ export type Patient = {
   lastName: string;
   phone: string | null;
   email: string | null;
+  isActive: boolean;
 };
 
-export type PatientInput = Omit<Patient, "id">;
+export type PatientInput = Pick<
+  Patient,
+  "firstName" | "lastName" | "phone" | "email"
+>;
+
+export type PatientStatus = "active" | "inactive";
 
 export type PatientFieldErrors = Partial<
   Record<"firstName" | "lastName" | "phone" | "email", string>
@@ -82,4 +88,21 @@ export function normalizePatientSearch(value: unknown) {
     .replace(/\s+/g, " ")
     .trim()
     .slice(0, 80);
+}
+
+export function validatePatientId(value: unknown) {
+  if (
+    typeof value !== "string" ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      value,
+    )
+  ) {
+    return null;
+  }
+
+  return value.toLowerCase();
+}
+
+export function normalizePatientStatus(value: unknown): PatientStatus {
+  return value === "inactivos" ? "inactive" : "active";
 }

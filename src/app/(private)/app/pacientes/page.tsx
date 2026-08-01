@@ -1,11 +1,21 @@
-import { Mail, Phone, Search, UserRoundPlus, UsersRound } from "lucide-react";
+import {
+  Mail,
+  Pencil,
+  Phone,
+  Search,
+  UserRoundPlus,
+  UsersRound,
+} from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { PatientForm } from "@/components/patient-form";
 import { getInitialConfiguration } from "@/modules/initial-configuration/repository";
-import { normalizePatientSearch } from "@/modules/patients/domain/patient";
+import {
+  normalizePatientSearch,
+  normalizePatientStatus,
+} from "@/modules/patients/domain/patient";
 import { listPatients } from "@/modules/patients/repository";
 
 export const metadata: Metadata = {
@@ -17,6 +27,10 @@ type PatientsPageProps = {
   searchParams: Promise<{
     buscar?: string | string[];
     creado?: string | string[];
+    actualizado?: string | string[];
+    desactivado?: string | string[];
+    estado?: string | string[];
+    reactivado?: string | string[];
   }>;
 };
 
@@ -29,16 +43,26 @@ export default async function PatientsPage({
 }: PatientsPageProps) {
   const params = await searchParams;
   const search = normalizePatientSearch(readSearchParam(params.buscar));
+  const status = normalizePatientStatus(readSearchParam(params.estado));
   const [configuration, patients] = await Promise.all([
     getInitialConfiguration(),
-    listPatients(search),
+    listPatients(search, status),
   ]);
 
   if (!configuration || configuration.availability.length === 0) {
     redirect("/app/configuracion");
   }
 
-  const patientWasCreated = readSearchParam(params.creado) === "1";
+  const feedback =
+    readSearchParam(params.creado) === "1"
+      ? "El paciente ficticio se guardó correctamente."
+      : readSearchParam(params.actualizado) === "1"
+        ? "Los datos del paciente se actualizaron correctamente."
+        : readSearchParam(params.desactivado) === "1"
+          ? "El paciente quedó inactivo y sus datos se conservaron."
+          : readSearchParam(params.reactivado) === "1"
+            ? "El paciente volvió a estar activo."
+            : null;
 
   return (
     <main className="mx-auto w-full max-w-[90rem] px-4 py-7 md:px-[clamp(1.5rem,3.5vw,4rem)] md:py-12">
@@ -67,12 +91,12 @@ export default async function PatientsPage({
         </p>
       </aside>
 
-      {patientWasCreated ? (
+      {feedback ? (
         <p
           className="mt-5 mb-0 rounded-xl border border-[var(--color-border)] bg-[var(--color-brand-soft)] px-4 py-3 text-sm font-semibold text-[var(--color-brand-dark)]"
           role="status"
         >
-          El paciente ficticio se guardó correctamente.
+          {feedback}
         </p>
       ) : null}
 
@@ -87,11 +111,14 @@ export default async function PatientsPage({
                 Directorio
               </p>
               <h2 className="m-0 text-xl" id="patient-list-title">
-                Pacientes guardados
+                Pacientes {status === "active" ? "activos" : "inactivos"}
               </h2>
             </div>
 
             <form className="flex w-full max-w-md gap-2" method="get" role="search">
+              {status === "inactive" ? (
+                <input name="estado" type="hidden" value="inactivos" />
+              ) : null}
               <label className="sr-only" htmlFor="patient-search">
                 Buscar por nombre o apellido
               </label>
@@ -120,6 +147,31 @@ export default async function PatientsPage({
             </form>
           </div>
 
+          <nav aria-label="Estado de pacientes" className="mt-5 flex gap-2">
+            <Link
+              aria-current={status === "active" ? "page" : undefined}
+              className={`inline-flex min-h-10 items-center rounded-xl border px-4 text-sm font-bold no-underline ${
+                status === "active"
+                  ? "border-[var(--color-brand)] bg-[var(--color-brand-soft)] text-[var(--color-brand-dark)]"
+                  : "border-[var(--color-border)] bg-white text-[var(--color-muted)] hover:bg-[var(--color-brand-subtle)]"
+              }`}
+              href="/app/pacientes"
+            >
+              Activos
+            </Link>
+            <Link
+              aria-current={status === "inactive" ? "page" : undefined}
+              className={`inline-flex min-h-10 items-center rounded-xl border px-4 text-sm font-bold no-underline ${
+                status === "inactive"
+                  ? "border-[var(--color-brand)] bg-[var(--color-brand-soft)] text-[var(--color-brand-dark)]"
+                  : "border-[var(--color-border)] bg-white text-[var(--color-muted)] hover:bg-[var(--color-brand-subtle)]"
+              }`}
+              href="/app/pacientes?estado=inactivos"
+            >
+              Inactivos
+            </Link>
+          </nav>
+
           {patients.length === 0 ? (
             <div className="mt-5 rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-brand-subtle)] px-5 py-10 text-center">
               <UsersRound
@@ -128,17 +180,27 @@ export default async function PatientsPage({
                 size={28}
               />
               <h3 className="mt-3 mb-0 text-base">
-                {search ? "No encontramos coincidencias" : "Todavía no hay pacientes"}
+                {search
+                  ? "No encontramos coincidencias"
+                  : status === "active"
+                    ? "Todavía no hay pacientes activos"
+                    : "No hay pacientes inactivos"}
               </h3>
               <p className="mx-auto mt-2 mb-0 max-w-md text-sm leading-6 text-[var(--color-muted)]">
                 {search
                   ? `No hay pacientes cuyo nombre o apellido coincida con “${search}”.`
-                  : "Usá el formulario para crear la primera ficha ficticia."}
+                  : status === "active"
+                    ? "Usá el formulario para crear la primera ficha ficticia."
+                    : "Los pacientes que desactives aparecerán en esta sección."}
               </p>
               {search ? (
                 <Link
                   className="mt-4 inline-flex min-h-10 items-center rounded-xl border border-[var(--color-border)] bg-white px-4 text-sm font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-soft)]"
-                  href="/app/pacientes"
+                  href={
+                    status === "inactive"
+                      ? "/app/pacientes?estado=inactivos"
+                      : "/app/pacientes"
+                  }
                 >
                   Limpiar búsqueda
                 </Link>
@@ -166,6 +228,13 @@ export default async function PatientsPage({
                       </span>
                     </span>
                   </div>
+                  <Link
+                    className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-xl border border-[var(--color-border)] bg-white px-3 text-xs font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-soft)]"
+                    href={`/app/pacientes/${patient.id}/editar`}
+                  >
+                    <Pencil aria-hidden="true" size={14} />
+                    Editar ficha
+                  </Link>
                 </article>
               ))}
             </div>
