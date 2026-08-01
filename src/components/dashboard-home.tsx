@@ -8,6 +8,7 @@ import {
   Printer,
   UserRound,
 } from "lucide-react";
+import Link from "next/link";
 
 const appointments = [
   {
@@ -60,13 +61,23 @@ export function DashboardHome({
             Organizá tu jornada y accedé rápido a tus herramientas.
           </p>
         </div>
-        <button
-          className="flex min-h-11.5 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-0 bg-[var(--color-brand)] px-4 py-3 text-[0.86rem] font-bold text-white shadow-[0_0.45rem_1.2rem_rgb(20_125_115/18%)] hover:bg-[var(--color-brand-dark)] md:w-auto"
-          type="button"
-        >
-          <Plus aria-hidden="true" size={18} />
-          Nuevo turno
-        </button>
+        {demoMode ? (
+          <button
+            className="flex min-h-11.5 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-0 bg-[var(--color-brand)] px-4 py-3 text-[0.86rem] font-bold text-white shadow-[0_0.45rem_1.2rem_rgb(20_125_115/18%)] hover:bg-[var(--color-brand-dark)] md:w-auto"
+            type="button"
+          >
+            <Plus aria-hidden="true" size={18} />
+            Nuevo turno
+          </button>
+        ) : (
+          <Link
+            className="flex min-h-11.5 w-full items-center justify-center gap-2 rounded-xl border-0 bg-[var(--color-brand)] px-4 py-3 text-[0.86rem] font-bold text-white no-underline shadow-[0_0.45rem_1.2rem_rgb(20_125_115/18%)] hover:bg-[var(--color-brand-dark)] md:w-auto"
+            href="/app/agenda#nuevo-turno"
+          >
+            <Plus aria-hidden="true" size={18} />
+            Nuevo turno
+          </Link>
+        )}
       </header>
 
       <aside className="mt-8 flex items-start gap-3 rounded-[var(--radius-medium)] border border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] px-4 py-3 text-[var(--color-warning-foreground)] md:items-center">

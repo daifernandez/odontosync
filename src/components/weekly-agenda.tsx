@@ -210,7 +210,8 @@ export function WeeklyAgenda({
 
         <section
           aria-labelledby="new-appointment-title"
-          className="rounded-[var(--radius-large)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-card)] md:p-6"
+          className="scroll-mt-5 rounded-[var(--radius-large)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-card)] md:p-6"
+          id="nuevo-turno"
         >
           <CalendarPlus
             aria-hidden="true"
