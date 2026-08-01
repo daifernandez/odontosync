@@ -14,7 +14,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest run",
-    "test:db:linked": "supabase db query --linked --file supabase/tests/database/profile-settings-rls.sql && supabase db query --linked --file supabase/tests/database/patients-rls.sql",
+    "test:db:linked": "supabase db query --linked --file supabase/tests/database/profile-settings-rls.sql && supabase db query --linked --file supabase/tests/database/patients-rls.sql && supabase db query --linked --file supabase/tests/database/appointments-rls.sql",
     "security:advisors:linked": "supabase db advisors --linked --type security --level info --fail-on error",
     "test:security:linked": "npm run test:db:linked && npm run security:advisors:linked",
     "prisma:generate": "prisma generate",
