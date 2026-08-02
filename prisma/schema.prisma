@@ -15,6 +15,31 @@ enum AgendaView {
   @@map("agenda_view")
 }
 
+enum AppointmentStatus {
+  PENDING_CONFIRMATION @map("pending_confirmation")
+  CONFIRMED            @map("confirmed")
+  COMPLETED            @map("completed")
+  CANCELLED            @map("cancelled")
+  NO_SHOW              @map("no_show")
+  RESCHEDULED          @map("rescheduled")
+
+  @@map("appointment_status")
+}
+
+enum AppointmentSpecialty {
+  GENERAL               @map("general")
+  PEDIATRIC_DENTISTRY   @map("pediatric_dentistry")
+  ORTHODONTICS          @map("orthodontics")
+  SURGERY                @map("surgery")
+  IMPLANTOLOGY           @map("implantology")
+  ENDODONTICS            @map("endodontics")
+  PERIODONTICS           @map("periodontics")
+  RESTORATIVE            @map("restorative")
+  PROSTHODONTICS         @map("prosthodontics")
+
+  @@map("appointment_specialty")
+}
+
 model Profile {
   id                  String          @id @db.Uuid
   fullName            String          @map("full_name")
@@ -22,6 +47,7 @@ model Profile {
   licenseJurisdiction String?         @map("license_jurisdiction")
   agendaSettings      AgendaSettings?
   patients            Patient[]
+  appointments        Appointment[]
 
   @@map("profiles")
 }
@@ -35,9 +61,30 @@ model Patient {
   email     String?
   isActive  Boolean @default(true) @map("is_active")
   profile   Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
 
   @@index([userId, isActive, lastName, firstName])
+  @@unique([id, userId], map: "patients_id_user_id_key")
   @@map("patients")
+}
+
+model Appointment {
+  id               String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           String                 @map("user_id") @db.Uuid
+  patientId        String                 @map("patient_id") @db.Uuid
+  startsAt         DateTime               @map("starts_at") @db.Timestamptz(0)
+  occupiedUntil    DateTime               @map("occupied_until") @db.Timestamptz(0)
+  durationMinutes  Int                    @map("duration_minutes") @db.SmallInt
+  cleanupMinutes   Int                    @map("cleanup_minutes") @db.SmallInt
+  status           AppointmentStatus      @default(PENDING_CONFIRMATION)
+  specialty        AppointmentSpecialty
+  overlapConfirmed Boolean                @default(false) @map("overlap_confirmed")
+  profile          Profile                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  patient          Patient                @relation(fields: [patientId, userId], references: [id, userId], onDelete: Restrict)
+
+  @@index([userId, startsAt])
+  @@index([patientId, startsAt])
+  @@map("appointments")
 }
 
 model AgendaSettings {
