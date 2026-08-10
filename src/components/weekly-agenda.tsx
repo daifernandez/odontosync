@@ -1,14 +1,26 @@
-import { CalendarClock, Clock3, Settings2 } from "lucide-react";
+import {
+  CalendarClock,
+  ChevronLeft,
+  ChevronRight,
+  Settings2,
+} from "lucide-react";
 import Link from "next/link";
 
 import { AppointmentPanel } from "@/components/appointment-panel";
-import { buildWeeklySchedule } from "@/modules/agenda/domain/weekly-schedule";
+import {
+  buildAgendaWeek,
+  type AgendaWeek,
+} from "@/modules/agenda/domain/weekly-schedule";
 import {
   formatArgentinaDateInput,
+  getArgentinaDateTimeParts,
   getAppointmentSpecialtyLabel,
   type Appointment,
 } from "@/modules/appointments/domain/appointment";
-import type { AppointmentOccupancy } from "@/modules/appointments/domain/availability";
+import {
+  getAvailableAppointmentSlots,
+  type AppointmentOccupancy,
+} from "@/modules/appointments/domain/availability";
 import type { InitialConfiguration } from "@/modules/initial-configuration/domain/initial-configuration";
 import type { Patient } from "@/modules/patients/domain/patient";
 
@@ -19,6 +31,16 @@ type AppointmentPatientOption = Pick<
 
 const summaryCardClassName =
   "rounded-[var(--radius-medium)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)]";
+const pixelsPerMinute = 1.2;
+
+function timeToMinutes(value: string) {
+  const [hour, minute] = value.split(":").map(Number);
+  return hour * 60 + minute;
+}
+
+function formatTime(minutes: number) {
+  return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
+}
 
 export function WeeklyAgenda({
   appointments,
@@ -26,22 +48,55 @@ export function WeeklyAgenda({
   autoOpenNewAppointment,
   configuration,
   created,
+  initialDate,
+  initialTime,
   patients,
+  week,
 }: Readonly<{
   appointments: Appointment[];
   appointmentOccupancy: AppointmentOccupancy[];
   autoOpenNewAppointment: boolean;
   configuration: InitialConfiguration;
   created: boolean;
+  initialDate?: string;
+  initialTime?: string;
   patients: AppointmentPatientOption[];
+  week: AgendaWeek;
 }>) {
-  const schedule = buildWeeklySchedule(configuration.availability);
   const currentTime = new Date();
+  const weekdayAvailability = configuration.availability.filter(
+    (block) => block.dayOfWeek <= 5,
+  );
+  const calendarStart = Math.min(
+    ...weekdayAvailability.map((block) => timeToMinutes(block.startTime)),
+  );
+  const calendarEnd = Math.max(
+    ...weekdayAvailability.map((block) => timeToMinutes(block.endTime)),
+  );
+  const calendarHeight = (calendarEnd - calendarStart) * pixelsPerMinute;
+  const hourMarkers = Array.from(
+    { length: Math.ceil((calendarEnd - calendarStart) / 60) + 1 },
+    (_, index) => calendarStart + index * 60,
+  ).filter((minutes) => minutes <= calendarEnd);
+  const currentWeekStart = buildAgendaWeek(undefined, currentTime).startDate;
   const dateFormatter = new Intl.DateTimeFormat("es-AR", {
     timeZone: "America/Argentina/Buenos_Aires",
     dateStyle: "medium",
     timeStyle: "short",
   });
+  const shortDateFormatter = new Intl.DateTimeFormat("es-AR", {
+    timeZone: "America/Argentina/Buenos_Aires",
+    day: "2-digit",
+    month: "2-digit",
+  });
+  const weekTitleFormatter = new Intl.DateTimeFormat("es-AR", {
+    timeZone: "America/Argentina/Buenos_Aires",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  const firstDay = new Date(`${week.days[0].date}T12:00:00-03:00`);
+  const lastDay = new Date(`${week.days.at(-1)?.date}T12:00:00-03:00`);
 
   return (
     <main className="mx-auto w-full max-w-[90rem] px-4 py-7 md:px-[clamp(1.5rem,3.5vw,4rem)] md:py-12">
@@ -51,10 +106,11 @@ export function WeeklyAgenda({
             Agenda
           </p>
           <h1 className="m-0 text-[clamp(1.8rem,3vw,2.55rem)] leading-[1.1] tracking-[-0.045em]">
-            Semana habitual
+            Agenda semanal
           </h1>
           <p className="mt-3 mb-0 max-w-2xl text-sm leading-6 text-[var(--color-muted)]">
-            Consultá los bloques de atención que configuraste para cada día.
+            Visualizá el tiempo clínico y el acondicionamiento reservado de cada
+            turno.
           </p>
         </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
@@ -69,8 +125,12 @@ export function WeeklyAgenda({
               configuration.defaultAppointmentDurationMinutes
             }
             gridIntervalMinutes={configuration.gridIntervalMinutes}
+            initialDate={initialDate}
+            initialTime={initialTime}
+            key={`${initialDate ?? ""}-${initialTime ?? ""}-${created}`}
             minimumDate={formatArgentinaDateInput(currentTime)}
             patients={patients}
+            weekStartDate={week.startDate}
           />
           <Link
             className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] bg-white px-4 text-sm font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-subtle)]"
@@ -121,52 +181,235 @@ export function WeeklyAgenda({
       </section>
 
       <section
-        aria-labelledby="weekly-availability-title"
-        className="mt-5 rounded-[var(--radius-large)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)] md:p-6"
+        aria-labelledby="weekly-calendar-title"
+        className="mt-5 overflow-hidden rounded-[var(--radius-large)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-card)]"
       >
-        <div>
-          <p className="mb-2 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
-            Disponibilidad
-          </p>
-          <h2 className="m-0 text-xl" id="weekly-availability-title">
-            Horarios por día
-          </h2>
+        <div className="flex flex-col gap-4 border-b border-[var(--color-border)] p-4 md:flex-row md:items-center md:justify-between md:p-6">
+          <div>
+            <p className="mb-2 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
+              Semana seleccionada
+            </p>
+            <h2 className="m-0 text-xl" id="weekly-calendar-title">
+              {weekTitleFormatter.format(firstDay)} — {weekTitleFormatter.format(lastDay)}
+            </h2>
+          </div>
+          <nav aria-label="Navegar semanas" className="flex flex-wrap gap-2">
+            <Link
+              aria-label="Semana anterior"
+              className="grid size-11 place-items-center rounded-xl border border-[var(--color-border)] bg-white text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-subtle)]"
+              href={`/app/agenda?semana=${week.previousStartDate}`}
+            >
+              <ChevronLeft aria-hidden="true" size={18} />
+            </Link>
+            <Link
+              className="flex min-h-11 items-center rounded-xl border border-[var(--color-border)] bg-white px-4 text-sm font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-subtle)]"
+              href={`/app/agenda?semana=${currentWeekStart}`}
+            >
+              Semana actual
+            </Link>
+            <Link
+              aria-label="Semana siguiente"
+              className="grid size-11 place-items-center rounded-xl border border-[var(--color-border)] bg-white text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-subtle)]"
+              href={`/app/agenda?semana=${week.nextStartDate}`}
+            >
+              <ChevronRight aria-hidden="true" size={18} />
+            </Link>
+          </nav>
         </div>
 
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-7">
-          {schedule.map((day) => (
-            <article
-              className="min-h-36 rounded-xl border border-[var(--color-border)] bg-[var(--color-brand-subtle)] p-3.5"
-              key={day.dayOfWeek}
-            >
-              <h3 className="m-0 text-sm font-bold">{day.label}</h3>
-
-              {day.blocks.length === 0 ? (
-                <p className="mt-5 mb-0 text-xs leading-5 text-[var(--color-muted)]">
-                  Sin atención
-                </p>
-              ) : (
-                <div className="mt-3 flex flex-col gap-2">
-                  {day.blocks.map((block) => (
-                    <div
-                      className="rounded-lg border border-[var(--color-border)] bg-white px-3 py-2.5"
-                      key={`${block.startTime}-${block.endTime}`}
-                    >
-                      <span className="flex items-center gap-1.5 text-xs font-bold text-[var(--color-brand-dark)]">
-                        <Clock3 aria-hidden="true" size={14} />
-                        <time dateTime={block.startTime}>{block.startTime}</time>
-                        <span aria-hidden="true">–</span>
-                        <time dateTime={block.endTime}>{block.endTime}</time>
-                      </span>
-                      <span className="mt-1 block text-[0.68rem] text-[var(--color-muted)]">
-                        Disponible
-                      </span>
-                    </div>
-                  ))}
+        <div className="overflow-x-auto">
+          <div className="min-w-[64rem]">
+            <div className="grid grid-cols-[4.5rem_repeat(5,minmax(0,1fr))] border-b border-[var(--color-border)] bg-[var(--color-brand-subtle)]">
+              <div aria-hidden="true" />
+              {week.days.map((day) => (
+                <div
+                  className="border-l border-[var(--color-border)] px-3 py-3 text-center"
+                  key={day.date}
+                >
+                  <strong className="block text-sm">{day.label}</strong>
+                  <span className="mt-1 block text-xs text-[var(--color-muted)]">
+                    {shortDateFormatter.format(new Date(`${day.date}T12:00:00-03:00`))}
+                  </span>
                 </div>
-              )}
-            </article>
-          ))}
+              ))}
+            </div>
+
+            <div className="grid grid-cols-[4.5rem_repeat(5,minmax(0,1fr))]">
+              <svg
+                aria-hidden="true"
+                className="block w-full"
+                height={calendarHeight}
+                width="100%"
+              >
+                {hourMarkers.map((minutes) => {
+                  const y = (minutes - calendarStart) * pixelsPerMinute;
+
+                  return (
+                    <text
+                      className="fill-[var(--color-muted)] text-[0.68rem] font-semibold"
+                      key={minutes}
+                      textAnchor="end"
+                      x="60"
+                      y={Math.min(y + 4, calendarHeight - 4)}
+                    >
+                      {formatTime(minutes)}
+                    </text>
+                  );
+                })}
+              </svg>
+
+              {week.days.map((day) => {
+                const dayAvailability = configuration.availability.filter(
+                  (block) => block.dayOfWeek === day.dayOfWeek,
+                );
+                const dayAppointments = appointments.filter(
+                  (appointment) =>
+                    formatArgentinaDateInput(new Date(appointment.startsAt)) ===
+                    day.date,
+                );
+                const availableSlots = getAvailableAppointmentSlots({
+                  date: day.date,
+                  availability: configuration.availability,
+                  appointments: appointmentOccupancy,
+                  durationMinutes:
+                    configuration.defaultAppointmentDurationMinutes,
+                  cleanupMinutes: configuration.defaultCleanupMinutes,
+                  gridIntervalMinutes: configuration.gridIntervalMinutes,
+                  now: currentTime,
+                });
+
+                return (
+                  <svg
+                    aria-label={`${day.label} ${day.date}`}
+                    className="block w-full border-l border-[var(--color-border)] bg-[var(--color-brand-subtle)]"
+                    height={calendarHeight}
+                    key={day.date}
+                    width="100%"
+                  >
+                    {dayAvailability.map((block) => {
+                      const start = timeToMinutes(block.startTime);
+                      const end = timeToMinutes(block.endTime);
+
+                      return (
+                        <rect
+                          aria-hidden="true"
+                          className="fill-white"
+                          height={(end - start) * pixelsPerMinute}
+                          key={`${block.startTime}-${block.endTime}`}
+                          width="100%"
+                          x="0"
+                          y={(start - calendarStart) * pixelsPerMinute}
+                        />
+                      );
+                    })}
+
+                    {hourMarkers.map((minutes) => {
+                      const y = (minutes - calendarStart) * pixelsPerMinute;
+
+                      return (
+                        <line
+                          aria-hidden="true"
+                          className="stroke-[var(--color-border)]"
+                          key={minutes}
+                          x1="0"
+                          x2="100%"
+                          y1={y}
+                          y2={y}
+                        />
+                      );
+                    })}
+
+                    {availableSlots.map((time) => {
+                      const minutes = timeToMinutes(time);
+
+                      return (
+                        <Link
+                          aria-label={`Crear turno el ${day.date} a las ${time}`}
+                          href={`/app/agenda?semana=${week.startDate}&nuevo=1&fecha=${day.date}&hora=${time}`}
+                          key={time}
+                        >
+                          <rect
+                            className="cursor-pointer fill-transparent stroke-transparent hover:fill-[var(--color-brand-soft)] hover:stroke-[var(--color-brand)] focus:fill-[var(--color-brand-soft)] focus:stroke-[var(--color-brand)]"
+                            height={
+                              configuration.gridIntervalMinutes *
+                              pixelsPerMinute
+                            }
+                            rx="4"
+                            width="calc(100% - 8px)"
+                            x="4"
+                            y={(minutes - calendarStart) * pixelsPerMinute}
+                          />
+                        </Link>
+                      );
+                    })}
+
+                    {dayAppointments.map((appointment) => {
+                      const parts = getArgentinaDateTimeParts(
+                        new Date(appointment.startsAt),
+                      );
+                      const start = parts.hour * 60 + parts.minute;
+                      const clinicalEnd = start + appointment.durationMinutes;
+                      const occupiedMinutes =
+                        appointment.durationMinutes +
+                        appointment.cleanupMinutes;
+
+                      const y =
+                        (start - calendarStart) * pixelsPerMinute;
+                      const occupiedHeight =
+                        occupiedMinutes * pixelsPerMinute;
+                      const cleanupHeight =
+                        appointment.cleanupMinutes * pixelsPerMinute;
+
+                      return (
+                        <g
+                          aria-label={`${appointment.patientLastName}, ${appointment.patientFirstName}. ${formatTime(start)} a ${formatTime(clinicalEnd)}. Acondicionamiento hasta ${formatTime(start + occupiedMinutes)}.`}
+                          key={appointment.id}
+                          role="img"
+                        >
+                          <rect
+                            className="fill-[var(--color-brand-soft)] stroke-[var(--color-brand)]"
+                            height={occupiedHeight}
+                            rx="8"
+                            width="calc(100% - 12px)"
+                            x="6"
+                            y={y}
+                          />
+                          {appointment.cleanupMinutes > 0 ? (
+                            <rect
+                              className="fill-[rgb(20_125_115/18%)]"
+                              height={cleanupHeight}
+                              width="calc(100% - 14px)"
+                              x="7"
+                              y={y + occupiedHeight - cleanupHeight}
+                            />
+                          ) : null}
+                          <foreignObject
+                            height={occupiedHeight}
+                            width="calc(100% - 16px)"
+                            x="8"
+                            y={y}
+                          >
+                            <div className="h-full overflow-hidden px-2 py-2 text-[var(--color-brand-dark)]">
+                              <strong className="block truncate text-xs">
+                                {appointment.patientLastName},{" "}
+                                {appointment.patientFirstName}
+                              </strong>
+                              <span className="mt-0.5 block truncate text-[0.66rem] font-semibold">
+                                {formatTime(start)}–{formatTime(clinicalEnd)} ·{" "}
+                                {getAppointmentSpecialtyLabel(
+                                  appointment.specialty,
+                                )}
+                              </span>
+                            </div>
+                          </foreignObject>
+                        </g>
+                      );
+                    })}
+                  </svg>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -176,7 +419,7 @@ export function WeeklyAgenda({
           className="rounded-[var(--radius-large)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)] md:p-6"
         >
           <p className="mb-2 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
-            Próximos turnos
+            Turnos de la semana
           </p>
           <h2 className="m-0 text-xl" id="upcoming-appointments-title">
             Pendientes de confirmación
@@ -190,11 +433,11 @@ export function WeeklyAgenda({
                 size={28}
               />
               <h3 className="mt-3 mb-0 text-base">
-                Todavía no hay próximos turnos
+                No hay turnos en esta semana
               </h3>
               <p className="mx-auto mt-2 mb-0 max-w-md text-sm leading-6 text-[var(--color-muted)]">
-                Los turnos nuevos aparecerán aquí hasta que se habilite su
-                gestión de estados.
+                Elegí un espacio libre de la grilla o usá “Nuevo turno” para
+                cargar el primero.
               </p>
             </div>
           ) : (

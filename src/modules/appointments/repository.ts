@@ -70,6 +70,26 @@ export async function listUpcomingAppointments(
   return (data as unknown as AppointmentRow[]).map(mapAppointment);
 }
 
+export async function listAppointmentsForRange(
+  from: Date,
+  to: Date,
+): Promise<Appointment[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("appointments")
+    .select(appointmentColumns)
+    .gte("starts_at", from.toISOString())
+    .lt("starts_at", to.toISOString())
+    .eq("status", "pending_confirmation")
+    .order("starts_at");
+
+  if (error) {
+    throw new Error("Could not read appointments for agenda week");
+  }
+
+  return (data as unknown as AppointmentRow[]).map(mapAppointment);
+}
+
 type AppointmentOccupancyRow = {
   starts_at: string;
   duration_minutes: number;

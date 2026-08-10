@@ -41,8 +41,11 @@ export function AppointmentForm({
   defaultDurationMinutes,
   defaultCleanupMinutes,
   gridIntervalMinutes,
+  initialDate = "",
+  initialTime = "",
   minimumDate,
   onClose,
+  weekStartDate,
 }: Readonly<{
   appointmentOccupancy: AppointmentOccupancy[];
   availability: AvailabilityBlock[];
@@ -52,8 +55,11 @@ export function AppointmentForm({
   defaultDurationMinutes: number;
   defaultCleanupMinutes: number;
   gridIntervalMinutes: number;
+  initialDate?: string;
+  initialTime?: string;
   minimumDate: string;
   onClose: () => void;
+  weekStartDate?: string;
 }>) {
   const [state, action] = useActionState(
     createAppointmentAction,
@@ -61,8 +67,10 @@ export function AppointmentForm({
   );
   const patientSelectRef = useRef<HTMLSelectElement>(null);
   const [patientId, setPatientId] = useState("");
-  const [date, setDate] = useState("");
-  const [startsAt, setStartsAt] = useState("");
+  const [date, setDate] = useState(initialDate);
+  const [startsAt, setStartsAt] = useState(
+    initialDate && initialTime ? `${initialDate}T${initialTime}` : "",
+  );
   const [durationMinutes, setDurationMinutes] = useState(
     String(defaultDurationMinutes),
   );
@@ -99,6 +107,9 @@ export function AppointmentForm({
       key={formKey}
       noValidate
     >
+      {weekStartDate ? (
+        <input name="weekStartDate" type="hidden" value={weekStartDate} />
+      ) : null}
       {created && state.status === "idle" ? (
         <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-brand-soft)] px-4 py-4 text-[var(--color-brand-dark)]">
           <p

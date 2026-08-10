@@ -48,4 +48,43 @@ describe("AppointmentForm", () => {
     expect(markup).toContain('name="cleanupMinutes"');
     expect(markup).toContain('value="10"');
   });
+
+  it("prefills a date and time selected from the weekly calendar", () => {
+    const markup = renderToStaticMarkup(
+      <AppointmentForm
+        appointmentOccupancy={[]}
+        availability={[
+          {
+            dayOfWeek: 2,
+            startTime: "09:00",
+            endTime: "11:00",
+          },
+        ]}
+        created={false}
+        currentTime="2026-08-10T12:20:00.000Z"
+        defaultCleanupMinutes={5}
+        defaultDurationMinutes={30}
+        gridIntervalMinutes={15}
+        initialDate="2026-08-11"
+        initialTime="09:30"
+        minimumDate="2026-08-10"
+        onClose={vi.fn()}
+        patients={[
+          {
+            id: "00000000-0000-4000-8000-000000000001",
+            firstName: "Lucía",
+            lastName: "Prueba",
+          },
+        ]}
+        weekStartDate="2026-08-10"
+      />,
+    );
+
+    expect(markup).toContain('type="date" value="2026-08-11"');
+    expect(markup).toMatch(
+      /<input[^>]*name="startsAt"[^>]*checked=""[^>]*value="2026-08-11T09:30"/,
+    );
+    expect(markup).toContain('name="weekStartDate" value="2026-08-10"');
+    expect(markup).toContain("11/08/2026 a las 09:30");
+  });
 });
