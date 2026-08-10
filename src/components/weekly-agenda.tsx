@@ -1,13 +1,7 @@
-import {
-  CalendarClock,
-  CalendarPlus,
-  Clock3,
-  Settings2,
-  UsersRound,
-} from "lucide-react";
+import { CalendarClock, Clock3, Settings2 } from "lucide-react";
 import Link from "next/link";
 
-import { AppointmentForm } from "@/components/appointment-form";
+import { AppointmentPanel } from "@/components/appointment-panel";
 import { buildWeeklySchedule } from "@/modules/agenda/domain/weekly-schedule";
 import {
   getAppointmentSpecialtyLabel,
@@ -26,11 +20,13 @@ const summaryCardClassName =
 
 export function WeeklyAgenda({
   appointments,
+  autoOpenNewAppointment,
   configuration,
   created,
   patients,
 }: Readonly<{
   appointments: Appointment[];
+  autoOpenNewAppointment: boolean;
   configuration: InitialConfiguration;
   created: boolean;
   patients: AppointmentPatientOption[];
@@ -56,13 +52,24 @@ export function WeeklyAgenda({
             Consultá los bloques de atención que configuraste para cada día.
           </p>
         </div>
-        <Link
-          className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] bg-white px-4 text-sm font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-subtle)]"
-          href="/app/configuracion#agenda"
-        >
-          <Settings2 aria-hidden="true" size={17} />
-          Ajustar horarios
-        </Link>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+          <AppointmentPanel
+            autoOpen={autoOpenNewAppointment}
+            created={created}
+            defaultCleanupMinutes={configuration.defaultCleanupMinutes}
+            defaultDurationMinutes={
+              configuration.defaultAppointmentDurationMinutes
+            }
+            patients={patients}
+          />
+          <Link
+            className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] bg-white px-4 text-sm font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-subtle)]"
+            href="/app/configuracion#agenda"
+          >
+            <Settings2 aria-hidden="true" size={17} />
+            Ajustar horarios
+          </Link>
+        </div>
       </header>
 
       <aside className="mt-8 flex items-start gap-3 rounded-[var(--radius-medium)] border border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] px-4 py-3 text-[var(--color-warning-foreground)] md:items-center">
@@ -153,7 +160,7 @@ export function WeeklyAgenda({
         </div>
       </section>
 
-      <div className="mt-5 grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_25rem]">
+      <div className="mt-5">
         <section
           aria-labelledby="upcoming-appointments-title"
           className="rounded-[var(--radius-large)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)] md:p-6"
@@ -205,53 +212,6 @@ export function WeeklyAgenda({
                 </article>
               ))}
             </div>
-          )}
-        </section>
-
-        <section
-          aria-labelledby="new-appointment-title"
-          className="scroll-mt-5 rounded-[var(--radius-large)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-card)] md:p-6"
-          id="nuevo-turno"
-        >
-          <CalendarPlus
-            aria-hidden="true"
-            className="text-[var(--color-brand)]"
-            size={24}
-          />
-          <h2 className="mt-3 mb-0 text-xl" id="new-appointment-title">
-            Nuevo turno
-          </h2>
-          <p className="mt-2 mb-0 text-sm leading-6 text-[var(--color-muted)]">
-            Se guardará como pendiente y respetará el tiempo de
-            acondicionamiento.
-          </p>
-
-          {patients.length === 0 ? (
-            <div className="mt-5 rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-brand-subtle)] p-5 text-center">
-              <UsersRound
-                aria-hidden="true"
-                className="mx-auto text-[var(--color-brand)]"
-                size={26}
-              />
-              <p className="mt-3 mb-0 text-sm leading-6 text-[var(--color-muted)]">
-                Primero necesitás un paciente ficticio activo.
-              </p>
-              <Link
-                className="mt-4 inline-flex min-h-10 items-center rounded-xl border border-[var(--color-border)] bg-white px-4 text-sm font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-soft)]"
-                href="/app/pacientes"
-              >
-                Ir a pacientes
-              </Link>
-            </div>
-          ) : (
-            <AppointmentForm
-              created={created}
-              defaultCleanupMinutes={configuration.defaultCleanupMinutes}
-              defaultDurationMinutes={
-                configuration.defaultAppointmentDurationMinutes
-              }
-              patients={patients}
-            />
           )}
         </section>
       </div>

@@ -12,7 +12,10 @@ export const metadata: Metadata = {
 };
 
 type AgendaPageProps = {
-  searchParams: Promise<{ creado?: string | string[] }>;
+  searchParams: Promise<{
+    creado?: string | string[];
+    nuevo?: string | string[];
+  }>;
 };
 
 export default async function AgendaPage({ searchParams }: AgendaPageProps) {
@@ -30,6 +33,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
   return (
     <WeeklyAgenda
       appointments={appointments}
+      autoOpenNewAppointment={params.nuevo === "1" || params.creado === "1"}
       configuration={configuration}
       created={params.creado === "1"}
       patients={patients.map(({ id, firstName, lastName }) => ({

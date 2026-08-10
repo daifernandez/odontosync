@@ -36,6 +36,8 @@ export type AppointmentInput = Pick<
 
 type AppointmentField = keyof AppointmentInput;
 
+export type AppointmentFormValues = Record<AppointmentField, string>;
+
 export type AppointmentFieldErrors = Partial<
   Record<AppointmentField, string>
 >;
@@ -44,6 +46,7 @@ export type AppointmentFormState = {
   status: "idle" | "error";
   message?: string;
   fieldErrors: AppointmentFieldErrors;
+  values?: AppointmentFormValues;
 };
 
 export const appointmentFormState: AppointmentFormState = {
