@@ -20,19 +20,21 @@ export async function createAppointmentAction(
   _previousState: AppointmentFormState,
   formData: FormData,
 ): Promise<AppointmentFormState> {
-  const validation = validateAppointment({
+  const values = {
     patientId: readText(formData, "patientId"),
     startsAt: readText(formData, "startsAt"),
     durationMinutes: readText(formData, "durationMinutes"),
     cleanupMinutes: readText(formData, "cleanupMinutes"),
     specialty: readText(formData, "specialty"),
-  });
+  };
+  const validation = validateAppointment(values);
 
   if (!validation.success) {
     return {
       status: "error",
       message: "Revisá los campos marcados.",
       fieldErrors: validation.fieldErrors,
+      values,
     };
   }
 
@@ -45,6 +47,7 @@ export async function createAppointmentAction(
       status: "error",
       message: "Tu sesión venció. Volvé a ingresar para continuar.",
       fieldErrors: {},
+      values,
     };
   }
 
@@ -56,6 +59,7 @@ export async function createAppointmentAction(
         status: "error",
         message: "El paciente ya no está disponible para asignar un turno.",
         fieldErrors: { patientId: "Elegí otro paciente activo." },
+        values,
       };
     }
 
@@ -65,6 +69,7 @@ export async function createAppointmentAction(
         message:
           "Ese horario se superpone con otro turno. Elegí un horario disponible.",
         fieldErrors: { startsAt: "El horario seleccionado no está disponible." },
+        values,
       };
     }
   } catch {
@@ -73,6 +78,7 @@ export async function createAppointmentAction(
       message:
         "No pudimos guardar el turno. Intentá nuevamente en unos minutos.",
       fieldErrors: {},
+      values,
     };
   }
 

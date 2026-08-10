@@ -72,7 +72,7 @@ export function DashboardHome({
         ) : (
           <Link
             className="flex min-h-11.5 w-full items-center justify-center gap-2 rounded-xl border-0 bg-[var(--color-brand)] px-4 py-3 text-[0.86rem] font-bold text-white no-underline shadow-[0_0.45rem_1.2rem_rgb(20_125_115/18%)] hover:bg-[var(--color-brand-dark)] md:w-auto"
-            href="/app/agenda#nuevo-turno"
+            href="/app/agenda?nuevo=1#nuevo-turno"
           >
             <Plus aria-hidden="true" size={18} />
             Nuevo turno

@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { CalendarCheck, Check, Clock3, UserRound } from "lucide-react";
+import { useActionState, useRef, useState } from "react";
 
 import { SubmitButton } from "@/components/auth/submit-button";
 import { createAppointmentAction } from "@/modules/appointments/actions";
@@ -31,26 +32,72 @@ export function AppointmentForm({
   patients,
   defaultDurationMinutes,
   defaultCleanupMinutes,
+  onClose,
 }: Readonly<{
   created: boolean;
   patients: AppointmentPatientOption[];
   defaultDurationMinutes: number;
   defaultCleanupMinutes: number;
+  onClose: () => void;
 }>) {
   const [state, action] = useActionState(
     createAppointmentAction,
     appointmentFormState,
   );
+  const patientSelectRef = useRef<HTMLSelectElement>(null);
+  const [patientId, setPatientId] = useState("");
+  const [startsAt, setStartsAt] = useState("");
+  const [durationMinutes, setDurationMinutes] = useState(
+    String(defaultDurationMinutes),
+  );
+  const [cleanupMinutes, setCleanupMinutes] = useState(
+    String(defaultCleanupMinutes),
+  );
+  const [specialty, setSpecialty] = useState("general");
+  const selectedPatient = patients.find((patient) => patient.id === patientId);
+  const selectedSpecialty = appointmentSpecialties.find(
+    (option) => option.value === specialty,
+  );
+  const formattedStart = startsAt
+    ? `${startsAt.slice(8, 10)}/${startsAt.slice(5, 7)}/${startsAt.slice(0, 4)} a las ${startsAt.slice(11, 16)}`
+    : "Fecha y hora pendientes";
+  const formKey = state.values
+    ? JSON.stringify(state.values)
+    : "new-appointment";
 
   return (
-    <form action={action} className="mt-5 flex flex-col gap-4" noValidate>
+    <form
+      action={action}
+      className="flex flex-col gap-5"
+      key={formKey}
+      noValidate
+    >
       {created && state.status === "idle" ? (
-        <p
-          className="m-0 rounded-xl border border-[var(--color-border)] bg-[var(--color-brand-soft)] px-4 py-3 text-sm font-semibold text-[var(--color-brand-dark)]"
-          role="status"
-        >
-          El turno pendiente se guardó correctamente.
-        </p>
+        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-brand-soft)] px-4 py-4 text-[var(--color-brand-dark)]">
+          <p
+            className="m-0 flex items-center gap-2 text-sm font-bold"
+            role="status"
+          >
+            <Check aria-hidden="true" size={18} />
+            El turno pendiente se guardó correctamente.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              className="min-h-10 cursor-pointer rounded-xl border border-[var(--color-border)] bg-white px-3 text-xs font-bold text-[var(--color-brand-dark)]"
+              onClick={onClose}
+              type="button"
+            >
+              Ver en la agenda
+            </button>
+            <button
+              className="min-h-10 cursor-pointer rounded-xl border-0 bg-transparent px-3 text-xs font-bold text-[var(--color-brand-dark)]"
+              onClick={() => patientSelectRef.current?.focus()}
+              type="button"
+            >
+              Cargar otro turno
+            </button>
+          </div>
+        </div>
       ) : null}
 
       {state.message ? (
@@ -62,122 +109,203 @@ export function AppointmentForm({
         </p>
       ) : null}
 
-      <label className="text-sm font-semibold">
-        Paciente ficticio
-        <select
-          aria-describedby={
-            state.fieldErrors.patientId ? "appointment-patient-error" : undefined
-          }
-          aria-invalid={Boolean(state.fieldErrors.patientId)}
-          className={inputClassName}
-          defaultValue=""
-          name="patientId"
-        >
-          <option disabled value="">
-            Elegí un paciente
-          </option>
-          {patients.map((patient) => (
-            <option key={patient.id} value={patient.id}>
-              {patient.lastName}, {patient.firstName}
-            </option>
-          ))}
-        </select>
-        <FieldError
-          id="appointment-patient-error"
-          message={state.fieldErrors.patientId}
-        />
-      </label>
-
-      <label className="text-sm font-semibold">
-        Fecha y hora
-        <input
-          aria-describedby={
-            state.fieldErrors.startsAt ? "appointment-start-error" : undefined
-          }
-          aria-invalid={Boolean(state.fieldErrors.startsAt)}
-          className={inputClassName}
-          name="startsAt"
-          type="datetime-local"
-        />
-        <FieldError
-          id="appointment-start-error"
-          message={state.fieldErrors.startsAt}
-        />
-      </label>
-
-      <div className="grid gap-4 sm:grid-cols-2">
+      <section aria-labelledby="appointment-patient-title">
+        <p className="m-0 flex items-center gap-2 text-xs font-bold tracking-[0.08em] text-[var(--color-brand)] uppercase">
+          <UserRound aria-hidden="true" size={16} />
+          Paso 1
+        </p>
+        <h3 className="mt-2 mb-0 text-base" id="appointment-patient-title">
+          Elegí el paciente
+        </h3>
         <label className="text-sm font-semibold">
-          Duración
+          <span className="sr-only">Paciente ficticio</span>
+          <select
+            aria-describedby={
+              state.fieldErrors.patientId ? "appointment-patient-error" : undefined
+            }
+            aria-invalid={Boolean(state.fieldErrors.patientId)}
+            className={inputClassName}
+            defaultValue={state.values?.patientId ?? ""}
+            name="patientId"
+            onChange={(event) => setPatientId(event.target.value)}
+            ref={patientSelectRef}
+          >
+            <option disabled value="">
+              Elegí un paciente
+            </option>
+            {patients.map((patient) => (
+              <option key={patient.id} value={patient.id}>
+                {patient.lastName}, {patient.firstName}
+              </option>
+            ))}
+          </select>
+          <FieldError
+            id="appointment-patient-error"
+            message={state.fieldErrors.patientId}
+          />
+        </label>
+      </section>
+
+      <section
+        aria-labelledby="appointment-time-title"
+        className="border-t border-[var(--color-border)] pt-5"
+      >
+        <p className="m-0 flex items-center gap-2 text-xs font-bold tracking-[0.08em] text-[var(--color-brand)] uppercase">
+          <Clock3 aria-hidden="true" size={16} />
+          Paso 2
+        </p>
+        <h3 className="mt-2 mb-0 text-base" id="appointment-time-title">
+          Definí el horario
+        </h3>
+        <label className="mt-4 block text-sm font-semibold">
+          Fecha y hora
           <input
             aria-describedby={
-              state.fieldErrors.durationMinutes
-                ? "appointment-duration-error"
-                : undefined
+              state.fieldErrors.startsAt ? "appointment-start-error" : undefined
             }
-            aria-invalid={Boolean(state.fieldErrors.durationMinutes)}
+            aria-invalid={Boolean(state.fieldErrors.startsAt)}
             className={inputClassName}
-            defaultValue={defaultDurationMinutes}
-            max={1440}
-            min={1}
-            name="durationMinutes"
-            type="number"
+            defaultValue={state.values?.startsAt ?? ""}
+            name="startsAt"
+            onChange={(event) => setStartsAt(event.target.value)}
+            type="datetime-local"
           />
           <FieldError
-            id="appointment-duration-error"
-            message={state.fieldErrors.durationMinutes}
+            id="appointment-start-error"
+            message={state.fieldErrors.startsAt}
+          />
+        </label>
+      </section>
+
+      <section
+        aria-labelledby="appointment-details-title"
+        className="border-t border-[var(--color-border)] pt-5"
+      >
+        <p className="m-0 flex items-center gap-2 text-xs font-bold tracking-[0.08em] text-[var(--color-brand)] uppercase">
+          <CalendarCheck aria-hidden="true" size={16} />
+          Paso 3
+        </p>
+        <h3 className="mt-2 mb-0 text-base" id="appointment-details-title">
+          Completá los detalles
+        </h3>
+
+        <label className="mt-4 block text-sm font-semibold">
+          Área odontológica
+          <select
+            aria-describedby={
+              state.fieldErrors.specialty
+                ? "appointment-specialty-error"
+                : undefined
+            }
+            aria-invalid={Boolean(state.fieldErrors.specialty)}
+            className={inputClassName}
+            defaultValue={state.values?.specialty ?? "general"}
+            name="specialty"
+            onChange={(event) => setSpecialty(event.target.value)}
+          >
+            {appointmentSpecialties.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <FieldError
+            id="appointment-specialty-error"
+            message={state.fieldErrors.specialty}
           />
         </label>
 
-        <label className="text-sm font-semibold">
-          Acondicionamiento
-          <input
-            aria-describedby={
-              state.fieldErrors.cleanupMinutes
-                ? "appointment-cleanup-error"
-                : undefined
-            }
-            aria-invalid={Boolean(state.fieldErrors.cleanupMinutes)}
-            className={inputClassName}
-            defaultValue={defaultCleanupMinutes}
-            max={1440}
-            min={0}
-            name="cleanupMinutes"
-            type="number"
-          />
-          <FieldError
-            id="appointment-cleanup-error"
-            message={state.fieldErrors.cleanupMinutes}
-          />
-        </label>
-      </div>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <label className="text-sm font-semibold">
+            Duración
+            <span className="mt-1 block text-xs font-normal text-[var(--color-muted)]">
+              Minutos de atención
+            </span>
+            <input
+              aria-describedby={
+                state.fieldErrors.durationMinutes
+                  ? "appointment-duration-error"
+                  : undefined
+              }
+              aria-invalid={Boolean(state.fieldErrors.durationMinutes)}
+              className={inputClassName}
+              max={1440}
+              min={1}
+              defaultValue={
+                state.values?.durationMinutes ?? defaultDurationMinutes
+              }
+              name="durationMinutes"
+              onChange={(event) => setDurationMinutes(event.target.value)}
+              type="number"
+            />
+            <FieldError
+              id="appointment-duration-error"
+              message={state.fieldErrors.durationMinutes}
+            />
+          </label>
 
-      <label className="text-sm font-semibold">
-        Área odontológica
-        <select
-          aria-describedby={
-            state.fieldErrors.specialty
-              ? "appointment-specialty-error"
-              : undefined
-          }
-          aria-invalid={Boolean(state.fieldErrors.specialty)}
-          className={inputClassName}
-          defaultValue="general"
-          name="specialty"
-        >
-          {appointmentSpecialties.map((specialty) => (
-            <option key={specialty.value} value={specialty.value}>
-              {specialty.label}
-            </option>
-          ))}
-        </select>
-        <FieldError
-          id="appointment-specialty-error"
-          message={state.fieldErrors.specialty}
-        />
-      </label>
+          <label className="text-sm font-semibold">
+            Acondicionamiento
+            <span className="mt-1 block text-xs font-normal text-[var(--color-muted)]">
+              Margen posterior
+            </span>
+            <input
+              aria-describedby={
+                state.fieldErrors.cleanupMinutes
+                  ? "appointment-cleanup-error"
+                  : undefined
+              }
+              aria-invalid={Boolean(state.fieldErrors.cleanupMinutes)}
+              className={inputClassName}
+              max={1440}
+              min={0}
+              defaultValue={
+                state.values?.cleanupMinutes ?? defaultCleanupMinutes
+              }
+              name="cleanupMinutes"
+              onChange={(event) => setCleanupMinutes(event.target.value)}
+              type="number"
+            />
+            <FieldError
+              id="appointment-cleanup-error"
+              message={state.fieldErrors.cleanupMinutes}
+            />
+          </label>
+        </div>
+      </section>
+
+      <section
+        aria-labelledby="appointment-summary-title"
+        className="rounded-xl border border-[var(--color-border)] bg-[var(--color-brand-subtle)] p-4"
+      >
+        <p className="m-0 text-xs font-bold tracking-[0.08em] text-[var(--color-brand)] uppercase">
+          Resumen
+        </p>
+        <h3 className="mt-2 mb-0 text-base" id="appointment-summary-title">
+          Revisá antes de confirmar
+        </h3>
+        <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
+          <dt className="text-[var(--color-muted)]">Paciente</dt>
+          <dd className="m-0 text-right font-semibold">
+            {selectedPatient
+              ? `${selectedPatient.lastName}, ${selectedPatient.firstName}`
+              : "Sin elegir"}
+          </dd>
+          <dt className="text-[var(--color-muted)]">Horario</dt>
+          <dd className="m-0 text-right font-semibold">{formattedStart}</dd>
+          <dt className="text-[var(--color-muted)]">Área</dt>
+          <dd className="m-0 text-right font-semibold">
+            {selectedSpecialty?.label}
+          </dd>
+          <dt className="text-[var(--color-muted)]">Tiempo reservado</dt>
+          <dd className="m-0 text-right font-semibold">
+            {durationMinutes || "0"} min + {cleanupMinutes || "0"} min
+          </dd>
+        </dl>
+      </section>
 
       <SubmitButton pendingLabel="Guardando…">
-        Guardar turno pendiente
+        Confirmar turno pendiente
       </SubmitButton>
     </form>
   );
