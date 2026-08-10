@@ -4,11 +4,13 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
+import { getInitialConfiguration } from "@/modules/initial-configuration/repository";
 
 import {
   type AppointmentFormState,
   validateAppointment,
 } from "./domain/appointment";
+import { isAppointmentWithinWeeklyAvailability } from "./domain/availability";
 import { createAppointment } from "./repository";
 
 function readText(formData: FormData, field: string) {
@@ -52,6 +54,25 @@ export async function createAppointmentAction(
   }
 
   try {
+    const configuration = await getInitialConfiguration();
+
+    if (
+      !configuration ||
+      !isAppointmentWithinWeeklyAvailability(
+        validation.data,
+        configuration.availability,
+        configuration.gridIntervalMinutes,
+      )
+    ) {
+      return {
+        status: "error",
+        message:
+          "Ese horario no pertenece a la disponibilidad configurada. Elegí otro.",
+        fieldErrors: { startsAt: "Elegí uno de los horarios disponibles." },
+        values,
+      };
+    }
+
     const result = await createAppointment(validation.data, userId);
 
     if (result === "patient_unavailable") {

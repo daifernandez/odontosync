@@ -6,6 +6,7 @@ import type {
   AppointmentInput,
   AppointmentSpecialty,
 } from "./domain/appointment";
+import type { AppointmentOccupancy } from "./domain/availability";
 
 type AppointmentRow = {
   id: string;
@@ -67,6 +68,35 @@ export async function listUpcomingAppointments(
   }
 
   return (data as unknown as AppointmentRow[]).map(mapAppointment);
+}
+
+type AppointmentOccupancyRow = {
+  starts_at: string;
+  duration_minutes: number;
+  cleanup_minutes: number;
+};
+
+export async function listAppointmentOccupancy(
+  from = new Date(),
+): Promise<AppointmentOccupancy[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("appointments")
+    .select("starts_at, duration_minutes, cleanup_minutes")
+    .gt("occupied_until", from.toISOString())
+    .eq("status", "pending_confirmation")
+    .order("starts_at")
+    .limit(1000);
+
+  if (error) {
+    throw new Error("Could not read appointment occupancy");
+  }
+
+  return (data as AppointmentOccupancyRow[]).map((row) => ({
+    startsAt: row.starts_at,
+    durationMinutes: row.duration_minutes,
+    cleanupMinutes: row.cleanup_minutes,
+  }));
 }
 
 export type CreateAppointmentResult =

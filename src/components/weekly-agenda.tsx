@@ -4,9 +4,11 @@ import Link from "next/link";
 import { AppointmentPanel } from "@/components/appointment-panel";
 import { buildWeeklySchedule } from "@/modules/agenda/domain/weekly-schedule";
 import {
+  formatArgentinaDateInput,
   getAppointmentSpecialtyLabel,
   type Appointment,
 } from "@/modules/appointments/domain/appointment";
+import type { AppointmentOccupancy } from "@/modules/appointments/domain/availability";
 import type { InitialConfiguration } from "@/modules/initial-configuration/domain/initial-configuration";
 import type { Patient } from "@/modules/patients/domain/patient";
 
@@ -20,18 +22,21 @@ const summaryCardClassName =
 
 export function WeeklyAgenda({
   appointments,
+  appointmentOccupancy,
   autoOpenNewAppointment,
   configuration,
   created,
   patients,
 }: Readonly<{
   appointments: Appointment[];
+  appointmentOccupancy: AppointmentOccupancy[];
   autoOpenNewAppointment: boolean;
   configuration: InitialConfiguration;
   created: boolean;
   patients: AppointmentPatientOption[];
 }>) {
   const schedule = buildWeeklySchedule(configuration.availability);
+  const currentTime = new Date();
   const dateFormatter = new Intl.DateTimeFormat("es-AR", {
     timeZone: "America/Argentina/Buenos_Aires",
     dateStyle: "medium",
@@ -55,11 +60,16 @@ export function WeeklyAgenda({
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
           <AppointmentPanel
             autoOpen={autoOpenNewAppointment}
+            appointmentOccupancy={appointmentOccupancy}
+            availability={configuration.availability}
             created={created}
+            currentTime={currentTime.toISOString()}
             defaultCleanupMinutes={configuration.defaultCleanupMinutes}
             defaultDurationMinutes={
               configuration.defaultAppointmentDurationMinutes
             }
+            gridIntervalMinutes={configuration.gridIntervalMinutes}
+            minimumDate={formatArgentinaDateInput(currentTime)}
             patients={patients}
           />
           <Link

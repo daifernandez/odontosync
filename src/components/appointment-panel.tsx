@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 import { AppointmentForm } from "@/components/appointment-form";
+import type { AppointmentOccupancy } from "@/modules/appointments/domain/availability";
+import type { AvailabilityBlock } from "@/modules/initial-configuration/domain/initial-configuration";
 import type { Patient } from "@/modules/patients/domain/patient";
 
 type AppointmentPatientOption = Pick<
@@ -15,16 +17,26 @@ type AppointmentPatientOption = Pick<
 
 export function AppointmentPanel({
   autoOpen,
+  appointmentOccupancy,
+  availability,
   created,
+  currentTime,
   patients,
   defaultDurationMinutes,
   defaultCleanupMinutes,
+  gridIntervalMinutes,
+  minimumDate,
 }: Readonly<{
   autoOpen: boolean;
+  appointmentOccupancy: AppointmentOccupancy[];
+  availability: AvailabilityBlock[];
   created: boolean;
+  currentTime: string;
   patients: AppointmentPatientOption[];
   defaultDurationMinutes: number;
   defaultCleanupMinutes: number;
+  gridIntervalMinutes: number;
+  minimumDate: string;
 }>) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const router = useRouter();
@@ -120,9 +132,14 @@ export function AppointmentPanel({
               </div>
             ) : (
               <AppointmentForm
+                appointmentOccupancy={appointmentOccupancy}
+                availability={availability}
                 created={created}
+                currentTime={currentTime}
                 defaultCleanupMinutes={defaultCleanupMinutes}
                 defaultDurationMinutes={defaultDurationMinutes}
+                gridIntervalMinutes={gridIntervalMinutes}
+                minimumDate={minimumDate}
                 onClose={closePanel}
                 patients={patients}
               />

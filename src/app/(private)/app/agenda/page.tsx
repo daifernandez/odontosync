@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { WeeklyAgenda } from "@/components/weekly-agenda";
-import { listUpcomingAppointments } from "@/modules/appointments/repository";
+import {
+  listAppointmentOccupancy,
+  listUpcomingAppointments,
+} from "@/modules/appointments/repository";
 import { getInitialConfiguration } from "@/modules/initial-configuration/repository";
 import { listPatients } from "@/modules/patients/repository";
 
@@ -20,11 +23,13 @@ type AgendaPageProps = {
 
 export default async function AgendaPage({ searchParams }: AgendaPageProps) {
   const params = await searchParams;
-  const [configuration, patients, appointments] = await Promise.all([
-    getInitialConfiguration(),
-    listPatients("", "active"),
-    listUpcomingAppointments(),
-  ]);
+  const [configuration, patients, appointments, appointmentOccupancy] =
+    await Promise.all([
+      getInitialConfiguration(),
+      listPatients("", "active"),
+      listUpcomingAppointments(),
+      listAppointmentOccupancy(),
+    ]);
 
   if (!configuration || configuration.availability.length === 0) {
     redirect("/app/configuracion");
@@ -33,6 +38,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
   return (
     <WeeklyAgenda
       appointments={appointments}
+      appointmentOccupancy={appointmentOccupancy}
       autoOpenNewAppointment={params.nuevo === "1" || params.creado === "1"}
       configuration={configuration}
       created={params.creado === "1"}
