@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import { getInitialConfiguration } from "@/modules/initial-configuration/repository";
+import { buildAgendaWeek } from "@/modules/agenda/domain/weekly-schedule";
 
 import {
   type AppointmentFormState,
@@ -104,5 +105,8 @@ export async function createAppointmentAction(
   }
 
   revalidatePath("/app/agenda");
-  redirect("/app/agenda?creado=1");
+  const weekStartDate = buildAgendaWeek(
+    readText(formData, "weekStartDate"),
+  ).startDate;
+  redirect(`/app/agenda?semana=${weekStartDate}&creado=1`);
 }

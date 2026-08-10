@@ -25,7 +25,10 @@ export function AppointmentPanel({
   defaultDurationMinutes,
   defaultCleanupMinutes,
   gridIntervalMinutes,
+  initialDate,
+  initialTime,
   minimumDate,
+  weekStartDate,
 }: Readonly<{
   autoOpen: boolean;
   appointmentOccupancy: AppointmentOccupancy[];
@@ -36,7 +39,10 @@ export function AppointmentPanel({
   defaultDurationMinutes: number;
   defaultCleanupMinutes: number;
   gridIntervalMinutes: number;
+  initialDate?: string;
+  initialTime?: string;
   minimumDate: string;
+  weekStartDate: string;
 }>) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const router = useRouter();
@@ -59,7 +65,7 @@ export function AppointmentPanel({
 
   function clearPanelQuery() {
     if (autoOpen) {
-      router.replace("/app/agenda", { scroll: false });
+      router.replace(`/app/agenda?semana=${weekStartDate}`, { scroll: false });
     }
   }
 
@@ -139,9 +145,12 @@ export function AppointmentPanel({
                 defaultCleanupMinutes={defaultCleanupMinutes}
                 defaultDurationMinutes={defaultDurationMinutes}
                 gridIntervalMinutes={gridIntervalMinutes}
+                initialDate={initialDate}
+                initialTime={initialTime}
                 minimumDate={minimumDate}
                 onClose={closePanel}
                 patients={patients}
+                weekStartDate={weekStartDate}
               />
             )}
 
