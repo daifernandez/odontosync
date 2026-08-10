@@ -9,6 +9,11 @@ import {
   appointmentFormState,
   appointmentSpecialties,
 } from "@/modules/appointments/domain/appointment";
+import {
+  getAvailableAppointmentSlots,
+  type AppointmentOccupancy,
+} from "@/modules/appointments/domain/availability";
+import type { AvailabilityBlock } from "@/modules/initial-configuration/domain/initial-configuration";
 import type { Patient } from "@/modules/patients/domain/patient";
 
 type AppointmentPatientOption = Pick<
@@ -28,16 +33,26 @@ function FieldError({ id, message }: { id: string; message?: string }) {
 }
 
 export function AppointmentForm({
+  appointmentOccupancy,
+  availability,
   created,
+  currentTime,
   patients,
   defaultDurationMinutes,
   defaultCleanupMinutes,
+  gridIntervalMinutes,
+  minimumDate,
   onClose,
 }: Readonly<{
+  appointmentOccupancy: AppointmentOccupancy[];
+  availability: AvailabilityBlock[];
   created: boolean;
+  currentTime: string;
   patients: AppointmentPatientOption[];
   defaultDurationMinutes: number;
   defaultCleanupMinutes: number;
+  gridIntervalMinutes: number;
+  minimumDate: string;
   onClose: () => void;
 }>) {
   const [state, action] = useActionState(
@@ -46,6 +61,7 @@ export function AppointmentForm({
   );
   const patientSelectRef = useRef<HTMLSelectElement>(null);
   const [patientId, setPatientId] = useState("");
+  const [date, setDate] = useState("");
   const [startsAt, setStartsAt] = useState("");
   const [durationMinutes, setDurationMinutes] = useState(
     String(defaultDurationMinutes),
@@ -58,6 +74,17 @@ export function AppointmentForm({
   const selectedSpecialty = appointmentSpecialties.find(
     (option) => option.value === specialty,
   );
+  const availableSlots = date
+    ? getAvailableAppointmentSlots({
+        date,
+        availability,
+        appointments: appointmentOccupancy,
+        durationMinutes: Number(durationMinutes),
+        cleanupMinutes: Number(cleanupMinutes),
+        gridIntervalMinutes,
+        now: new Date(currentTime),
+      })
+    : [];
   const formattedStart = startsAt
     ? `${startsAt.slice(8, 10)}/${startsAt.slice(5, 7)}/${startsAt.slice(0, 4)} a las ${startsAt.slice(11, 16)}`
     : "Fecha y hora pendientes";
@@ -147,46 +174,15 @@ export function AppointmentForm({
       </section>
 
       <section
-        aria-labelledby="appointment-time-title"
-        className="border-t border-[var(--color-border)] pt-5"
-      >
-        <p className="m-0 flex items-center gap-2 text-xs font-bold tracking-[0.08em] text-[var(--color-brand)] uppercase">
-          <Clock3 aria-hidden="true" size={16} />
-          Paso 2
-        </p>
-        <h3 className="mt-2 mb-0 text-base" id="appointment-time-title">
-          Definí el horario
-        </h3>
-        <label className="mt-4 block text-sm font-semibold">
-          Fecha y hora
-          <input
-            aria-describedby={
-              state.fieldErrors.startsAt ? "appointment-start-error" : undefined
-            }
-            aria-invalid={Boolean(state.fieldErrors.startsAt)}
-            className={inputClassName}
-            defaultValue={state.values?.startsAt ?? ""}
-            name="startsAt"
-            onChange={(event) => setStartsAt(event.target.value)}
-            type="datetime-local"
-          />
-          <FieldError
-            id="appointment-start-error"
-            message={state.fieldErrors.startsAt}
-          />
-        </label>
-      </section>
-
-      <section
         aria-labelledby="appointment-details-title"
         className="border-t border-[var(--color-border)] pt-5"
       >
         <p className="m-0 flex items-center gap-2 text-xs font-bold tracking-[0.08em] text-[var(--color-brand)] uppercase">
           <CalendarCheck aria-hidden="true" size={16} />
-          Paso 3
+          Paso 2
         </p>
         <h3 className="mt-2 mb-0 text-base" id="appointment-details-title">
-          Completá los detalles
+          Definí la práctica y el tiempo
         </h3>
 
         <label className="mt-4 block text-sm font-semibold">
@@ -217,9 +213,9 @@ export function AppointmentForm({
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <label className="text-sm font-semibold">
-            Duración
+            Duración estimada
             <span className="mt-1 block text-xs font-normal text-[var(--color-muted)]">
-              Minutos de atención
+              Podés ajustarla para este paciente
             </span>
             <input
               aria-describedby={
@@ -235,7 +231,10 @@ export function AppointmentForm({
                 state.values?.durationMinutes ?? defaultDurationMinutes
               }
               name="durationMinutes"
-              onChange={(event) => setDurationMinutes(event.target.value)}
+              onChange={(event) => {
+                setDurationMinutes(event.target.value);
+                setStartsAt("");
+              }}
               type="number"
             />
             <FieldError
@@ -263,7 +262,10 @@ export function AppointmentForm({
                 state.values?.cleanupMinutes ?? defaultCleanupMinutes
               }
               name="cleanupMinutes"
-              onChange={(event) => setCleanupMinutes(event.target.value)}
+              onChange={(event) => {
+                setCleanupMinutes(event.target.value);
+                setStartsAt("");
+              }}
               type="number"
             />
             <FieldError
@@ -272,6 +274,78 @@ export function AppointmentForm({
             />
           </label>
         </div>
+      </section>
+
+      <section
+        aria-labelledby="appointment-time-title"
+        className="border-t border-[var(--color-border)] pt-5"
+      >
+        <p className="m-0 flex items-center gap-2 text-xs font-bold tracking-[0.08em] text-[var(--color-brand)] uppercase">
+          <Clock3 aria-hidden="true" size={16} />
+          Paso 3
+        </p>
+        <h3 className="mt-2 mb-0 text-base" id="appointment-time-title">
+          Definí el horario
+        </h3>
+        <label className="mt-4 block text-sm font-semibold">
+          Fecha
+          <input
+            className={inputClassName}
+            min={minimumDate}
+            onInput={(event) => {
+              setDate(event.currentTarget.value);
+              setStartsAt("");
+            }}
+            type="date"
+            value={date}
+          />
+        </label>
+
+        <fieldset
+          aria-describedby={
+            state.fieldErrors.startsAt ? "appointment-start-error" : undefined
+          }
+          aria-invalid={Boolean(state.fieldErrors.startsAt)}
+          className="mt-4 border-0 p-0"
+        >
+          <legend className="text-sm font-semibold">Horarios disponibles</legend>
+          {!date ? (
+            <p className="mt-2 mb-0 rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-brand-subtle)] px-4 py-3 text-sm leading-6 text-[var(--color-muted)]">
+              Elegí una fecha para ver los horarios libres.
+            </p>
+          ) : availableSlots.length === 0 ? (
+            <p className="mt-2 mb-0 rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-brand-subtle)] px-4 py-3 text-sm leading-6 text-[var(--color-muted)]">
+              No hay horarios disponibles para esta fecha con la duración
+              elegida. Probá otro día.
+            </p>
+          ) : (
+            <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4">
+              {availableSlots.map((time) => {
+                const value = `${date}T${time}`;
+
+                return (
+                  <label className="cursor-pointer" key={time}>
+                    <input
+                      checked={startsAt === value}
+                      className="peer sr-only"
+                      name="startsAt"
+                      onChange={(event) => setStartsAt(event.target.value)}
+                      type="radio"
+                      value={value}
+                    />
+                    <span className="flex min-h-11 items-center justify-center rounded-xl border border-[var(--color-border)] bg-white px-2 text-sm font-bold text-[var(--color-brand-dark)] transition-colors peer-checked:border-[var(--color-brand)] peer-checked:bg-[var(--color-brand-soft)] peer-focus-visible:ring-3 peer-focus-visible:ring-[rgb(20_125_115/18%)]">
+                      {time}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          )}
+          <FieldError
+            id="appointment-start-error"
+            message={state.fieldErrors.startsAt}
+          />
+        </fieldset>
       </section>
 
       <section

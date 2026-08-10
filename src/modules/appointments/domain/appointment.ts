@@ -88,7 +88,7 @@ function parseInteger(value: unknown) {
   return Number.isInteger(parsed) ? parsed : null;
 }
 
-function getArgentinaParts(date: Date) {
+export function getArgentinaDateTimeParts(date: Date) {
   const parts = argentinaDateTimeFormatter.formatToParts(date);
   const values = Object.fromEntries(
     parts
@@ -106,7 +106,7 @@ function getArgentinaParts(date: Date) {
   };
 }
 
-function parseArgentinaDateTime(value: unknown) {
+export function parseArgentinaDateTime(value: unknown) {
   if (typeof value !== "string") {
     return null;
   }
@@ -134,7 +134,7 @@ function parseArgentinaDateTime(value: unknown) {
   let timestamp = localTimestamp;
 
   for (let attempt = 0; attempt < 2; attempt += 1) {
-    const parts = getArgentinaParts(new Date(timestamp));
+    const parts = getArgentinaDateTimeParts(new Date(timestamp));
     const representedLocalTimestamp = Date.UTC(
       parts.year,
       parts.month - 1,
@@ -147,7 +147,7 @@ function parseArgentinaDateTime(value: unknown) {
   }
 
   const result = new Date(timestamp);
-  const parts = getArgentinaParts(result);
+  const parts = getArgentinaDateTimeParts(result);
 
   if (
     parts.year !== year ||
@@ -160,6 +160,12 @@ function parseArgentinaDateTime(value: unknown) {
   }
 
   return result;
+}
+
+export function formatArgentinaDateInput(date: Date) {
+  const parts = getArgentinaDateTimeParts(date);
+
+  return `${String(parts.year).padStart(4, "0")}-${String(parts.month).padStart(2, "0")}-${String(parts.day).padStart(2, "0")}`;
 }
 
 export function validateAppointment(
