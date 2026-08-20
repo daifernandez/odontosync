@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { AppointmentManagementPanel } from "@/components/appointment-management-panel";
 import { AppointmentPanel } from "@/components/appointment-panel";
 import {
   buildAgendaWeek,
@@ -46,21 +47,29 @@ export function WeeklyAgenda({
   appointments,
   appointmentOccupancy,
   autoOpenNewAppointment,
+  cancelled,
   configuration,
   created,
   initialDate,
   initialTime,
+  managementError,
   patients,
+  selectedAppointment,
+  updated,
   week,
 }: Readonly<{
   appointments: Appointment[];
   appointmentOccupancy: AppointmentOccupancy[];
   autoOpenNewAppointment: boolean;
+  cancelled: boolean;
   configuration: InitialConfiguration;
   created: boolean;
   initialDate?: string;
   initialTime?: string;
+  managementError: boolean;
   patients: AppointmentPatientOption[];
+  selectedAppointment?: Appointment;
+  updated: boolean;
   week: AgendaWeek;
 }>) {
   const currentTime = new Date();
@@ -141,6 +150,34 @@ export function WeeklyAgenda({
           </Link>
         </div>
       </header>
+
+      {selectedAppointment ? (
+        <AppointmentManagementPanel
+          appointment={selectedAppointment}
+          appointmentOccupancy={appointmentOccupancy.filter(
+            (occupied) => occupied.startsAt !== selectedAppointment.startsAt,
+          )}
+          availability={configuration.availability}
+          currentTime={currentTime.toISOString()}
+          gridIntervalMinutes={configuration.gridIntervalMinutes}
+          key={selectedAppointment.id}
+          minimumDate={formatArgentinaDateInput(currentTime)}
+          weekStartDate={week.startDate}
+        />
+      ) : null}
+
+      {updated || cancelled || managementError ? (
+        <div
+          className={`mt-6 rounded-xl border px-4 py-3 text-sm font-semibold ${managementError ? "border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] text-[var(--color-warning-foreground)]" : "border-[var(--color-border)] bg-[var(--color-brand-soft)] text-[var(--color-brand-dark)]"}`}
+          role={managementError ? "alert" : "status"}
+        >
+          {updated
+            ? "El turno se actualizó correctamente."
+            : cancelled
+              ? "El turno se canceló y el horario volvió a quedar disponible."
+              : "No pudimos gestionar ese turno. Actualizá la agenda e intentá nuevamente."}
+        </div>
+      ) : null}
 
       <aside className="mt-8 flex items-start gap-3 rounded-[var(--radius-medium)] border border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] px-4 py-3 text-[var(--color-warning-foreground)] md:items-center">
         <CalendarClock aria-hidden="true" className="mt-1 shrink-0 md:mt-0" size={18} />
@@ -361,48 +398,54 @@ export function WeeklyAgenda({
                         appointment.cleanupMinutes * pixelsPerMinute;
 
                       return (
-                        <g
-                          aria-label={`${appointment.patientLastName}, ${appointment.patientFirstName}. ${formatTime(start)} a ${formatTime(clinicalEnd)}. Acondicionamiento hasta ${formatTime(start + occupiedMinutes)}.`}
+                        <Link
+                          aria-label={`Gestionar turno de ${appointment.patientLastName}, ${appointment.patientFirstName}`}
+                          href={`/app/agenda?semana=${week.startDate}&turno=${appointment.id}`}
                           key={appointment.id}
-                          role="img"
                         >
-                          <rect
-                            className="fill-[var(--color-brand-soft)] stroke-[var(--color-brand)]"
-                            height={occupiedHeight}
-                            rx="8"
-                            width="calc(100% - 12px)"
-                            x="6"
-                            y={y}
-                          />
-                          {appointment.cleanupMinutes > 0 ? (
-                            <rect
-                              className="fill-[rgb(20_125_115/18%)]"
-                              height={cleanupHeight}
-                              width="calc(100% - 14px)"
-                              x="7"
-                              y={y + occupiedHeight - cleanupHeight}
-                            />
-                          ) : null}
-                          <foreignObject
-                            height={occupiedHeight}
-                            width="calc(100% - 16px)"
-                            x="8"
-                            y={y}
+                          <g
+                            aria-label={`${appointment.patientLastName}, ${appointment.patientFirstName}. ${formatTime(start)} a ${formatTime(clinicalEnd)}. Acondicionamiento hasta ${formatTime(start + occupiedMinutes)}.`}
+                            role="img"
                           >
-                            <div className="h-full overflow-hidden px-2 py-2 text-[var(--color-brand-dark)]">
-                              <strong className="block truncate text-xs">
-                                {appointment.patientLastName},{" "}
-                                {appointment.patientFirstName}
-                              </strong>
-                              <span className="mt-0.5 block truncate text-[0.66rem] font-semibold">
-                                {formatTime(start)}–{formatTime(clinicalEnd)} ·{" "}
-                                {getAppointmentSpecialtyLabel(
-                                  appointment.specialty,
-                                )}
-                              </span>
-                            </div>
-                          </foreignObject>
-                        </g>
+                            <rect
+                              className="cursor-pointer fill-[var(--color-brand-soft)] stroke-[var(--color-brand)]"
+                              height={occupiedHeight}
+                              rx="8"
+                              width="calc(100% - 12px)"
+                              x="6"
+                              y={y}
+                            />
+                            {appointment.cleanupMinutes > 0 ? (
+                              <rect
+                                className="pointer-events-none fill-[rgb(20_125_115/18%)]"
+                                height={cleanupHeight}
+                                width="calc(100% - 14px)"
+                                x="7"
+                                y={y + occupiedHeight - cleanupHeight}
+                              />
+                            ) : null}
+                            <foreignObject
+                              className="pointer-events-none"
+                              height={occupiedHeight}
+                              width="calc(100% - 16px)"
+                              x="8"
+                              y={y}
+                            >
+                              <div className="h-full overflow-hidden px-2 py-2 text-[var(--color-brand-dark)]">
+                                <strong className="block truncate text-xs">
+                                  {appointment.patientLastName},{" "}
+                                  {appointment.patientFirstName}
+                                </strong>
+                                <span className="mt-0.5 block truncate text-[0.66rem] font-semibold">
+                                  {formatTime(start)}–{formatTime(clinicalEnd)} ·{" "}
+                                  {getAppointmentSpecialtyLabel(
+                                    appointment.specialty,
+                                  )}
+                                </span>
+                              </div>
+                            </foreignObject>
+                          </g>
+                        </Link>
                       );
                     })}
                   </svg>
@@ -462,6 +505,12 @@ export function WeeklyAgenda({
                   <span className="mt-3 inline-flex rounded-full border border-[var(--color-border)] bg-white px-2.5 py-1 text-[0.68rem] font-bold text-[var(--color-brand-dark)]">
                     Pendiente de confirmación
                   </span>
+                  <Link
+                    className="mt-3 flex min-h-10 items-center justify-center rounded-xl border border-[var(--color-border)] bg-white px-3 text-xs font-bold text-[var(--color-brand-dark)] no-underline"
+                    href={`/app/agenda?semana=${week.startDate}&turno=${appointment.id}`}
+                  >
+                    Gestionar turno
+                  </Link>
                 </article>
               ))}
             </div>
