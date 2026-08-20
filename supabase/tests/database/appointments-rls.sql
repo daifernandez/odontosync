@@ -39,6 +39,12 @@ BEGIN
         WHERE polrelid = 'public.appointments'::regclass
           AND polname = 'appointments_insert_own_active_patient'
           AND polwithcheck IS NOT NULL
+    ) OR NOT EXISTS (
+        SELECT 1 FROM pg_policy
+        WHERE polrelid = 'public.appointments'::regclass
+          AND polname = 'appointments_update_own_pending'
+          AND polqual IS NOT NULL
+          AND polwithcheck IS NOT NULL
     ) THEN
         RAISE EXCEPTION 'Appointment ownership policies are incomplete';
     END IF;
@@ -59,7 +65,16 @@ BEGIN
        OR NOT has_column_privilege('authenticated', 'public.appointments', 'specialty', 'INSERT')
        OR has_column_privilege('authenticated', 'public.appointments', 'id', 'INSERT')
        OR has_column_privilege('authenticated', 'public.appointments', 'status', 'INSERT')
-       OR has_column_privilege('authenticated', 'public.appointments', 'overlap_confirmed', 'INSERT') THEN
+       OR has_column_privilege('authenticated', 'public.appointments', 'overlap_confirmed', 'INSERT')
+       OR NOT has_column_privilege('authenticated', 'public.appointments', 'starts_at', 'UPDATE')
+       OR NOT has_column_privilege('authenticated', 'public.appointments', 'occupied_until', 'UPDATE')
+       OR NOT has_column_privilege('authenticated', 'public.appointments', 'duration_minutes', 'UPDATE')
+       OR NOT has_column_privilege('authenticated', 'public.appointments', 'cleanup_minutes', 'UPDATE')
+       OR NOT has_column_privilege('authenticated', 'public.appointments', 'specialty', 'UPDATE')
+       OR NOT has_column_privilege('authenticated', 'public.appointments', 'status', 'UPDATE')
+       OR has_column_privilege('authenticated', 'public.appointments', 'user_id', 'UPDATE')
+       OR has_column_privilege('authenticated', 'public.appointments', 'patient_id', 'UPDATE')
+       OR has_column_privilege('authenticated', 'public.appointments', 'overlap_confirmed', 'UPDATE') THEN
         RAISE EXCEPTION 'Appointment table privileges do not follow least privilege';
     END IF;
 END;
@@ -113,6 +128,13 @@ BEGIN
     EXCEPTION
         WHEN insufficient_privilege THEN NULL;
     END;
+
+    BEGIN
+        UPDATE public.appointments SET status = 'cancelled';
+        RAISE EXCEPTION 'Anonymous access updated an appointment';
+    EXCEPTION
+        WHEN insufficient_privilege THEN NULL;
+    END;
 END;
 $$;
 
@@ -159,6 +181,13 @@ BEGIN
     EXCEPTION
         WHEN insufficient_privilege THEN NULL;
     END;
+
+    UPDATE public.appointments
+    SET status = 'cancelled';
+
+    IF FOUND THEN
+        RAISE EXCEPTION 'Appointment RLS updated another user data';
+    END IF;
 END;
 $$;
 
@@ -283,12 +312,52 @@ BEGIN
         WHEN insufficient_privilege THEN NULL;
     END;
 
+    UPDATE public.appointments
+    SET starts_at = '2026-08-10 13:00:00+00',
+        occupied_until = '2026-08-10 13:50:00+00',
+        duration_minutes = 40,
+        cleanup_minutes = 10,
+        specialty = 'implantology'
+    WHERE patient_id = (
+        SELECT active_patient_id FROM appointments_rls_test_context
+    );
+
+    IF NOT EXISTS (
+        SELECT 1 FROM public.appointments
+        WHERE starts_at = '2026-08-10 13:00:00+00'
+          AND occupied_until = '2026-08-10 13:50:00+00'
+          AND specialty = 'implantology'
+    ) THEN
+        RAISE EXCEPTION 'The owner could not reprogram their appointment';
+    END IF;
+
     BEGIN
         UPDATE public.appointments SET status = 'confirmed';
-        RAISE EXCEPTION 'Appointment update should not be available yet';
+        RAISE EXCEPTION 'The owner promoted an appointment to confirmed';
     EXCEPTION
         WHEN insufficient_privilege THEN NULL;
     END;
+
+    UPDATE public.appointments
+    SET status = 'cancelled'
+    WHERE patient_id = (
+        SELECT active_patient_id FROM appointments_rls_test_context
+    );
+
+    IF NOT EXISTS (
+        SELECT 1 FROM public.appointments
+        WHERE status = 'cancelled'
+    ) THEN
+        RAISE EXCEPTION 'The owner could not cancel their appointment';
+    END IF;
+
+    UPDATE public.appointments
+    SET status = 'pending_confirmation'
+    WHERE status = 'cancelled';
+
+    IF FOUND THEN
+        RAISE EXCEPTION 'A cancelled appointment was modified';
+    END IF;
 
     BEGIN
         DELETE FROM public.appointments;

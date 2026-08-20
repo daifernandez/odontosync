@@ -17,11 +17,15 @@ export const metadata: Metadata = {
 
 type AgendaPageProps = {
   searchParams: Promise<{
+    actualizado?: string | string[];
+    cancelado?: string | string[];
     creado?: string | string[];
+    errorGestion?: string | string[];
     fecha?: string | string[];
     hora?: string | string[];
     nuevo?: string | string[];
     semana?: string | string[];
+    turno?: string | string[];
   }>;
 };
 
@@ -43,13 +47,20 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
     redirect("/app/configuracion");
   }
 
+  const selectedAppointment =
+    typeof params.turno === "string"
+      ? appointments.find((appointment) => appointment.id === params.turno)
+      : undefined;
+
   return (
     <WeeklyAgenda
       appointments={appointments}
       appointmentOccupancy={appointmentOccupancy}
       autoOpenNewAppointment={params.nuevo === "1" || params.creado === "1"}
+      cancelled={params.cancelado === "1"}
       configuration={configuration}
       created={params.creado === "1"}
+      managementError={params.errorGestion === "1"}
       initialDate={typeof params.fecha === "string" ? params.fecha : undefined}
       initialTime={typeof params.hora === "string" ? params.hora : undefined}
       patients={patients.map(({ id, firstName, lastName }) => ({
@@ -57,6 +68,8 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
         firstName,
         lastName,
       }))}
+      selectedAppointment={selectedAppointment}
+      updated={params.actualizado === "1"}
       week={week}
     />
   );

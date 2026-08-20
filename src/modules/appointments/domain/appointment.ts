@@ -66,6 +66,10 @@ const localDateTimePattern =
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+export function isAppointmentId(value: unknown): value is string {
+  return typeof value === "string" && uuidPattern.test(value);
+}
+
 const argentinaDateTimeFormatter = new Intl.DateTimeFormat("en-CA", {
   timeZone: argentinaTimeZone,
   year: "numeric",

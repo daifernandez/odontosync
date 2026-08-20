@@ -90,6 +90,24 @@ export async function listAppointmentsForRange(
   return (data as unknown as AppointmentRow[]).map(mapAppointment);
 }
 
+export async function getPendingAppointmentById(
+  appointmentId: string,
+): Promise<Appointment | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("appointments")
+    .select(appointmentColumns)
+    .eq("id", appointmentId)
+    .eq("status", "pending_confirmation")
+    .maybeSingle();
+
+  if (error) {
+    throw new Error("Could not read appointment");
+  }
+
+  return data ? mapAppointment(data as unknown as AppointmentRow) : null;
+}
+
 type AppointmentOccupancyRow = {
   starts_at: string;
   duration_minutes: number;
@@ -173,4 +191,62 @@ export async function createAppointment(
   }
 
   throw new Error("Could not create appointment");
+}
+
+export type UpdateAppointmentResult = "updated" | "unavailable" | "overlap";
+
+export async function updateAppointment(
+  appointmentId: string,
+  appointment: AppointmentInput,
+): Promise<UpdateAppointmentResult> {
+  const supabase = await createClient();
+  const occupiedUntil = calculateOccupiedUntil({
+    startsAt: new Date(appointment.startsAt),
+    durationMinutes: appointment.durationMinutes,
+    turnoverMinutes: appointment.cleanupMinutes,
+  });
+  const { data, error } = await supabase
+    .from("appointments")
+    .update({
+      starts_at: appointment.startsAt,
+      occupied_until: occupiedUntil.toISOString(),
+      duration_minutes: appointment.durationMinutes,
+      cleanup_minutes: appointment.cleanupMinutes,
+      specialty: appointment.specialty,
+    })
+    .eq("id", appointmentId)
+    .eq("status", "pending_confirmation")
+    .select("id")
+    .maybeSingle();
+
+  if (!error) {
+    return data ? "updated" : "unavailable";
+  }
+
+  if (error.code === "23P01") {
+    return "overlap";
+  }
+
+  if (error.code === "42501") {
+    return "unavailable";
+  }
+
+  throw new Error("Could not update appointment");
+}
+
+export async function cancelAppointment(appointmentId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("appointments")
+    .update({ status: "cancelled" })
+    .eq("id", appointmentId)
+    .eq("status", "pending_confirmation")
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    throw new Error("Could not cancel appointment");
+  }
+
+  return data ? "cancelled" : "unavailable";
 }

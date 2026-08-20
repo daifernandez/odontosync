@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: vi.fn() }),
@@ -10,6 +10,15 @@ import { buildAgendaWeek } from "@/modules/agenda/domain/weekly-schedule";
 import { WeeklyAgenda } from "./weekly-agenda";
 
 describe("WeeklyAgenda", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-10T12:00:00-03:00"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("renders appointments across their complete occupied time and links the next free slot", () => {
     const appointment = {
       id: "00000000-0000-4000-8000-000000000010",
@@ -27,6 +36,7 @@ describe("WeeklyAgenda", () => {
         appointmentOccupancy={[appointment]}
         appointments={[appointment]}
         autoOpenNewAppointment={false}
+        cancelled={false}
         configuration={{
           fullName: "Profesional de prueba",
           licenseNumber: null,
@@ -39,6 +49,7 @@ describe("WeeklyAgenda", () => {
           ],
         }}
         created={false}
+        managementError={false}
         patients={[
           {
             id: "00000000-0000-4000-8000-000000000001",
@@ -47,6 +58,7 @@ describe("WeeklyAgenda", () => {
           },
         ]}
         week={buildAgendaWeek("2026-08-10")}
+        updated={false}
       />,
     );
 
