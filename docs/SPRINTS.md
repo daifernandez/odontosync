@@ -6,7 +6,7 @@
 - **Estado técnico:** implementado y verificado
 - **Issue:** [#17](https://github.com/daifernandez/odontosync/issues/17)
 - **Rama:** `codex/sprint-001-confirmar-turnos`
-- **Publicación:** pendiente de autorización para commit, push y PR
+- **Publicación:** [PR borrador #18](https://github.com/daifernandez/odontosync/pull/18)
 
 ### Objetivo
 
@@ -57,4 +57,4 @@ visible y probada.
 - Marcar turnos como atendidos o ausentes.
 - Reprogramar turnos.
 - Permitir acciones posteriores sobre turnos confirmados.
-- Completar commit, push y PR cuando exista autorización explícita.
+- Revisar el PR #18 y mergearlo cuando exista autorización explícita.
