@@ -19,6 +19,7 @@ type AgendaPageProps = {
   searchParams: Promise<{
     actualizado?: string | string[];
     cancelado?: string | string[];
+    confirmado?: string | string[];
     creado?: string | string[];
     errorGestion?: string | string[];
     fecha?: string | string[];
@@ -58,6 +59,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
       appointmentOccupancy={appointmentOccupancy}
       autoOpenNewAppointment={params.nuevo === "1" || params.creado === "1"}
       cancelled={params.cancelado === "1"}
+      confirmed={params.confirmado === "1"}
       configuration={configuration}
       created={params.creado === "1"}
       managementError={params.errorGestion === "1"}

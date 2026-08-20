@@ -22,7 +22,7 @@ export type Appointment = {
   durationMinutes: number;
   cleanupMinutes: number;
   specialty: AppointmentSpecialty;
-  status: "pending_confirmation";
+  status: "pending_confirmation" | "confirmed";
 };
 
 export type AppointmentInput = Pick<

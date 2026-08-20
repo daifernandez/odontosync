@@ -15,7 +15,7 @@ type AppointmentRow = {
   duration_minutes: number;
   cleanup_minutes: number;
   specialty: AppointmentSpecialty;
-  status: "pending_confirmation";
+  status: "pending_confirmation" | "confirmed";
   patient: {
     first_name: string;
     last_name: string;
@@ -59,7 +59,7 @@ export async function listUpcomingAppointments(
     .from("appointments")
     .select(appointmentColumns)
     .gte("starts_at", from.toISOString())
-    .eq("status", "pending_confirmation")
+    .in("status", ["pending_confirmation", "confirmed"])
     .order("starts_at")
     .limit(50);
 
@@ -80,7 +80,7 @@ export async function listAppointmentsForRange(
     .select(appointmentColumns)
     .gte("starts_at", from.toISOString())
     .lt("starts_at", to.toISOString())
-    .eq("status", "pending_confirmation")
+    .in("status", ["pending_confirmation", "confirmed"])
     .order("starts_at");
 
   if (error) {
@@ -122,7 +122,7 @@ export async function listAppointmentOccupancy(
     .from("appointments")
     .select("starts_at, duration_minutes, cleanup_minutes")
     .gt("occupied_until", from.toISOString())
-    .eq("status", "pending_confirmation")
+    .in("status", ["pending_confirmation", "confirmed"])
     .order("starts_at")
     .limit(1000);
 
@@ -249,4 +249,21 @@ export async function cancelAppointment(appointmentId: string) {
   }
 
   return data ? "cancelled" : "unavailable";
+}
+
+export async function confirmAppointment(appointmentId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("appointments")
+    .update({ status: "confirmed" })
+    .eq("id", appointmentId)
+    .eq("status", "pending_confirmation")
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    throw new Error("Could not confirm appointment");
+  }
+
+  return data ? "confirmed" : "unavailable";
 }

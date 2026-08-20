@@ -34,6 +34,7 @@ describe("AppointmentManagementPanel", () => {
     );
 
     expect(markup).toContain("Prueba, Lucía");
+    expect(markup).toContain("Confirmar turno");
     expect(markup).toContain("Guardar cambios");
     expect(markup).toContain("Quiero cancelar el turno");
     expect(markup).toContain("El horario se liberará");
@@ -41,5 +42,37 @@ describe("AppointmentManagementPanel", () => {
     expect(markup).toMatch(
       /<input[^>]*name="startsAt"[^>]*checked=""[^>]*value="2026-08-11T09:00"/,
     );
+  });
+
+  it("shows a confirmed appointment without pending-only actions", () => {
+    const markup = renderToStaticMarkup(
+      <AppointmentManagementPanel
+        appointment={{
+          id: "00000000-0000-4000-8000-000000000010",
+          patientId: "00000000-0000-4000-8000-000000000001",
+          patientFirstName: "Lucía",
+          patientLastName: "Prueba",
+          startsAt: "2026-08-11T12:00:00.000Z",
+          durationMinutes: 50,
+          cleanupMinutes: 10,
+          specialty: "implantology",
+          status: "confirmed",
+        }}
+        appointmentOccupancy={[]}
+        availability={[
+          { dayOfWeek: 2, startTime: "09:00", endTime: "13:00" },
+        ]}
+        currentTime="2026-08-10T12:00:00.000Z"
+        gridIntervalMinutes={15}
+        minimumDate="2026-08-10"
+        weekStartDate="2026-08-10"
+      />,
+    );
+
+    expect(markup).toContain("Turno confirmado");
+    expect(markup).toContain("Implantología");
+    expect(markup).not.toContain("Confirmar turno");
+    expect(markup).not.toContain("Guardar cambios");
+    expect(markup).not.toContain("Quiero cancelar el turno");
   });
 });
