@@ -331,18 +331,28 @@ BEGIN
         RAISE EXCEPTION 'The owner could not reprogram their appointment';
     END IF;
 
-    BEGIN
-        UPDATE public.appointments SET status = 'confirmed';
-        RAISE EXCEPTION 'The owner promoted an appointment to confirmed';
-    EXCEPTION
-        WHEN insufficient_privilege THEN NULL;
-    END;
+    INSERT INTO public.appointments (
+        user_id,
+        patient_id,
+        starts_at,
+        occupied_until,
+        duration_minutes,
+        cleanup_minutes,
+        specialty
+    )
+    SELECT
+        owner_id,
+        active_patient_id,
+        '2026-08-10 15:00:00+00',
+        '2026-08-10 15:35:00+00',
+        30,
+        5,
+        'general'
+    FROM appointments_rls_test_context;
 
     UPDATE public.appointments
     SET status = 'cancelled'
-    WHERE patient_id = (
-        SELECT active_patient_id FROM appointments_rls_test_context
-    );
+    WHERE starts_at = '2026-08-10 15:00:00+00';
 
     IF NOT EXISTS (
         SELECT 1 FROM public.appointments
@@ -352,11 +362,23 @@ BEGIN
     END IF;
 
     UPDATE public.appointments
+    SET status = 'confirmed'
+    WHERE starts_at = '2026-08-10 13:00:00+00';
+
+    IF NOT EXISTS (
+        SELECT 1 FROM public.appointments
+        WHERE starts_at = '2026-08-10 13:00:00+00'
+          AND status = 'confirmed'
+    ) THEN
+        RAISE EXCEPTION 'The owner could not confirm their appointment';
+    END IF;
+
+    UPDATE public.appointments
     SET status = 'pending_confirmation'
-    WHERE status = 'cancelled';
+    WHERE status IN ('cancelled', 'confirmed');
 
     IF FOUND THEN
-        RAISE EXCEPTION 'A cancelled appointment was modified';
+        RAISE EXCEPTION 'A completed status transition was modified';
     END IF;
 
     BEGIN

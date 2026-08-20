@@ -2,11 +2,24 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   cancelAppointment: vi.fn(),
+  confirmAppointment: vi.fn(),
   createAppointment: vi.fn(),
   getClaims: vi.fn(),
   getInitialConfiguration: vi.fn(),
   getPendingAppointmentById: vi.fn(),
+  revalidatePath: vi.fn(),
+  redirect: vi.fn((path: string) => {
+    throw new Error(`redirect:${path}`);
+  }),
   updateAppointment: vi.fn(),
+}));
+
+vi.mock("next/navigation", () => ({
+  redirect: mocks.redirect,
+}));
+
+vi.mock("next/cache", () => ({
+  revalidatePath: mocks.revalidatePath,
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -21,12 +34,17 @@ vi.mock("@/modules/initial-configuration/repository", () => ({
 
 vi.mock("./repository", () => ({
   cancelAppointment: mocks.cancelAppointment,
+  confirmAppointment: mocks.confirmAppointment,
   createAppointment: mocks.createAppointment,
   getPendingAppointmentById: mocks.getPendingAppointmentById,
   updateAppointment: mocks.updateAppointment,
 }));
 
-import { createAppointmentAction, updateAppointmentAction } from "./actions";
+import {
+  confirmAppointmentAction,
+  createAppointmentAction,
+  updateAppointmentAction,
+} from "./actions";
 import { appointmentFormState } from "./domain/appointment";
 
 describe("createAppointmentAction", () => {
@@ -138,5 +156,40 @@ describe("createAppointmentAction", () => {
       message: "Ese horario se superpone con otro turno.",
       fieldErrors: { startsAt: "Elegí otro horario disponible." },
     });
+  });
+});
+
+describe("confirmAppointmentAction", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getClaims.mockResolvedValue({
+      data: { claims: { sub: "00000000-0000-4000-8000-000000000002" } },
+    });
+    mocks.confirmAppointment.mockResolvedValue("confirmed");
+  });
+
+  it("confirms a pending appointment and returns to its agenda week", async () => {
+    const formData = new FormData();
+    formData.set("appointmentId", "00000000-0000-4000-8000-000000000010");
+    formData.set("weekStartDate", "2026-08-10");
+
+    await expect(confirmAppointmentAction(formData)).rejects.toThrow(
+      "redirect:/app/agenda?semana=2026-08-10&confirmado=1",
+    );
+    expect(mocks.confirmAppointment).toHaveBeenCalledWith(
+      "00000000-0000-4000-8000-000000000010",
+    );
+  });
+
+  it("does not confirm when the session is unavailable", async () => {
+    mocks.getClaims.mockResolvedValue({ data: { claims: null } });
+    const formData = new FormData();
+    formData.set("appointmentId", "00000000-0000-4000-8000-000000000010");
+    formData.set("weekStartDate", "2026-08-10");
+
+    await expect(confirmAppointmentAction(formData)).rejects.toThrow(
+      "redirect:/app/agenda?semana=2026-08-10&errorGestion=1",
+    );
+    expect(mocks.confirmAppointment).not.toHaveBeenCalled();
   });
 });

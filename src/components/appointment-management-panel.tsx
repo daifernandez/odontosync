@@ -1,12 +1,13 @@
 "use client";
 
-import { Trash2, X } from "lucide-react";
+import { CheckCircle2, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useRef, useState } from "react";
 
 import { SubmitButton } from "@/components/auth/submit-button";
 import {
   cancelAppointmentAction,
+  confirmAppointmentAction,
   updateAppointmentAction,
 } from "@/modules/appointments/actions";
 import {
@@ -14,6 +15,7 @@ import {
   appointmentSpecialties,
   formatArgentinaDateInput,
   getArgentinaDateTimeParts,
+  getAppointmentSpecialtyLabel,
   type Appointment,
 } from "@/modules/appointments/domain/appointment";
 import {
@@ -69,6 +71,11 @@ export function AppointmentManagementPanel({
     gridIntervalMinutes,
     now: new Date(currentTime),
   });
+  const formattedDate = new Intl.DateTimeFormat("es-AR", {
+    dateStyle: "long",
+    timeStyle: "short",
+    timeZone: "America/Argentina/Buenos_Aires",
+  }).format(new Date(appointment.startsAt));
 
   useEffect(() => {
     dialogRef.current?.showModal();
@@ -99,7 +106,9 @@ export function AppointmentManagementPanel({
               {appointment.patientLastName}, {appointment.patientFirstName}
             </h2>
             <p className="mt-2 mb-0 text-sm text-[var(--color-muted)]">
-              Modificá el horario o cancelá sin eliminar el registro.
+              {appointment.status === "confirmed"
+                ? "Consultá los datos del turno confirmado."
+                : "Modificá, confirmá o cancelá el turno sin eliminar el registro."}
             </p>
           </div>
           <button
@@ -113,6 +122,41 @@ export function AppointmentManagementPanel({
         </header>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 md:px-7 md:py-6">
+          {appointment.status === "confirmed" ? (
+            <section aria-labelledby="confirmed-appointment-title">
+              <div className="flex items-center gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-brand-soft)] px-4 py-3 text-[var(--color-brand-dark)]">
+                <CheckCircle2 aria-hidden="true" className="shrink-0" size={20} />
+                <h3 className="m-0 text-base" id="confirmed-appointment-title">
+                  Turno confirmado
+                </h3>
+              </div>
+              <dl className="mt-5 grid gap-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-brand-subtle)] p-4 text-sm">
+                <div>
+                  <dt className="font-semibold text-[var(--color-muted)]">
+                    Fecha y horario
+                  </dt>
+                  <dd className="mt-1 ml-0 font-bold">{formattedDate}</dd>
+                </div>
+                <div>
+                  <dt className="font-semibold text-[var(--color-muted)]">
+                    Área odontológica
+                  </dt>
+                  <dd className="mt-1 ml-0 font-bold">
+                    {getAppointmentSpecialtyLabel(appointment.specialty)}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="font-semibold text-[var(--color-muted)]">
+                    Duración reservada
+                  </dt>
+                  <dd className="mt-1 ml-0 font-bold">
+                    {appointment.durationMinutes} min + {appointment.cleanupMinutes} min de acondicionamiento
+                  </dd>
+                </div>
+              </dl>
+            </section>
+          ) : (
+            <>
           <form action={action} className="flex flex-col gap-4" noValidate>
             <input name="appointmentId" type="hidden" value={appointment.id} />
             <input name="weekStartDate" type="hidden" value={weekStartDate} />
@@ -226,6 +270,29 @@ export function AppointmentManagementPanel({
           </form>
 
           <section className="mt-6 border-t border-[var(--color-border)] pt-6">
+            <h3 className="m-0 text-base">Confirmar turno</h3>
+            <p className="mt-2 mb-0 text-sm leading-6 text-[var(--color-muted)]">
+              Al confirmar, el horario seguirá reservado y el turno pasará a
+              modo de lectura.
+            </p>
+            <form action={confirmAppointmentAction} className="mt-4">
+              <input
+                name="appointmentId"
+                type="hidden"
+                value={appointment.id}
+              />
+              <input
+                name="weekStartDate"
+                type="hidden"
+                value={weekStartDate}
+              />
+              <SubmitButton pendingLabel="Confirmando turno…">
+                Confirmar turno
+              </SubmitButton>
+            </form>
+          </section>
+
+          <section className="mt-6 border-t border-[var(--color-border)] pt-6">
             <h3 className="m-0 text-base">Cancelar turno</h3>
             <p className="mt-2 mb-0 text-sm leading-6 text-[var(--color-muted)]">
               El horario se liberará, pero el registro no se eliminará.
@@ -275,6 +342,8 @@ export function AppointmentManagementPanel({
               </form>
             )}
           </section>
+            </>
+          )}
         </div>
       </div>
     </dialog>

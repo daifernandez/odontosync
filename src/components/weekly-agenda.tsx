@@ -48,6 +48,7 @@ export function WeeklyAgenda({
   appointmentOccupancy,
   autoOpenNewAppointment,
   cancelled,
+  confirmed,
   configuration,
   created,
   initialDate,
@@ -62,6 +63,7 @@ export function WeeklyAgenda({
   appointmentOccupancy: AppointmentOccupancy[];
   autoOpenNewAppointment: boolean;
   cancelled: boolean;
+  confirmed: boolean;
   configuration: InitialConfiguration;
   created: boolean;
   initialDate?: string;
@@ -166,7 +168,7 @@ export function WeeklyAgenda({
         />
       ) : null}
 
-      {updated || cancelled || managementError ? (
+      {updated || cancelled || confirmed || managementError ? (
         <div
           className={`mt-6 rounded-xl border px-4 py-3 text-sm font-semibold ${managementError ? "border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] text-[var(--color-warning-foreground)]" : "border-[var(--color-border)] bg-[var(--color-brand-soft)] text-[var(--color-brand-dark)]"}`}
           role={managementError ? "alert" : "status"}
@@ -175,7 +177,9 @@ export function WeeklyAgenda({
             ? "El turno se actualizó correctamente."
             : cancelled
               ? "El turno se canceló y el horario volvió a quedar disponible."
-              : "No pudimos gestionar ese turno. Actualizá la agenda e intentá nuevamente."}
+              : confirmed
+                ? "El turno quedó confirmado correctamente."
+                : "No pudimos gestionar ese turno. Actualizá la agenda e intentá nuevamente."}
         </div>
       ) : null}
 
@@ -399,7 +403,7 @@ export function WeeklyAgenda({
 
                       return (
                         <Link
-                          aria-label={`Gestionar turno de ${appointment.patientLastName}, ${appointment.patientFirstName}`}
+                          aria-label={`${appointment.status === "confirmed" ? "Ver" : "Gestionar"} turno de ${appointment.patientLastName}, ${appointment.patientFirstName}`}
                           href={`/app/agenda?semana=${week.startDate}&turno=${appointment.id}`}
                           key={appointment.id}
                         >
@@ -408,7 +412,11 @@ export function WeeklyAgenda({
                             role="img"
                           >
                             <rect
-                              className="cursor-pointer fill-[var(--color-brand-soft)] stroke-[var(--color-brand)]"
+                              className={
+                                appointment.status === "confirmed"
+                                  ? "cursor-pointer fill-[var(--color-brand)] stroke-[var(--color-brand-dark)]"
+                                  : "cursor-pointer fill-[var(--color-brand-soft)] stroke-[var(--color-brand)]"
+                              }
                               height={occupiedHeight}
                               rx="8"
                               width="calc(100% - 12px)"
@@ -431,7 +439,9 @@ export function WeeklyAgenda({
                               x="8"
                               y={y}
                             >
-                              <div className="h-full overflow-hidden px-2 py-2 text-[var(--color-brand-dark)]">
+                              <div
+                                className={`h-full overflow-hidden px-2 py-2 ${appointment.status === "confirmed" ? "text-white" : "text-[var(--color-brand-dark)]"}`}
+                              >
                                 <strong className="block truncate text-xs">
                                   {appointment.patientLastName},{" "}
                                   {appointment.patientFirstName}
@@ -465,7 +475,7 @@ export function WeeklyAgenda({
             Turnos de la semana
           </p>
           <h2 className="m-0 text-xl" id="upcoming-appointments-title">
-            Pendientes de confirmación
+            Agenda de la semana
           </h2>
 
           {appointments.length === 0 ? (
@@ -503,13 +513,17 @@ export function WeeklyAgenda({
                     {appointment.cleanupMinutes} min de acondicionamiento
                   </p>
                   <span className="mt-3 inline-flex rounded-full border border-[var(--color-border)] bg-white px-2.5 py-1 text-[0.68rem] font-bold text-[var(--color-brand-dark)]">
-                    Pendiente de confirmación
+                    {appointment.status === "confirmed"
+                      ? "Confirmado"
+                      : "Pendiente de confirmación"}
                   </span>
                   <Link
                     className="mt-3 flex min-h-10 items-center justify-center rounded-xl border border-[var(--color-border)] bg-white px-3 text-xs font-bold text-[var(--color-brand-dark)] no-underline"
                     href={`/app/agenda?semana=${week.startDate}&turno=${appointment.id}`}
                   >
-                    Gestionar turno
+                    {appointment.status === "confirmed"
+                      ? "Ver turno"
+                      : "Gestionar turno"}
                   </Link>
                 </article>
               ))}
