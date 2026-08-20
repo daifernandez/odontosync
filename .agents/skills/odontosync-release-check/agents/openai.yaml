@@ -1,0 +1,4 @@
+interface:
+  display_name: "OdontoSync Release Check"
+  short_description: "Verifica ramas antes de publicar un PR"
+  default_prompt: "Usá $odontosync-release-check para verificar esta rama y dejarla lista para un PR."
