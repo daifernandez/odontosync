@@ -27,6 +27,7 @@ type AgendaPageProps = {
     fecha?: string | string[];
     hora?: string | string[];
     nuevo?: string | string[];
+    reprogramado?: string | string[];
     semana?: string | string[];
     turno?: string | string[];
   }>;
@@ -76,6 +77,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
         lastName,
       }))}
       selectedAppointment={selectedAppointment}
+      rescheduled={params.reprogramado === "1"}
       updated={params.actualizado === "1"}
       week={week}
     />

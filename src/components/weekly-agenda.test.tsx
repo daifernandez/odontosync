@@ -115,4 +115,54 @@ describe("WeeklyAgenda", () => {
       "semana=2026-08-10&amp;nuevo=1&amp;fecha=2026-08-11&amp;hora=10:45",
     );
   });
+
+  it("keeps a simultaneous appointment occupied when managing the selected one", () => {
+    const selectedAppointment = {
+      id: "00000000-0000-4000-8000-000000000010",
+      patientId: "00000000-0000-4000-8000-000000000001",
+      patientFirstName: "Lucía",
+      patientLastName: "Prueba",
+      startsAt: "2026-08-11T12:00:00.000Z",
+      occupiedUntil: "2026-08-11T13:00:00.000Z",
+      durationMinutes: 50,
+      cleanupMinutes: 10,
+      specialty: "implantology" as const,
+      status: "confirmed" as const,
+    };
+    const simultaneousAppointment = {
+      ...selectedAppointment,
+      id: "00000000-0000-4000-8000-000000000011",
+    };
+    const markup = renderToStaticMarkup(
+      <WeeklyAgenda
+        appointmentOccupancy={[
+          selectedAppointment,
+          simultaneousAppointment,
+        ]}
+        appointments={[selectedAppointment, simultaneousAppointment]}
+        autoOpenNewAppointment={false}
+        cancelled={false}
+        confirmed={false}
+        configuration={{
+          fullName: "Profesional de prueba",
+          licenseNumber: null,
+          licenseJurisdiction: null,
+          gridIntervalMinutes: 15,
+          defaultAppointmentDurationMinutes: 30,
+          defaultCleanupMinutes: 5,
+          availability: [
+            { dayOfWeek: 2, startTime: "09:00", endTime: "12:00" },
+          ],
+        }}
+        created={false}
+        managementError={false}
+        patients={[]}
+        selectedAppointment={selectedAppointment}
+        updated={false}
+        week={buildAgendaWeek("2026-08-10")}
+      />,
+    );
+
+    expect(markup).toContain("Ocupado");
+  });
 });

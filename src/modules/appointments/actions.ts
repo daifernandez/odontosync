@@ -9,6 +9,7 @@ import { buildAgendaWeek } from "@/modules/agenda/domain/weekly-schedule";
 
 import {
   type AppointmentFormState,
+  type AppointmentRescheduleState,
   isAppointmentClosureStatus,
   isAppointmentId,
   validateAppointment,
@@ -19,7 +20,9 @@ import {
   closeAppointment,
   confirmAppointment,
   createAppointment,
+  getConfirmedAppointmentById,
   getPendingAppointmentById,
+  rescheduleAppointment,
   updateAppointment,
 } from "./repository";
 
@@ -224,6 +227,132 @@ export async function updateAppointmentAction(
 
   revalidatePath("/app/agenda");
   redirect(`/app/agenda?semana=${weekStartDate}&actualizado=1`);
+}
+
+export async function rescheduleAppointmentAction(
+  _previousState: AppointmentRescheduleState,
+  formData: FormData,
+): Promise<AppointmentRescheduleState> {
+  const appointmentId = readText(formData, "appointmentId");
+  const values = { startsAt: readText(formData, "startsAt") };
+
+  if (!isAppointmentId(appointmentId)) {
+    return {
+      status: "error",
+      message: "El turno ya no está disponible para reprogramar.",
+      fieldErrors: {},
+      values,
+    };
+  }
+
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+
+  if (typeof data?.claims?.sub !== "string") {
+    return {
+      status: "error",
+      message: "Tu sesión venció. Volvé a ingresar para continuar.",
+      fieldErrors: {},
+      values,
+    };
+  }
+
+  try {
+    const currentAppointment =
+      await getConfirmedAppointmentById(appointmentId);
+
+    if (!currentAppointment) {
+      return {
+        status: "error",
+        message: "El turno ya no está disponible para reprogramar.",
+        fieldErrors: {},
+        values,
+      };
+    }
+
+    const validation = validateAppointment({
+      patientId: currentAppointment.patientId,
+      startsAt: values.startsAt,
+      durationMinutes: currentAppointment.durationMinutes,
+      cleanupMinutes: currentAppointment.cleanupMinutes,
+      specialty: currentAppointment.specialty,
+    });
+
+    if (!validation.success) {
+      return {
+        status: "error",
+        message: "Elegí una nueva fecha y hora válidas.",
+        fieldErrors: { startsAt: validation.fieldErrors.startsAt },
+        values,
+      };
+    }
+
+    if (
+      new Date(validation.data.startsAt).getTime() ===
+      new Date(currentAppointment.startsAt).getTime()
+    ) {
+      return {
+        status: "error",
+        message: "Elegí un horario diferente del turno actual.",
+        fieldErrors: { startsAt: "Elegí otro horario." },
+        values,
+      };
+    }
+
+    const configuration = await getInitialConfiguration();
+
+    if (
+      !configuration ||
+      !isAppointmentWithinWeeklyAvailability(
+        validation.data,
+        configuration.availability,
+        configuration.gridIntervalMinutes,
+      )
+    ) {
+      return {
+        status: "error",
+        message: "Ese horario no pertenece a la disponibilidad configurada.",
+        fieldErrors: { startsAt: "Elegí uno de los horarios configurados." },
+        values,
+      };
+    }
+
+    const result = await rescheduleAppointment(
+      appointmentId,
+      validation.data.startsAt,
+      readText(formData, "overlapConfirmed") === "true",
+    );
+
+    if (result === "overlap") {
+      return {
+        status: "overlap",
+        message:
+          "Ese horario se superpone con otro turno. Confirmá la superposición para continuar.",
+        fieldErrors: {},
+        values,
+      };
+    }
+
+    if (result === "unavailable") {
+      return {
+        status: "error",
+        message: "El turno ya no está disponible para reprogramar.",
+        fieldErrors: {},
+        values,
+      };
+    }
+  } catch {
+    return {
+      status: "error",
+      message: "No pudimos reprogramar el turno. Intentá nuevamente.",
+      fieldErrors: {},
+      values,
+    };
+  }
+
+  revalidatePath("/app/agenda");
+  const newWeekStart = buildAgendaWeek(values.startsAt.slice(0, 10)).startDate;
+  redirect(`/app/agenda?semana=${newWeekStart}&reprogramado=1`);
 }
 
 export async function cancelAppointmentAction(formData: FormData) {

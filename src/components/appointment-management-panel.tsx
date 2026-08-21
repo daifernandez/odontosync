@@ -9,10 +9,12 @@ import {
   cancelAppointmentAction,
   closeAppointmentAction,
   confirmAppointmentAction,
+  rescheduleAppointmentAction,
   updateAppointmentAction,
 } from "@/modules/appointments/actions";
 import {
   appointmentFormState,
+  appointmentRescheduleState,
   appointmentSpecialties,
   formatArgentinaDateInput,
   getArgentinaDateTimeParts,
@@ -47,6 +49,8 @@ export function AppointmentManagementPanel({
 }>) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const router = useRouter();
+  const isPending = appointment.status === "pending_confirmation";
+  const isConfirmed = appointment.status === "confirmed";
   const initialDate = formatArgentinaDateInput(new Date(appointment.startsAt));
   const initialParts = getArgentinaDateTimeParts(new Date(appointment.startsAt));
   const initialTime = `${String(initialParts.hour).padStart(2, "0")}:${String(initialParts.minute).padStart(2, "0")}`;
@@ -54,8 +58,14 @@ export function AppointmentManagementPanel({
     updateAppointmentAction,
     appointmentFormState,
   );
+  const [rescheduleState, rescheduleAction] = useActionState(
+    rescheduleAppointmentAction,
+    appointmentRescheduleState,
+  );
   const [date, setDate] = useState(initialDate);
-  const [startsAt, setStartsAt] = useState(`${initialDate}T${initialTime}`);
+  const [startsAt, setStartsAt] = useState(
+    isConfirmed ? "" : `${initialDate}T${initialTime}`,
+  );
   const [durationMinutes, setDurationMinutes] = useState(
     String(appointment.durationMinutes),
   );
@@ -72,13 +82,23 @@ export function AppointmentManagementPanel({
     gridIntervalMinutes,
     now: new Date(currentTime),
   });
+  const rescheduleSlots = getAvailableAppointmentSlots({
+    date,
+    availability,
+    appointments: [],
+    durationMinutes: appointment.durationMinutes,
+    cleanupMinutes: appointment.cleanupMinutes,
+    gridIntervalMinutes,
+    now: new Date(currentTime),
+  }).filter((time) => `${date}T${time}` !== `${initialDate}T${initialTime}`);
+  const overlapRequiresConfirmation =
+    rescheduleState.status === "overlap" &&
+    rescheduleState.values?.startsAt === startsAt;
   const formattedDate = new Intl.DateTimeFormat("es-AR", {
     dateStyle: "long",
     timeStyle: "short",
     timeZone: "America/Argentina/Buenos_Aires",
   }).format(new Date(appointment.startsAt));
-  const isPending = appointment.status === "pending_confirmation";
-  const isConfirmed = appointment.status === "confirmed";
   const canCancel =
     isConfirmed &&
     new Date(appointment.startsAt).getTime() > new Date(currentTime).getTime();
@@ -86,6 +106,7 @@ export function AppointmentManagementPanel({
     isConfirmed &&
     new Date(appointment.occupiedUntil).getTime() <=
       new Date(currentTime).getTime();
+  const canReschedule = canCancel;
   const statusTitle =
     appointment.status === "completed"
       ? "Turno atendido"
@@ -295,6 +316,136 @@ export function AppointmentManagementPanel({
                       incluido el acondicionamiento.
                     </p>
                   )}
+                  {canReschedule ? (
+                    <details className="mt-6 rounded-xl border border-[var(--color-border)] bg-white p-4">
+                      <summary className="cursor-pointer text-sm font-bold text-[var(--color-brand-dark)]">
+                        Reprogramar turno
+                      </summary>
+                      <form
+                        action={rescheduleAction}
+                        className="mt-4 border-t border-[var(--color-border)] pt-4"
+                        noValidate
+                      >
+                        <input
+                          name="appointmentId"
+                          type="hidden"
+                          value={appointment.id}
+                        />
+                        <p className="m-0 text-sm leading-6 text-[var(--color-muted)]">
+                          Elegí la nueva fecha y el nuevo horario. El turno
+                          actual quedará como reprogramado y se creará otro
+                          pendiente, sin cambiar sus demás datos.
+                        </p>
+
+                        {rescheduleState.message ? (
+                          <p
+                            className="mt-4 mb-0 rounded-xl border border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] px-4 py-3 text-sm leading-6 text-[var(--color-warning-foreground)]"
+                            role="alert"
+                          >
+                            {rescheduleState.message}
+                          </p>
+                        ) : null}
+
+                        <label className="mt-4 block text-sm font-semibold">
+                          Nueva fecha
+                          <input
+                            className={inputClassName}
+                            min={minimumDate}
+                            onInput={(event) => {
+                              setDate(event.currentTarget.value);
+                              setStartsAt("");
+                            }}
+                            type="date"
+                            value={date}
+                          />
+                        </label>
+
+                        <fieldset
+                          aria-describedby={`reschedule-slots-help${rescheduleState.fieldErrors.startsAt ? " reschedule-slots-error" : ""}`}
+                          aria-invalid={
+                            rescheduleState.fieldErrors.startsAt
+                              ? "true"
+                              : undefined
+                          }
+                          className="mt-4 border-0 p-0"
+                        >
+                          <legend className="text-sm font-semibold">
+                            Nuevo horario
+                          </legend>
+                          <p
+                            className="mt-2 mb-0 text-xs leading-5 text-[var(--color-muted)]"
+                            id="reschedule-slots-help"
+                          >
+                            Los horarios ocupados requieren una confirmación
+                            adicional antes de guardar.
+                          </p>
+                          <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
+                            {rescheduleSlots.map((time) => {
+                              const value = `${date}T${time}`;
+                              const isOccupied = !availableSlots.includes(time);
+
+                              return (
+                                <label className="cursor-pointer" key={time}>
+                                  <input
+                                    checked={startsAt === value}
+                                    className="peer sr-only"
+                                    name="startsAt"
+                                    onChange={(event) =>
+                                      setStartsAt(event.target.value)
+                                    }
+                                    type="radio"
+                                    value={value}
+                                  />
+                                  <span
+                                    className={`flex min-h-11 flex-col items-center justify-center rounded-xl border bg-white text-sm font-bold peer-checked:border-[var(--color-brand)] peer-checked:bg-[var(--color-brand-soft)] ${isOccupied ? "border-[var(--color-warning-border)] text-[var(--color-warning-foreground)]" : "border-[var(--color-border)]"}`}
+                                  >
+                                    {time}
+                                    {isOccupied ? (
+                                      <small className="text-[0.62rem] font-semibold">
+                                        Ocupado
+                                      </small>
+                                    ) : null}
+                                  </span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                          {rescheduleSlots.length === 0 ? (
+                            <p className="mt-3 mb-0 text-sm text-[var(--color-muted)]">
+                              No hay otros horarios configurados para esta fecha.
+                            </p>
+                          ) : null}
+                          {rescheduleState.fieldErrors.startsAt ? (
+                            <p
+                              className="mt-2 mb-0 text-xs text-red-700"
+                              id="reschedule-slots-error"
+                            >
+                              {rescheduleState.fieldErrors.startsAt}
+                            </p>
+                          ) : null}
+                        </fieldset>
+
+                        {overlapRequiresConfirmation ? (
+                          <input
+                            name="overlapConfirmed"
+                            type="hidden"
+                            value="true"
+                          />
+                        ) : null}
+                        <SubmitButton
+                          pendingLabel={
+                            overlapRequiresConfirmation
+                              ? "Confirmando superposición…"
+                              : "Reprogramando turno…"
+                          }
+                        >
+                          {overlapRequiresConfirmation
+                            ? "Confirmar superposición y reprogramar"
+                            : "Reprogramar turno"}
+                        </SubmitButton>
+                      </form>
+                    </details>
+                  ) : null}
                   {canCancel ? cancellationSection : null}
                 </>
               ) : (

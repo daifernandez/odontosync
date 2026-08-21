@@ -118,6 +118,24 @@ export async function getPendingAppointmentById(
   return data ? mapAppointment(data as unknown as AppointmentRow) : null;
 }
 
+export async function getConfirmedAppointmentById(
+  appointmentId: string,
+): Promise<Appointment | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("appointments")
+    .select(appointmentColumns)
+    .eq("id", appointmentId)
+    .eq("status", "confirmed")
+    .maybeSingle();
+
+  if (error) {
+    throw new Error("Could not read confirmed appointment");
+  }
+
+  return data ? mapAppointment(data as unknown as AppointmentRow) : null;
+}
+
 type AppointmentOccupancyRow = {
   starts_at: string;
   duration_minutes: number;
@@ -304,4 +322,36 @@ export async function closeAppointment(
   }
 
   return data ? status : "unavailable";
+}
+
+export type RescheduleAppointmentResult =
+  | "rescheduled"
+  | "unavailable"
+  | "overlap";
+
+export async function rescheduleAppointment(
+  appointmentId: string,
+  startsAt: string,
+  confirmOverlap: boolean,
+): Promise<RescheduleAppointmentResult> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("reschedule_appointment", {
+    appointment_id: appointmentId,
+    new_starts_at: startsAt,
+    confirm_overlap: confirmOverlap,
+  });
+
+  if (!error) {
+    return data ? "rescheduled" : "unavailable";
+  }
+
+  if (error.code === "23P01") {
+    return "overlap";
+  }
+
+  if (["23514", "42501", "P0002"].includes(error.code)) {
+    return "unavailable";
+  }
+
+  throw new Error("Could not reschedule appointment");
 }

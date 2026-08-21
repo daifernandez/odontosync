@@ -60,7 +60,13 @@ describe("AppointmentManagementPanel", () => {
           specialty: "implantology",
           status: "confirmed",
         }}
-        appointmentOccupancy={[]}
+        appointmentOccupancy={[
+          {
+            startsAt: "2026-08-11T13:00:00.000Z",
+            durationMinutes: 30,
+            cleanupMinutes: 5,
+          },
+        ]}
         availability={[
           { dayOfWeek: 2, startTime: "09:00", endTime: "13:00" },
         ]}
@@ -76,6 +82,13 @@ describe("AppointmentManagementPanel", () => {
     expect(markup).not.toContain("Confirmar turno");
     expect(markup).not.toContain("Guardar cambios");
     expect(markup).toContain("Quiero cancelar el turno");
+    expect(markup).toContain("Reprogramar turno");
+    expect(markup).toContain("Elegí la nueva fecha y el nuevo horario");
+    expect(markup).toContain("Ocupado");
+    expect(markup).toContain('name="startsAt"');
+    expect(markup).not.toContain('name="durationMinutes"');
+    expect(markup).not.toContain('name="cleanupMinutes"');
+    expect(markup).not.toContain('name="specialty"');
     expect(markup).toContain("El horario se liberará");
     expect(markup).toContain("Podrás cerrarlo cuando finalice");
     expect(markup).not.toContain("Marcar como atendido");
@@ -110,6 +123,7 @@ describe("AppointmentManagementPanel", () => {
     expect(markup).toContain("Turno confirmado");
     expect(markup).toContain("Podrás cerrarlo cuando finalice");
     expect(markup).not.toContain("Quiero cancelar el turno");
+    expect(markup).not.toContain("Reprogramar turno");
     expect(markup).not.toContain("Marcar como atendido");
   });
 
