@@ -476,12 +476,66 @@ BEGIN
     SET status = 'confirmed'
     WHERE starts_at = '2099-08-10 16:00:00+00';
 
+    BEGIN
+        UPDATE public.appointments
+        SET status = 'completed'
+        WHERE starts_at = '2099-08-10 16:00:00+00';
+
+        IF FOUND THEN
+            RAISE EXCEPTION 'A future appointment was completed';
+        END IF;
+    EXCEPTION
+        WHEN check_violation OR insufficient_privilege THEN NULL;
+    END;
+
     UPDATE public.appointments
-    SET status = 'completed'
+    SET status = 'cancelled'
     WHERE starts_at = '2099-08-10 16:00:00+00';
 
-    IF FOUND THEN
-        RAISE EXCEPTION 'A future appointment was completed';
+    IF NOT EXISTS (
+        SELECT 1 FROM public.appointments
+        WHERE starts_at = '2099-08-10 16:00:00+00'
+          AND status = 'cancelled'
+    ) THEN
+        RAISE EXCEPTION 'The owner could not cancel a future confirmed appointment';
+    END IF;
+
+    INSERT INTO public.appointments (
+        user_id,
+        patient_id,
+        starts_at,
+        occupied_until,
+        duration_minutes,
+        cleanup_minutes,
+        specialty
+    )
+    SELECT
+        owner_id,
+        active_patient_id,
+        CURRENT_TIMESTAMP - INTERVAL '10 minutes',
+        CURRENT_TIMESTAMP + INTERVAL '20 minutes',
+        25,
+        5,
+        'general'
+    FROM appointments_rls_test_context;
+
+    UPDATE public.appointments
+    SET status = 'confirmed'
+    WHERE starts_at <= CURRENT_TIMESTAMP
+      AND occupied_until > CURRENT_TIMESTAMP;
+
+    UPDATE public.appointments
+    SET status = 'cancelled'
+    WHERE starts_at <= CURRENT_TIMESTAMP
+      AND occupied_until > CURRENT_TIMESTAMP;
+
+    IF FOUND OR EXISTS (
+        SELECT 1 FROM public.appointments
+        WHERE starts_at <= CURRENT_TIMESTAMP
+          AND occupied_until > CURRENT_TIMESTAMP
+          AND status <> 'confirmed'
+    ) THEN
+        RAISE EXCEPTION 'An ongoing confirmed appointment was cancelled';
     END IF;
 
     INSERT INTO public.appointments (

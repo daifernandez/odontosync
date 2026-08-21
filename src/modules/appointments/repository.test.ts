@@ -8,7 +8,7 @@ vi.mock("@/lib/supabase/server", () => ({
   createClient: mocks.createClient,
 }));
 
-import { closeAppointment } from "./repository";
+import { cancelAppointment, closeAppointment } from "./repository";
 
 function createUpdateQuery(result: {
   data: { id: string } | null;
@@ -17,16 +17,55 @@ function createUpdateQuery(result: {
   const query = {
     update: vi.fn(),
     eq: vi.fn(),
+    in: vi.fn(),
     select: vi.fn(),
     maybeSingle: vi.fn().mockResolvedValue(result),
   };
 
   query.update.mockReturnValue(query);
   query.eq.mockReturnValue(query);
+  query.in.mockReturnValue(query);
   query.select.mockReturnValue(query);
 
   return query;
 }
+
+describe("cancelAppointment", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("requests cancellation for a pending or confirmed appointment", async () => {
+    const query = createUpdateQuery({
+      data: { id: "appointment-id" },
+      error: null,
+    });
+    mocks.createClient.mockResolvedValue({
+      from: vi.fn().mockReturnValue(query),
+    });
+
+    await expect(cancelAppointment("appointment-id")).resolves.toBe(
+      "cancelled",
+    );
+    expect(query.update).toHaveBeenCalledWith({ status: "cancelled" });
+    expect(query.eq).toHaveBeenCalledWith("id", "appointment-id");
+    expect(query.in).toHaveBeenCalledWith("status", [
+      "pending_confirmation",
+      "confirmed",
+    ]);
+  });
+
+  it("reports a cancellation rejected by database policy as unavailable", async () => {
+    const query = createUpdateQuery({ data: null, error: { code: "23514" } });
+    mocks.createClient.mockResolvedValue({
+      from: vi.fn().mockReturnValue(query),
+    });
+
+    await expect(cancelAppointment("appointment-id")).resolves.toBe(
+      "unavailable",
+    );
+  });
+});
 
 describe("closeAppointment", () => {
   beforeEach(() => {

@@ -130,3 +130,74 @@ con estados históricos irreversibles y controles en la base de datos.
 - Reprogramar turnos.
 - Reabrir o corregir estados históricos.
 - Incorporar vistas diaria y mensual.
+
+## Sprint 004 — Cancelación de turnos confirmados
+
+- **Fecha:** 20 de agosto de 2026
+- **Estado:** implementado y verificado; pendiente de publicación
+- **Issue:** [#23](https://github.com/daifernandez/odontosync/issues/23)
+- **Rama:** `codex/sprint-004-cancelar-confirmados`
+- **Publicación:** pendiente de commit y pull request
+
+### Objetivo
+
+Permitir que un turno propio confirmado y todavía no iniciado pueda cancelarse
+de forma segura, liberando el horario sin eliminar el registro.
+
+### Resultado
+
+- La cancelación existente admite turnos pendientes y confirmados futuros.
+- La interfaz ofrece la acción destructiva únicamente antes de la hora de
+  inicio, explica la consecuencia y exige una confirmación explícita.
+- Un turno en curso permanece en modo de lectura y, al finalizar, conserva
+  solamente las acciones de atendido o ausente.
+- PostgreSQL valida la transición `confirmed → cancelled` con el tiempo de la
+  base y mantiene irreversibles los estados finales.
+- RLS restringe la actualización al propietario y a los turnos gestionables;
+  el trigger vuelve a validar estado, campos y tiempo ante carreras.
+- Se corrigió un aviso de hidratación causado por diferencias de puntuación en
+  la fecha localizada entre servidor y navegador.
+- La migración `20260821022153_cancel_confirmed_appointments` se aplicó al
+  Supabase enlazado.
+
+### Criterios verificados
+
+- El usuario autenticado puede cancelar un turno propio confirmado futuro.
+- Un turno iniciado, ajeno, inexistente o en otro estado no puede cancelarse.
+- La cancelación libera la ocupación sin eliminar el registro.
+- La Server Action valida sesión e identificador y comunica éxito o error sin
+  filtrar detalles internos.
+- La interfaz distingue la acción destructiva, muestra la confirmación y
+  permite volver sin enviar el formulario.
+- El flujo se revisó con datos ficticios no persistidos en escritorio y móvil,
+  sin desbordamiento horizontal ni errores nuevos de consola; no se ejecutó
+  ninguna cancelación durante QA.
+
+### Skills aplicadas
+
+- Next.js para Server Actions, renderizado y el ajuste de hidratación.
+- Supabase, `supabase-postgres-best-practices` y `security-sprint-review` para
+  transición, RLS, tiempo de base y casos negativos.
+- `usability-review` y `react-best-practices` para confirmación, feedback,
+  accesibilidad y estructura del componente.
+- Browser para la revisión visual y responsive sin escrituras persistentes.
+- `odontosync-release-check` para la batería final y el control previo a
+  publicación.
+
+### Verificaciones
+
+- Pruebas: 16 archivos y 86 casos aprobados.
+- RLS: tres suites aprobadas sobre Supabase enlazado.
+- Prisma: esquema válido y base al día con 12 migraciones.
+- TypeScript, ESLint y build de producción: aprobados.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- Asesor de Supabase: sin errores; permanece el aviso externo conocido de
+  protección contra contraseñas filtradas, postergado por decisión del
+  proyecto.
+
+### Fuera de alcance y próximos pasos
+
+- Reprogramar turnos confirmados.
+- Cancelar turnos una vez iniciados.
+- Reabrir turnos cancelados o estados históricos.
+- Incorporar vistas diaria y mensual.
