@@ -3,10 +3,11 @@
 ## Sprint 001 — Confirmación de turnos
 
 - **Fecha:** 20 de agosto de 2026
-- **Estado técnico:** implementado y verificado
+- **Estado:** publicado y mergeado
 - **Issue:** [#17](https://github.com/daifernandez/odontosync/issues/17)
 - **Rama:** `codex/sprint-001-confirmar-turnos`
-- **Publicación:** [PR borrador #18](https://github.com/daifernandez/odontosync/pull/18)
+- **Publicación:** [PR #18](https://github.com/daifernandez/odontosync/pull/18),
+  merge commit `36f62ea`
 
 ### Objetivo
 
@@ -57,4 +58,75 @@ visible y probada.
 - Marcar turnos como atendidos o ausentes.
 - Reprogramar turnos.
 - Permitir acciones posteriores sobre turnos confirmados.
-- Revisar el PR #18 y mergearlo cuando exista autorización explícita.
+
+## Sprint 003 — Cierre administrativo de turnos
+
+- **Fecha:** 20 de agosto de 2026
+- **Estado técnico:** implementado y verificado; PR borrador abierto
+- **Issue:** [#20](https://github.com/daifernandez/odontosync/issues/20)
+- **Rama:** `codex/sprint-003-cierre-turnos`
+- **Publicación:** [PR borrador #21](https://github.com/daifernandez/odontosync/pull/21)
+
+### Objetivo
+
+Permitir que un turno propio confirmado y finalizado pase a atendido o ausente,
+con estados históricos irreversibles y controles en la base de datos.
+
+### Resultado
+
+- Se agregaron las acciones de cierre como `completed` (Atendido) y `no_show`
+  (Ausente).
+- La agenda semanal conserva los turnos históricos y muestra sus estados con
+  texto, no solamente con color.
+- El panel deja los turnos confirmados futuros en modo de lectura, habilita el
+  cierre al finalizar el tiempo reservado y explica que la decisión es
+  irreversible.
+- PostgreSQL valida propiedad, estado anterior, transición y finalización con
+  `CURRENT_TIMESTAMP`; la interfaz no constituye el control de seguridad.
+- La migración `20260821014802_close_appointments` se aplicó al Supabase
+  enlazado.
+
+### Criterios verificados
+
+- El usuario autenticado puede cerrar un turno propio confirmado y finalizado
+  como atendido o ausente.
+- Los turnos futuros, ajenos, inexistentes o en estados incompatibles no pueden
+  cerrarse.
+- Los estados atendido y ausente no pueden revertirse ni intercambiarse.
+- La acción valida sesión, identificador y estado solicitado, y comunica éxito
+  o error.
+- La agenda conserva el historial de la semana sin ocupar horarios futuros.
+- El flujo base de agenda y panel fue revisado en escritorio y móvil, con cierre
+  por teclado, sin desbordamiento horizontal ni errores de consola. Los estados
+  nuevos se verificaron con pruebas de componentes sin modificar turnos reales.
+
+### Skills aplicadas
+
+- Next.js para Server Actions, renderizado y manejo del resultado.
+- Supabase, `supabase-postgres-best-practices` y `security-sprint-review` para
+  RLS, trigger de transición y casos negativos.
+- `usability-review` y `react-best-practices` para claridad, accesibilidad y
+  estructura de los componentes.
+- Browser para la revisión responsive, teclado y consola sin enviar acciones
+  irreversibles.
+- `odontosync-release-check` para la batería final y el control previo a
+  publicación.
+
+### Verificaciones
+
+- Pruebas: 16 archivos y 80 casos aprobados.
+- RLS: tres suites aprobadas sobre Supabase enlazado.
+- Prisma: esquema válido y base al día con 11 migraciones.
+- TypeScript, ESLint y build de producción: aprobados.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- Asesor de Supabase: sin errores; permanece el aviso externo conocido de
+  protección contra contraseñas filtradas desactivada, postergado hasta que sea
+  indispensable.
+
+### Fuera de alcance y próximos pasos
+
+- Cancelar turnos confirmados.
+- Reprogramar turnos.
+- Reabrir o corregir estados históricos.
+- Incorporar vistas diaria y mensual.
+- Revisar el PR #21 y mergearlo cuando exista autorización explícita.

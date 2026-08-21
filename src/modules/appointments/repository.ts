@@ -3,8 +3,10 @@ import { createClient } from "@/lib/supabase/server";
 import { calculateOccupiedUntil } from "./domain/calculate-occupied-until";
 import type {
   Appointment,
+  AppointmentClosureStatus,
   AppointmentInput,
   AppointmentSpecialty,
+  AppointmentStatus,
 } from "./domain/appointment";
 import type { AppointmentOccupancy } from "./domain/availability";
 
@@ -12,10 +14,11 @@ type AppointmentRow = {
   id: string;
   patient_id: string;
   starts_at: string;
+  occupied_until: string;
   duration_minutes: number;
   cleanup_minutes: number;
   specialty: AppointmentSpecialty;
-  status: "pending_confirmation" | "confirmed";
+  status: AppointmentStatus;
   patient: {
     first_name: string;
     last_name: string;
@@ -26,6 +29,7 @@ const appointmentColumns = `
   id,
   patient_id,
   starts_at,
+  occupied_until,
   duration_minutes,
   cleanup_minutes,
   specialty,
@@ -44,6 +48,7 @@ function mapAppointment(row: AppointmentRow): Appointment {
     patientFirstName: row.patient.first_name,
     patientLastName: row.patient.last_name,
     startsAt: row.starts_at,
+    occupiedUntil: row.occupied_until,
     durationMinutes: row.duration_minutes,
     cleanupMinutes: row.cleanup_minutes,
     specialty: row.specialty,
@@ -80,7 +85,12 @@ export async function listAppointmentsForRange(
     .select(appointmentColumns)
     .gte("starts_at", from.toISOString())
     .lt("starts_at", to.toISOString())
-    .in("status", ["pending_confirmation", "confirmed"])
+    .in("status", [
+      "pending_confirmation",
+      "confirmed",
+      "completed",
+      "no_show",
+    ])
     .order("starts_at");
 
   if (error) {
@@ -266,4 +276,28 @@ export async function confirmAppointment(appointmentId: string) {
   }
 
   return data ? "confirmed" : "unavailable";
+}
+
+export async function closeAppointment(
+  appointmentId: string,
+  status: AppointmentClosureStatus,
+) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("appointments")
+    .update({ status })
+    .eq("id", appointmentId)
+    .eq("status", "confirmed")
+    .select("id")
+    .maybeSingle();
+
+  if (error?.code === "23514" || error?.code === "42501") {
+    return "unavailable";
+  }
+
+  if (error) {
+    throw new Error("Could not close appointment");
+  }
+
+  return data ? status : "unavailable";
 }
