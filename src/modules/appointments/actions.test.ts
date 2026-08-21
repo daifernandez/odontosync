@@ -7,7 +7,9 @@ const mocks = vi.hoisted(() => ({
   createAppointment: vi.fn(),
   getClaims: vi.fn(),
   getInitialConfiguration: vi.fn(),
+  getConfirmedAppointmentById: vi.fn(),
   getPendingAppointmentById: vi.fn(),
+  rescheduleAppointment: vi.fn(),
   revalidatePath: vi.fn(),
   redirect: vi.fn((path: string) => {
     throw new Error(`redirect:${path}`);
@@ -38,7 +40,9 @@ vi.mock("./repository", () => ({
   closeAppointment: mocks.closeAppointment,
   confirmAppointment: mocks.confirmAppointment,
   createAppointment: mocks.createAppointment,
+  getConfirmedAppointmentById: mocks.getConfirmedAppointmentById,
   getPendingAppointmentById: mocks.getPendingAppointmentById,
+  rescheduleAppointment: mocks.rescheduleAppointment,
   updateAppointment: mocks.updateAppointment,
 }));
 
@@ -47,9 +51,13 @@ import {
   closeAppointmentAction,
   confirmAppointmentAction,
   createAppointmentAction,
+  rescheduleAppointmentAction,
   updateAppointmentAction,
 } from "./actions";
-import { appointmentFormState } from "./domain/appointment";
+import {
+  appointmentFormState,
+  appointmentRescheduleState,
+} from "./domain/appointment";
 
 describe("createAppointmentAction", () => {
   beforeEach(() => {
@@ -292,5 +300,154 @@ describe("closeAppointmentAction", () => {
       "redirect:/app/agenda?semana=2026-08-10&errorGestion=1",
     );
     expect(mocks.closeAppointment).not.toHaveBeenCalled();
+  });
+});
+
+describe("rescheduleAppointmentAction", () => {
+  const appointment = {
+    id: "00000000-0000-4000-8000-000000000010",
+    patientId: "00000000-0000-4000-8000-000000000001",
+    patientFirstName: "Lucía",
+    patientLastName: "Prueba",
+    startsAt: "2099-08-10T15:00:00.000Z",
+    occupiedUntil: "2099-08-10T15:35:00.000Z",
+    durationMinutes: 30,
+    cleanupMinutes: 5,
+    specialty: "general" as const,
+    status: "confirmed" as const,
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getClaims.mockResolvedValue({
+      data: { claims: { sub: "00000000-0000-4000-8000-000000000002" } },
+    });
+    mocks.getConfirmedAppointmentById.mockResolvedValue(appointment);
+    mocks.getInitialConfiguration.mockResolvedValue({
+      fullName: "Profesional de prueba",
+      licenseNumber: null,
+      licenseJurisdiction: null,
+      gridIntervalMinutes: 15,
+      defaultAppointmentDurationMinutes: 30,
+      defaultCleanupMinutes: 5,
+      availability: [
+        { dayOfWeek: 2, startTime: "09:00", endTime: "11:00" },
+      ],
+    });
+    mocks.rescheduleAppointment.mockResolvedValue("rescheduled");
+  });
+
+  it("reprograms an eligible confirmed appointment and opens the new week", async () => {
+    const formData = new FormData();
+    formData.set("appointmentId", appointment.id);
+    formData.set("startsAt", "2099-08-11T09:00");
+
+    await expect(
+      rescheduleAppointmentAction(appointmentRescheduleState, formData),
+    ).rejects.toThrow(
+      "redirect:/app/agenda?semana=2099-08-10&reprogramado=1",
+    );
+    expect(mocks.rescheduleAppointment).toHaveBeenCalledWith(
+      appointment.id,
+      "2099-08-11T12:00:00.000Z",
+      false,
+    );
+  });
+
+  it("requires an explicit second submission when the new time overlaps", async () => {
+    mocks.rescheduleAppointment.mockResolvedValue("overlap");
+    const formData = new FormData();
+    formData.set("appointmentId", appointment.id);
+    formData.set("startsAt", "2099-08-11T09:00");
+
+    const result = await rescheduleAppointmentAction(
+      appointmentRescheduleState,
+      formData,
+    );
+
+    expect(result).toEqual({
+      status: "overlap",
+      message:
+        "Ese horario se superpone con otro turno. Confirmá la superposición para continuar.",
+      fieldErrors: {},
+      values: { startsAt: "2099-08-11T09:00" },
+    });
+    expect(mocks.rescheduleAppointment).toHaveBeenCalledWith(
+      appointment.id,
+      "2099-08-11T12:00:00.000Z",
+      false,
+    );
+  });
+
+  it("passes the explicit overlap confirmation to the atomic operation", async () => {
+    const formData = new FormData();
+    formData.set("appointmentId", appointment.id);
+    formData.set("startsAt", "2099-08-11T09:00");
+    formData.set("overlapConfirmed", "true");
+
+    await expect(
+      rescheduleAppointmentAction(appointmentRescheduleState, formData),
+    ).rejects.toThrow(
+      "redirect:/app/agenda?semana=2099-08-10&reprogramado=1",
+    );
+    expect(mocks.rescheduleAppointment).toHaveBeenCalledWith(
+      appointment.id,
+      "2099-08-11T12:00:00.000Z",
+      true,
+    );
+  });
+
+  it("rejects a time outside configured availability before writing", async () => {
+    const formData = new FormData();
+    formData.set("appointmentId", appointment.id);
+    formData.set("startsAt", "2099-08-11T12:00");
+
+    const result = await rescheduleAppointmentAction(
+      appointmentRescheduleState,
+      formData,
+    );
+
+    expect(result).toMatchObject({
+      status: "error",
+      fieldErrors: { startsAt: "Elegí uno de los horarios configurados." },
+    });
+    expect(mocks.rescheduleAppointment).not.toHaveBeenCalled();
+  });
+
+  it("does not reprogram an unavailable or foreign appointment", async () => {
+    mocks.getConfirmedAppointmentById.mockResolvedValue(null);
+    const formData = new FormData();
+    formData.set("appointmentId", appointment.id);
+    formData.set("startsAt", "2099-08-11T09:00");
+
+    const result = await rescheduleAppointmentAction(
+      appointmentRescheduleState,
+      formData,
+    );
+
+    expect(result).toMatchObject({
+      status: "error",
+      message: "El turno ya no está disponible para reprogramar.",
+    });
+    expect(mocks.rescheduleAppointment).not.toHaveBeenCalled();
+  });
+
+  it("does not reprogram without a valid session", async () => {
+    mocks.getClaims.mockResolvedValue({ data: { claims: null } });
+    const formData = new FormData();
+    formData.set("appointmentId", appointment.id);
+    formData.set("startsAt", "2099-08-11T09:00");
+
+    const result = await rescheduleAppointmentAction(
+      appointmentRescheduleState,
+      formData,
+    );
+
+    expect(result).toMatchObject({
+      status: "error",
+      message: "Tu sesión venció. Volvé a ingresar para continuar.",
+    });
+    expect(mocks.getConfirmedAppointmentById).not.toHaveBeenCalled();
+    expect(mocks.rescheduleAppointment).not.toHaveBeenCalled();
   });
 });

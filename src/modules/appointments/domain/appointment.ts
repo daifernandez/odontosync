@@ -72,6 +72,18 @@ export const appointmentFormState: AppointmentFormState = {
   fieldErrors: {},
 };
 
+export type AppointmentRescheduleState = {
+  status: "idle" | "error" | "overlap";
+  message?: string;
+  fieldErrors: { startsAt?: string };
+  values?: { startsAt: string };
+};
+
+export const appointmentRescheduleState: AppointmentRescheduleState = {
+  status: "idle",
+  fieldErrors: {},
+};
+
 type AppointmentFormInput = Record<AppointmentField, unknown>;
 
 type ValidationResult =

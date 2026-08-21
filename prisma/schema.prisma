@@ -79,8 +79,11 @@ model Appointment {
   status           AppointmentStatus      @default(PENDING_CONFIRMATION)
   specialty        AppointmentSpecialty
   overlapConfirmed Boolean                @default(false) @map("overlap_confirmed")
+  rescheduledFromId String?                @unique(map: "appointments_rescheduled_from_id_key") @map("rescheduled_from_id") @db.Uuid
   profile          Profile                @relation(fields: [userId], references: [id], onDelete: Cascade)
   patient          Patient                @relation(fields: [patientId, userId], references: [id, userId], onDelete: Restrict)
+  rescheduledFrom  Appointment?            @relation("AppointmentRescheduling", fields: [rescheduledFromId], references: [id], onDelete: Restrict)
+  rescheduledTo    Appointment?            @relation("AppointmentRescheduling")
 
   @@index([userId, startsAt])
   @@index([patientId, startsAt])

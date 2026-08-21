@@ -75,6 +75,7 @@ export function WeeklyAgenda({
   initialTime,
   managementError,
   patients,
+  rescheduled = false,
   selectedAppointment,
   updated,
   week,
@@ -91,6 +92,7 @@ export function WeeklyAgenda({
   initialTime?: string;
   managementError: boolean;
   patients: AppointmentPatientOption[];
+  rescheduled?: boolean;
   selectedAppointment?: Appointment;
   updated: boolean;
   week: AgendaWeek;
@@ -129,6 +131,14 @@ export function WeeklyAgenda({
   });
   const firstDay = new Date(`${week.days[0].date}T12:00:00-03:00`);
   const lastDay = new Date(`${week.days.at(-1)?.date}T12:00:00-03:00`);
+  const selectedOccupancyIndex = selectedAppointment
+    ? appointmentOccupancy.findIndex(
+        (occupied) =>
+          occupied.startsAt === selectedAppointment.startsAt &&
+          occupied.durationMinutes === selectedAppointment.durationMinutes &&
+          occupied.cleanupMinutes === selectedAppointment.cleanupMinutes,
+      )
+    : -1;
 
   return (
     <main className="mx-auto w-full max-w-[90rem] px-4 py-7 md:px-[clamp(1.5rem,3.5vw,4rem)] md:py-12">
@@ -178,7 +188,7 @@ export function WeeklyAgenda({
         <AppointmentManagementPanel
           appointment={selectedAppointment}
           appointmentOccupancy={appointmentOccupancy.filter(
-            (occupied) => occupied.startsAt !== selectedAppointment.startsAt,
+            (_, index) => index !== selectedOccupancyIndex,
           )}
           availability={configuration.availability}
           currentTime={currentTime.toISOString()}
@@ -189,13 +199,20 @@ export function WeeklyAgenda({
         />
       ) : null}
 
-      {updated || cancelled || confirmed || closureStatus || managementError ? (
+      {updated ||
+      cancelled ||
+      confirmed ||
+      rescheduled ||
+      closureStatus ||
+      managementError ? (
         <div
           className={`mt-6 rounded-xl border px-4 py-3 text-sm font-semibold ${managementError ? "border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] text-[var(--color-warning-foreground)]" : "border-[var(--color-border)] bg-[var(--color-brand-soft)] text-[var(--color-brand-dark)]"}`}
           role={managementError ? "alert" : "status"}
         >
           {updated
             ? "El turno se actualizó correctamente."
+            : rescheduled
+              ? "El turno se reprogramó y el nuevo horario quedó pendiente de confirmación."
             : cancelled
               ? "El turno se canceló y el horario volvió a quedar disponible."
               : confirmed

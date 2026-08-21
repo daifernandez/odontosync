@@ -8,7 +8,11 @@ vi.mock("@/lib/supabase/server", () => ({
   createClient: mocks.createClient,
 }));
 
-import { cancelAppointment, closeAppointment } from "./repository";
+import {
+  cancelAppointment,
+  closeAppointment,
+  rescheduleAppointment,
+} from "./repository";
 
 function createUpdateQuery(result: {
   data: { id: string } | null;
@@ -110,4 +114,65 @@ describe("closeAppointment", () => {
       "unavailable",
     );
   });
+});
+
+describe("rescheduleAppointment", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("requests the atomic database function with the selected time", async () => {
+    const rpc = vi.fn().mockResolvedValue({
+      data: "00000000-0000-4000-8000-000000000011",
+      error: null,
+    });
+    mocks.createClient.mockResolvedValue({ rpc });
+
+    await expect(
+      rescheduleAppointment(
+        "00000000-0000-4000-8000-000000000010",
+        "2099-08-11T12:00:00.000Z",
+        false,
+      ),
+    ).resolves.toBe("rescheduled");
+    expect(rpc).toHaveBeenCalledWith("reschedule_appointment", {
+      appointment_id: "00000000-0000-4000-8000-000000000010",
+      new_starts_at: "2099-08-11T12:00:00.000Z",
+      confirm_overlap: false,
+    });
+  });
+
+  it("reports a database overlap without losing the original appointment", async () => {
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn().mockResolvedValue({
+        data: null,
+        error: { code: "23P01" },
+      }),
+    });
+
+    await expect(
+      rescheduleAppointment(
+        "00000000-0000-4000-8000-000000000010",
+        "2099-08-11T12:00:00.000Z",
+        false,
+      ),
+    ).resolves.toBe("overlap");
+  });
+
+  it.each(["23514", "42501", "P0002"])(
+    "maps database rejection %s to an unavailable appointment",
+    async (code) => {
+      mocks.createClient.mockResolvedValue({
+        rpc: vi.fn().mockResolvedValue({ data: null, error: { code } }),
+      });
+
+      await expect(
+        rescheduleAppointment(
+          "00000000-0000-4000-8000-000000000010",
+          "2099-08-11T12:00:00.000Z",
+          false,
+        ),
+      ).resolves.toBe("unavailable");
+    },
+  );
 });

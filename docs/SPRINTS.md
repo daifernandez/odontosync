@@ -202,3 +202,90 @@ de forma segura, liberando el horario sin eliminar el registro.
 - Cancelar turnos una vez iniciados.
 - Reabrir turnos cancelados o estados históricos.
 - Incorporar vistas diaria y mensual.
+
+## Sprint 005 — Reprogramación de turnos confirmados
+
+- **Fecha:** 21 de agosto de 2026
+- **Estado:** implementado y verificado; pendiente de publicación
+- **Issue:** [#26](https://github.com/daifernandez/odontosync/issues/26)
+- **Rama:** `codex/sprint-005-reprogramar-confirmados`
+
+### Objetivo
+
+Permitir que un turno propio confirmado y todavía no iniciado pueda
+reprogramarse de forma segura, conservando el original y creando un nuevo
+turno pendiente vinculado.
+
+### Resultado
+
+- La interfaz permite elegir una nueva fecha y hora sin modificar paciente,
+  especialidad, duración ni acondicionamiento.
+- El turno original pasa a `rescheduled` y el sucesor se crea como
+  `pending_confirmation`, unido por `rescheduled_from_id`.
+- La operación se ejecuta mediante una función PostgreSQL atómica: si falla la
+  creación del sucesor, el original conserva su estado confirmado.
+- PostgreSQL bloquea la fila original, usa `CURRENT_TIMESTAMP` y rechaza
+  turnos ajenos, iniciados, inexistentes, repetidos o en otro estado.
+- Una superposición exige un segundo envío explícito. Un bloqueo transaccional
+  por usuario evita carreras y los turnos superpuestos continúan bloqueando
+  futuras escrituras no confirmadas.
+- Los indicadores internos de transición, vínculo y superposición no pueden
+  escribirse directamente mediante la Data API.
+- La agenda abre la semana del nuevo turno y comunica que quedó pendiente de
+  confirmación.
+- Las migraciones `20260821032517_reschedule_confirmed_appointments`,
+  `20260821033356_reset_rescheduling_context` y
+  `20260821033704_guard_rescheduling_link` se aplicaron al Supabase enlazado.
+
+### Criterios verificados
+
+- Un usuario autenticado puede reprogramar un turno propio confirmado futuro.
+- El original libera el horario, queda como reprogramado y conserva un único
+  sucesor pendiente con trazabilidad y datos administrativos equivalentes.
+- Usuario anónimo, usuario ajeno, sesión vencida, identificador inválido,
+  turno iniciado y repetición de la operación son rechazados.
+- Una superposición sin confirmar revierte la operación completa; con
+  confirmación explícita queda registrada y no debilita controles posteriores.
+- La fecha y hora se validan contra la configuración en servidor y contra el
+  reloj de PostgreSQL en la base.
+- La interfaz distingue horarios ocupados con texto, anuncia errores, evita
+  envíos duplicados y conserva controles nativos accesibles.
+- Al gestionar turnos simultáneos, la interfaz descuenta únicamente el turno
+  seleccionado y conserva los demás como ocupados.
+- El panel se revisó con datos ficticios no persistidos en un viewport de 558
+  px, con foco de teclado, sin desbordamiento horizontal ni errores o
+  advertencias de consola. No se reprogramaron turnos reales durante QA.
+
+### Skills aplicadas
+
+- Next.js para la Server Action, el manejo del resultado y la redirección a la
+  nueva semana.
+- Supabase y `supabase-postgres-best-practices` para el RPC atómico, RLS,
+  privilegios mínimos, integridad, concurrencia y migraciones.
+- `security-sprint-review` para autorización, casos negativos, rollback,
+  repetición y aislamiento entre usuarios.
+- `usability-review` y `react-best-practices` para confirmación progresiva,
+  feedback, accesibilidad y estructura de los componentes.
+- Browser para la revisión local del panel, el viewport, el foco y la consola
+  sin escrituras persistentes.
+- `odontosync-release-check` para la batería final y el control previo a
+  publicación.
+
+### Verificaciones
+
+- Pruebas: 16 archivos y 98 casos aprobados.
+- RLS: tres suites aprobadas sobre Supabase enlazado.
+- Prisma: esquema válido y base al día con 15 migraciones.
+- TypeScript, ESLint y build de producción: aprobados.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- Asesor de Supabase: sin errores; permanece el aviso externo conocido de
+  protección contra contraseñas filtradas, postergado por decisión del
+  proyecto.
+
+### Fuera de alcance y próximos pasos
+
+- Reprogramar turnos pendientes, iniciados, cancelados o históricos.
+- Cambiar paciente, especialidad, duración o acondicionamiento durante la
+  reprogramación.
+- Reabrir turnos reprogramados.
+- Incorporar vistas diaria y mensual.
