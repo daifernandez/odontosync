@@ -134,10 +134,11 @@ con estados históricos irreversibles y controles en la base de datos.
 ## Sprint 004 — Cancelación de turnos confirmados
 
 - **Fecha:** 20 de agosto de 2026
-- **Estado:** implementado y verificado; pendiente de publicación
+- **Estado:** publicado y mergeado
 - **Issue:** [#23](https://github.com/daifernandez/odontosync/issues/23)
 - **Rama:** `codex/sprint-004-cancelar-confirmados`
-- **Publicación:** pendiente de commit y pull request
+- **Publicación:** [PR #24](https://github.com/daifernandez/odontosync/pull/24),
+  merge commit `0f75fb9`
 
 ### Objetivo
 
