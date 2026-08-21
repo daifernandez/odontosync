@@ -206,9 +206,11 @@ de forma segura, liberando el horario sin eliminar el registro.
 ## Sprint 005 — Reprogramación de turnos confirmados
 
 - **Fecha:** 21 de agosto de 2026
-- **Estado:** implementado y verificado; pendiente de publicación
+- **Estado:** publicado y mergeado
 - **Issue:** [#26](https://github.com/daifernandez/odontosync/issues/26)
 - **Rama:** `codex/sprint-005-reprogramar-confirmados`
+- **Publicación:** [PR #27](https://github.com/daifernandez/odontosync/pull/27),
+  merge commit `823ed1f`
 
 ### Objetivo
 
