@@ -79,6 +79,9 @@ export function AppointmentManagementPanel({
   }).format(new Date(appointment.startsAt));
   const isPending = appointment.status === "pending_confirmation";
   const isConfirmed = appointment.status === "confirmed";
+  const canCancel =
+    isConfirmed &&
+    new Date(appointment.startsAt).getTime() > new Date(currentTime).getTime();
   const canClose =
     isConfirmed &&
     new Date(appointment.occupiedUntil).getTime() <=
@@ -99,6 +102,55 @@ export function AppointmentManagementPanel({
   function closePanel() {
     dialogRef.current?.close();
   }
+
+  const cancellationSection = (
+    <section className="mt-6 border-t border-[var(--color-border)] pt-6">
+      <h3 className="m-0 text-base">Cancelar turno</h3>
+      <p className="mt-2 mb-0 text-sm leading-6 text-[var(--color-muted)]">
+        El horario se liberará, pero el registro no se eliminará.
+      </p>
+      {!confirmCancellation ? (
+        <button
+          className="mt-4 flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-red-200 bg-white px-4 text-sm font-bold text-red-700"
+          onClick={() => setConfirmCancellation(true)}
+          type="button"
+        >
+          <Trash2 aria-hidden="true" size={17} />
+          Quiero cancelar el turno
+        </button>
+      ) : (
+        <form
+          action={cancelAppointmentAction}
+          className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4"
+        >
+          <input name="appointmentId" type="hidden" value={appointment.id} />
+          <input
+            name="weekStartDate"
+            type="hidden"
+            value={weekStartDate}
+          />
+          <p className="m-0 text-sm font-semibold text-red-800">
+            ¿Confirmás que este paciente canceló el turno?
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              className="min-h-11 cursor-pointer rounded-xl border-0 bg-red-700 px-4 text-sm font-bold text-white"
+              type="submit"
+            >
+              Sí, cancelar turno
+            </button>
+            <button
+              className="min-h-11 cursor-pointer rounded-xl border border-red-200 bg-white px-4 text-sm font-bold"
+              onClick={() => setConfirmCancellation(false)}
+              type="button"
+            >
+              Volver
+            </button>
+          </div>
+        </form>
+      )}
+    </section>
+  );
 
   return (
     <dialog
@@ -156,7 +208,12 @@ export function AppointmentManagementPanel({
                   <dt className="font-semibold text-[var(--color-muted)]">
                     Fecha y horario
                   </dt>
-                  <dd className="mt-1 ml-0 font-bold">{formattedDate}</dd>
+                  <dd
+                    className="mt-1 ml-0 font-bold"
+                    suppressHydrationWarning
+                  >
+                    {formattedDate}
+                  </dd>
                 </div>
                 <div>
                   <dt className="font-semibold text-[var(--color-muted)]">
@@ -177,66 +234,69 @@ export function AppointmentManagementPanel({
               </dl>
 
               {isConfirmed ? (
-                canClose ? (
-                  <details className="mt-6 rounded-xl border border-[var(--color-border)] bg-white p-4">
-                    <summary className="cursor-pointer text-sm font-bold text-[var(--color-brand-dark)]">
-                      Cerrar turno
-                    </summary>
-                    <div className="mt-4 border-t border-[var(--color-border)] pt-4">
-                      <p className="m-0 text-sm leading-6 text-[var(--color-muted)]">
-                        Esta decisión no se puede deshacer. Elegí el resultado
-                        administrativo que corresponda.
-                      </p>
-                      <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                        <form action={closeAppointmentAction}>
-                          <input
-                            name="appointmentId"
-                            type="hidden"
-                            value={appointment.id}
-                          />
-                          <input
-                            name="weekStartDate"
-                            type="hidden"
-                            value={weekStartDate}
-                          />
-                          <input
-                            name="closureStatus"
-                            type="hidden"
-                            value="completed"
-                          />
-                          <SubmitButton pendingLabel="Registrando atención…">
-                            Marcar como atendido
-                          </SubmitButton>
-                        </form>
-                        <form action={closeAppointmentAction}>
-                          <input
-                            name="appointmentId"
-                            type="hidden"
-                            value={appointment.id}
-                          />
-                          <input
-                            name="weekStartDate"
-                            type="hidden"
-                            value={weekStartDate}
-                          />
-                          <input
-                            name="closureStatus"
-                            type="hidden"
-                            value="no_show"
-                          />
-                          <SubmitButton pendingLabel="Registrando ausencia…">
-                            Marcar como ausente
-                          </SubmitButton>
-                        </form>
+                <>
+                  {canClose ? (
+                    <details className="mt-6 rounded-xl border border-[var(--color-border)] bg-white p-4">
+                      <summary className="cursor-pointer text-sm font-bold text-[var(--color-brand-dark)]">
+                        Cerrar turno
+                      </summary>
+                      <div className="mt-4 border-t border-[var(--color-border)] pt-4">
+                        <p className="m-0 text-sm leading-6 text-[var(--color-muted)]">
+                          Esta decisión no se puede deshacer. Elegí el resultado
+                          administrativo que corresponda.
+                        </p>
+                        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                          <form action={closeAppointmentAction}>
+                            <input
+                              name="appointmentId"
+                              type="hidden"
+                              value={appointment.id}
+                            />
+                            <input
+                              name="weekStartDate"
+                              type="hidden"
+                              value={weekStartDate}
+                            />
+                            <input
+                              name="closureStatus"
+                              type="hidden"
+                              value="completed"
+                            />
+                            <SubmitButton pendingLabel="Registrando atención…">
+                              Marcar como atendido
+                            </SubmitButton>
+                          </form>
+                          <form action={closeAppointmentAction}>
+                            <input
+                              name="appointmentId"
+                              type="hidden"
+                              value={appointment.id}
+                            />
+                            <input
+                              name="weekStartDate"
+                              type="hidden"
+                              value={weekStartDate}
+                            />
+                            <input
+                              name="closureStatus"
+                              type="hidden"
+                              value="no_show"
+                            />
+                            <SubmitButton pendingLabel="Registrando ausencia…">
+                              Marcar como ausente
+                            </SubmitButton>
+                          </form>
+                        </div>
                       </div>
-                    </div>
-                  </details>
-                ) : (
-                  <p className="mt-5 mb-0 rounded-xl border border-[var(--color-border)] bg-white px-4 py-3 text-sm leading-6 text-[var(--color-muted)]">
-                    Podrás cerrarlo cuando finalice todo el horario reservado,
-                    incluido el acondicionamiento.
-                  </p>
-                )
+                    </details>
+                  ) : (
+                    <p className="mt-5 mb-0 rounded-xl border border-[var(--color-border)] bg-white px-4 py-3 text-sm leading-6 text-[var(--color-muted)]">
+                      Podrás cerrarlo cuando finalice todo el horario reservado,
+                      incluido el acondicionamiento.
+                    </p>
+                  )}
+                  {canCancel ? cancellationSection : null}
+                </>
               ) : (
                 <p className="mt-5 mb-0 text-sm leading-6 text-[var(--color-muted)]">
                   Este estado forma parte del historial y no admite cambios.
@@ -380,56 +440,7 @@ export function AppointmentManagementPanel({
             </form>
           </section>
 
-          <section className="mt-6 border-t border-[var(--color-border)] pt-6">
-            <h3 className="m-0 text-base">Cancelar turno</h3>
-            <p className="mt-2 mb-0 text-sm leading-6 text-[var(--color-muted)]">
-              El horario se liberará, pero el registro no se eliminará.
-            </p>
-            {!confirmCancellation ? (
-              <button
-                className="mt-4 flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-red-200 bg-white px-4 text-sm font-bold text-red-700"
-                onClick={() => setConfirmCancellation(true)}
-                type="button"
-              >
-                <Trash2 aria-hidden="true" size={17} />
-                Quiero cancelar el turno
-              </button>
-            ) : (
-              <form
-                action={cancelAppointmentAction}
-                className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4"
-              >
-                <input
-                  name="appointmentId"
-                  type="hidden"
-                  value={appointment.id}
-                />
-                <input
-                  name="weekStartDate"
-                  type="hidden"
-                  value={weekStartDate}
-                />
-                <p className="m-0 text-sm font-semibold text-red-800">
-                  ¿Confirmás que este paciente canceló el turno?
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button
-                    className="min-h-11 cursor-pointer rounded-xl border-0 bg-red-700 px-4 text-sm font-bold text-white"
-                    type="submit"
-                  >
-                    Sí, cancelar turno
-                  </button>
-                  <button
-                    className="min-h-11 cursor-pointer rounded-xl border border-red-200 bg-white px-4 text-sm font-bold"
-                    onClick={() => setConfirmCancellation(false)}
-                    type="button"
-                  >
-                    Volver
-                  </button>
-                </div>
-              </form>
-            )}
-          </section>
+            {cancellationSection}
             </>
           )}
         </div>

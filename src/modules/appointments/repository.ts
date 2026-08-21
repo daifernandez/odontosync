@@ -250,9 +250,13 @@ export async function cancelAppointment(appointmentId: string) {
     .from("appointments")
     .update({ status: "cancelled" })
     .eq("id", appointmentId)
-    .eq("status", "pending_confirmation")
+    .in("status", ["pending_confirmation", "confirmed"])
     .select("id")
     .maybeSingle();
+
+  if (error?.code === "23514" || error?.code === "42501") {
+    return "unavailable";
+  }
 
   if (error) {
     throw new Error("Could not cancel appointment");

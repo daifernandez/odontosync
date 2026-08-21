@@ -43,6 +43,7 @@ vi.mock("./repository", () => ({
 }));
 
 import {
+  cancelAppointmentAction,
   closeAppointmentAction,
   confirmAppointmentAction,
   createAppointmentAction,
@@ -195,6 +196,52 @@ describe("confirmAppointmentAction", () => {
       "redirect:/app/agenda?semana=2026-08-10&errorGestion=1",
     );
     expect(mocks.confirmAppointment).not.toHaveBeenCalled();
+  });
+});
+
+describe("cancelAppointmentAction", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getClaims.mockResolvedValue({
+      data: { claims: { sub: "00000000-0000-4000-8000-000000000002" } },
+    });
+    mocks.cancelAppointment.mockResolvedValue("cancelled");
+  });
+
+  it("cancels an eligible appointment and returns to its agenda week", async () => {
+    const formData = new FormData();
+    formData.set("appointmentId", "00000000-0000-4000-8000-000000000010");
+    formData.set("weekStartDate", "2026-08-10");
+
+    await expect(cancelAppointmentAction(formData)).rejects.toThrow(
+      "redirect:/app/agenda?semana=2026-08-10&cancelado=1",
+    );
+    expect(mocks.cancelAppointment).toHaveBeenCalledWith(
+      "00000000-0000-4000-8000-000000000010",
+    );
+  });
+
+  it("does not cancel when the session is unavailable", async () => {
+    mocks.getClaims.mockResolvedValue({ data: { claims: null } });
+    const formData = new FormData();
+    formData.set("appointmentId", "00000000-0000-4000-8000-000000000010");
+    formData.set("weekStartDate", "2026-08-10");
+
+    await expect(cancelAppointmentAction(formData)).rejects.toThrow(
+      "redirect:/app/agenda?semana=2026-08-10&errorGestion=1",
+    );
+    expect(mocks.cancelAppointment).not.toHaveBeenCalled();
+  });
+
+  it("reports an ineligible appointment without exposing database details", async () => {
+    mocks.cancelAppointment.mockResolvedValue("unavailable");
+    const formData = new FormData();
+    formData.set("appointmentId", "00000000-0000-4000-8000-000000000010");
+    formData.set("weekStartDate", "2026-08-10");
+
+    await expect(cancelAppointmentAction(formData)).rejects.toThrow(
+      "redirect:/app/agenda?semana=2026-08-10&errorGestion=1",
+    );
   });
 });
 
