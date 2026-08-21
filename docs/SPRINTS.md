@@ -62,10 +62,11 @@ visible y probada.
 ## Sprint 003 — Cierre administrativo de turnos
 
 - **Fecha:** 20 de agosto de 2026
-- **Estado técnico:** implementado y verificado; PR borrador abierto
+- **Estado:** publicado y mergeado
 - **Issue:** [#20](https://github.com/daifernandez/odontosync/issues/20)
 - **Rama:** `codex/sprint-003-cierre-turnos`
-- **Publicación:** [PR borrador #21](https://github.com/daifernandez/odontosync/pull/21)
+- **Publicación:** [PR #21](https://github.com/daifernandez/odontosync/pull/21),
+  merge commit `fbd1498`
 
 ### Objetivo
 
@@ -129,4 +130,3 @@ con estados históricos irreversibles y controles en la base de datos.
 - Reprogramar turnos.
 - Reabrir o corregir estados históricos.
 - Incorporar vistas diaria y mensual.
-- Revisar el PR #21 y mergearlo cuando exista autorización explícita.
