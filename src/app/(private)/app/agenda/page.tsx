@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { WeeklyAgenda } from "@/components/weekly-agenda";
 import { getAgendaWeekRange } from "@/modules/agenda/domain/weekly-schedule";
+import { isAppointmentClosureStatus } from "@/modules/appointments/domain/appointment";
 import {
   listAppointmentsForRange,
   listAppointmentOccupancy,
@@ -19,6 +20,7 @@ type AgendaPageProps = {
   searchParams: Promise<{
     actualizado?: string | string[];
     cancelado?: string | string[];
+    cierre?: string | string[];
     confirmado?: string | string[];
     creado?: string | string[];
     errorGestion?: string | string[];
@@ -59,6 +61,9 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
       appointmentOccupancy={appointmentOccupancy}
       autoOpenNewAppointment={params.nuevo === "1" || params.creado === "1"}
       cancelled={params.cancelado === "1"}
+      closureStatus={
+        isAppointmentClosureStatus(params.cierre) ? params.cierre : undefined
+      }
       confirmed={params.confirmado === "1"}
       configuration={configuration}
       created={params.creado === "1"}

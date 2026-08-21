@@ -9,12 +9,14 @@ import { buildAgendaWeek } from "@/modules/agenda/domain/weekly-schedule";
 
 import {
   type AppointmentFormState,
+  isAppointmentClosureStatus,
   isAppointmentId,
   validateAppointment,
 } from "./domain/appointment";
 import { isAppointmentWithinWeeklyAvailability } from "./domain/availability";
 import {
   cancelAppointment,
+  closeAppointment,
   confirmAppointment,
   createAppointment,
   getPendingAppointmentById,
@@ -288,4 +290,43 @@ export async function confirmAppointmentAction(formData: FormData) {
 
   revalidatePath("/app/agenda");
   redirect(`/app/agenda?semana=${weekStartDate}&confirmado=1`);
+}
+
+export async function closeAppointmentAction(formData: FormData) {
+  const appointmentId = readText(formData, "appointmentId");
+  const closureStatus = readText(formData, "closureStatus");
+  const weekStartDate = buildAgendaWeek(
+    readText(formData, "weekStartDate"),
+  ).startDate;
+
+  if (
+    !isAppointmentId(appointmentId) ||
+    !isAppointmentClosureStatus(closureStatus)
+  ) {
+    redirect(`/app/agenda?semana=${weekStartDate}&errorGestion=1`);
+  }
+
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+
+  if (typeof data?.claims?.sub !== "string") {
+    redirect(`/app/agenda?semana=${weekStartDate}&errorGestion=1`);
+  }
+
+  let result: Awaited<ReturnType<typeof closeAppointment>>;
+
+  try {
+    result = await closeAppointment(appointmentId, closureStatus);
+  } catch {
+    redirect(`/app/agenda?semana=${weekStartDate}&errorGestion=1`);
+  }
+
+  if (result === "unavailable") {
+    redirect(`/app/agenda?semana=${weekStartDate}&errorGestion=1`);
+  }
+
+  revalidatePath("/app/agenda");
+  redirect(
+    `/app/agenda?semana=${weekStartDate}&cierre=${closureStatus}`,
+  );
 }

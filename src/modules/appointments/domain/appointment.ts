@@ -13,16 +13,34 @@ export const appointmentSpecialties = [
 export type AppointmentSpecialty =
   (typeof appointmentSpecialties)[number]["value"];
 
+export type AppointmentStatus =
+  | "pending_confirmation"
+  | "confirmed"
+  | "completed"
+  | "no_show";
+
+export type AppointmentClosureStatus = Extract<
+  AppointmentStatus,
+  "completed" | "no_show"
+>;
+
+export function isAppointmentClosureStatus(
+  value: unknown,
+): value is AppointmentClosureStatus {
+  return value === "completed" || value === "no_show";
+}
+
 export type Appointment = {
   id: string;
   patientId: string;
   patientFirstName: string;
   patientLastName: string;
   startsAt: string;
+  occupiedUntil: string;
   durationMinutes: number;
   cleanupMinutes: number;
   specialty: AppointmentSpecialty;
-  status: "pending_confirmation" | "confirmed";
+  status: AppointmentStatus;
 };
 
 export type AppointmentInput = Pick<

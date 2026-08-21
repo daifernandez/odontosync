@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   cancelAppointment: vi.fn(),
+  closeAppointment: vi.fn(),
   confirmAppointment: vi.fn(),
   createAppointment: vi.fn(),
   getClaims: vi.fn(),
@@ -34,6 +35,7 @@ vi.mock("@/modules/initial-configuration/repository", () => ({
 
 vi.mock("./repository", () => ({
   cancelAppointment: mocks.cancelAppointment,
+  closeAppointment: mocks.closeAppointment,
   confirmAppointment: mocks.confirmAppointment,
   createAppointment: mocks.createAppointment,
   getPendingAppointmentById: mocks.getPendingAppointmentById,
@@ -41,6 +43,7 @@ vi.mock("./repository", () => ({
 }));
 
 import {
+  closeAppointmentAction,
   confirmAppointmentAction,
   createAppointmentAction,
   updateAppointmentAction,
@@ -132,6 +135,7 @@ describe("createAppointmentAction", () => {
       patientFirstName: "Lucía",
       patientLastName: "Prueba",
       startsAt: "2027-08-10T12:00:00.000Z",
+      occupiedUntil: "2027-08-10T12:35:00.000Z",
       durationMinutes: 30,
       cleanupMinutes: 5,
       specialty: "general",
@@ -191,5 +195,55 @@ describe("confirmAppointmentAction", () => {
       "redirect:/app/agenda?semana=2026-08-10&errorGestion=1",
     );
     expect(mocks.confirmAppointment).not.toHaveBeenCalled();
+  });
+});
+
+describe("closeAppointmentAction", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getClaims.mockResolvedValue({
+      data: { claims: { sub: "00000000-0000-4000-8000-000000000002" } },
+    });
+    mocks.closeAppointment.mockResolvedValue("completed");
+  });
+
+  it("marks a finished confirmed appointment as completed", async () => {
+    const formData = new FormData();
+    formData.set("appointmentId", "00000000-0000-4000-8000-000000000010");
+    formData.set("weekStartDate", "2026-08-10");
+    formData.set("closureStatus", "completed");
+
+    await expect(closeAppointmentAction(formData)).rejects.toThrow(
+      "redirect:/app/agenda?semana=2026-08-10&cierre=completed",
+    );
+    expect(mocks.closeAppointment).toHaveBeenCalledWith(
+      "00000000-0000-4000-8000-000000000010",
+      "completed",
+    );
+  });
+
+  it("rejects an invalid closure status before reaching the repository", async () => {
+    const formData = new FormData();
+    formData.set("appointmentId", "00000000-0000-4000-8000-000000000010");
+    formData.set("weekStartDate", "2026-08-10");
+    formData.set("closureStatus", "confirmed");
+
+    await expect(closeAppointmentAction(formData)).rejects.toThrow(
+      "redirect:/app/agenda?semana=2026-08-10&errorGestion=1",
+    );
+    expect(mocks.closeAppointment).not.toHaveBeenCalled();
+  });
+
+  it("does not close an appointment when the session is unavailable", async () => {
+    mocks.getClaims.mockResolvedValue({ data: { claims: null } });
+    const formData = new FormData();
+    formData.set("appointmentId", "00000000-0000-4000-8000-000000000010");
+    formData.set("weekStartDate", "2026-08-10");
+    formData.set("closureStatus", "no_show");
+
+    await expect(closeAppointmentAction(formData)).rejects.toThrow(
+      "redirect:/app/agenda?semana=2026-08-10&errorGestion=1",
+    );
+    expect(mocks.closeAppointment).not.toHaveBeenCalled();
   });
 });

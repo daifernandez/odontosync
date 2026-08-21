@@ -1,12 +1,13 @@
 "use client";
 
-import { CheckCircle2, Trash2, X } from "lucide-react";
+import { CalendarClock, CheckCircle2, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useRef, useState } from "react";
 
 import { SubmitButton } from "@/components/auth/submit-button";
 import {
   cancelAppointmentAction,
+  closeAppointmentAction,
   confirmAppointmentAction,
   updateAppointmentAction,
 } from "@/modules/appointments/actions";
@@ -76,6 +77,20 @@ export function AppointmentManagementPanel({
     timeStyle: "short",
     timeZone: "America/Argentina/Buenos_Aires",
   }).format(new Date(appointment.startsAt));
+  const isPending = appointment.status === "pending_confirmation";
+  const isConfirmed = appointment.status === "confirmed";
+  const canClose =
+    isConfirmed &&
+    new Date(appointment.occupiedUntil).getTime() <=
+      new Date(currentTime).getTime();
+  const statusTitle =
+    appointment.status === "completed"
+      ? "Turno atendido"
+      : appointment.status === "no_show"
+        ? "Paciente ausente"
+        : "Turno confirmado";
+  const StatusIcon =
+    appointment.status === "no_show" ? CalendarClock : CheckCircle2;
 
   useEffect(() => {
     dialogRef.current?.showModal();
@@ -106,9 +121,13 @@ export function AppointmentManagementPanel({
               {appointment.patientLastName}, {appointment.patientFirstName}
             </h2>
             <p className="mt-2 mb-0 text-sm text-[var(--color-muted)]">
-              {appointment.status === "confirmed"
-                ? "Consultá los datos del turno confirmado."
-                : "Modificá, confirmá o cancelá el turno sin eliminar el registro."}
+              {isPending
+                ? "Modificá, confirmá o cancelá el turno sin eliminar el registro."
+                : isConfirmed
+                  ? canClose
+                    ? "Consultá los datos y registrá el resultado del turno."
+                    : "Consultá los datos del turno confirmado."
+                  : "Consultá este registro histórico del turno."}
             </p>
           </div>
           <button
@@ -122,12 +141,14 @@ export function AppointmentManagementPanel({
         </header>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 md:px-7 md:py-6">
-          {appointment.status === "confirmed" ? (
-            <section aria-labelledby="confirmed-appointment-title">
-              <div className="flex items-center gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-brand-soft)] px-4 py-3 text-[var(--color-brand-dark)]">
-                <CheckCircle2 aria-hidden="true" className="shrink-0" size={20} />
-                <h3 className="m-0 text-base" id="confirmed-appointment-title">
-                  Turno confirmado
+          {!isPending ? (
+            <section aria-labelledby="appointment-status-title">
+              <div
+                className={`flex items-center gap-3 rounded-xl border px-4 py-3 ${appointment.status === "no_show" ? "border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] text-[var(--color-warning-foreground)]" : "border-[var(--color-border)] bg-[var(--color-brand-soft)] text-[var(--color-brand-dark)]"}`}
+              >
+                <StatusIcon aria-hidden="true" className="shrink-0" size={20} />
+                <h3 className="m-0 text-base" id="appointment-status-title">
+                  {statusTitle}
                 </h3>
               </div>
               <dl className="mt-5 grid gap-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-brand-subtle)] p-4 text-sm">
@@ -154,6 +175,73 @@ export function AppointmentManagementPanel({
                   </dd>
                 </div>
               </dl>
+
+              {isConfirmed ? (
+                canClose ? (
+                  <details className="mt-6 rounded-xl border border-[var(--color-border)] bg-white p-4">
+                    <summary className="cursor-pointer text-sm font-bold text-[var(--color-brand-dark)]">
+                      Cerrar turno
+                    </summary>
+                    <div className="mt-4 border-t border-[var(--color-border)] pt-4">
+                      <p className="m-0 text-sm leading-6 text-[var(--color-muted)]">
+                        Esta decisión no se puede deshacer. Elegí el resultado
+                        administrativo que corresponda.
+                      </p>
+                      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                        <form action={closeAppointmentAction}>
+                          <input
+                            name="appointmentId"
+                            type="hidden"
+                            value={appointment.id}
+                          />
+                          <input
+                            name="weekStartDate"
+                            type="hidden"
+                            value={weekStartDate}
+                          />
+                          <input
+                            name="closureStatus"
+                            type="hidden"
+                            value="completed"
+                          />
+                          <SubmitButton pendingLabel="Registrando atención…">
+                            Marcar como atendido
+                          </SubmitButton>
+                        </form>
+                        <form action={closeAppointmentAction}>
+                          <input
+                            name="appointmentId"
+                            type="hidden"
+                            value={appointment.id}
+                          />
+                          <input
+                            name="weekStartDate"
+                            type="hidden"
+                            value={weekStartDate}
+                          />
+                          <input
+                            name="closureStatus"
+                            type="hidden"
+                            value="no_show"
+                          />
+                          <SubmitButton pendingLabel="Registrando ausencia…">
+                            Marcar como ausente
+                          </SubmitButton>
+                        </form>
+                      </div>
+                    </div>
+                  </details>
+                ) : (
+                  <p className="mt-5 mb-0 rounded-xl border border-[var(--color-border)] bg-white px-4 py-3 text-sm leading-6 text-[var(--color-muted)]">
+                    Podrás cerrarlo cuando finalice todo el horario reservado,
+                    incluido el acondicionamiento.
+                  </p>
+                )
+              ) : (
+                <p className="mt-5 mb-0 text-sm leading-6 text-[var(--color-muted)]">
+                  Este estado forma parte del historial y no admite cambios.
+                </p>
+              )}
             </section>
           ) : (
             <>

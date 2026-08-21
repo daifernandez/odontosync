@@ -17,6 +17,8 @@ import {
   getArgentinaDateTimeParts,
   getAppointmentSpecialtyLabel,
   type Appointment,
+  type AppointmentClosureStatus,
+  type AppointmentStatus,
 } from "@/modules/appointments/domain/appointment";
 import {
   getAvailableAppointmentSlots,
@@ -43,11 +45,29 @@ function formatTime(minutes: number) {
   return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
 }
 
+function getAppointmentStatusLabel(status: AppointmentStatus) {
+  switch (status) {
+    case "confirmed":
+      return "Confirmado";
+    case "completed":
+      return "Atendido";
+    case "no_show":
+      return "Ausente";
+    default:
+      return "Pendiente de confirmación";
+  }
+}
+
+function isHistoricalAppointment(status: AppointmentStatus) {
+  return status === "completed" || status === "no_show";
+}
+
 export function WeeklyAgenda({
   appointments,
   appointmentOccupancy,
   autoOpenNewAppointment,
   cancelled,
+  closureStatus,
   confirmed,
   configuration,
   created,
@@ -63,6 +83,7 @@ export function WeeklyAgenda({
   appointmentOccupancy: AppointmentOccupancy[];
   autoOpenNewAppointment: boolean;
   cancelled: boolean;
+  closureStatus?: AppointmentClosureStatus;
   confirmed: boolean;
   configuration: InitialConfiguration;
   created: boolean;
@@ -168,7 +189,7 @@ export function WeeklyAgenda({
         />
       ) : null}
 
-      {updated || cancelled || confirmed || managementError ? (
+      {updated || cancelled || confirmed || closureStatus || managementError ? (
         <div
           className={`mt-6 rounded-xl border px-4 py-3 text-sm font-semibold ${managementError ? "border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] text-[var(--color-warning-foreground)]" : "border-[var(--color-border)] bg-[var(--color-brand-soft)] text-[var(--color-brand-dark)]"}`}
           role={managementError ? "alert" : "status"}
@@ -179,7 +200,11 @@ export function WeeklyAgenda({
               ? "El turno se canceló y el horario volvió a quedar disponible."
               : confirmed
                 ? "El turno quedó confirmado correctamente."
-                : "No pudimos gestionar ese turno. Actualizá la agenda e intentá nuevamente."}
+                : closureStatus === "completed"
+                  ? "El turno quedó registrado como atendido."
+                  : closureStatus === "no_show"
+                    ? "El turno quedó registrado como ausente."
+                    : "No pudimos gestionar ese turno. Actualizá la agenda e intentá nuevamente."}
         </div>
       ) : null}
 
@@ -403,7 +428,7 @@ export function WeeklyAgenda({
 
                       return (
                         <Link
-                          aria-label={`${appointment.status === "confirmed" ? "Ver" : "Gestionar"} turno de ${appointment.patientLastName}, ${appointment.patientFirstName}`}
+                          aria-label={`${isHistoricalAppointment(appointment.status) ? "Ver historial de" : appointment.status === "confirmed" ? "Ver" : "Gestionar"} turno de ${appointment.patientLastName}, ${appointment.patientFirstName}`}
                           href={`/app/agenda?semana=${week.startDate}&turno=${appointment.id}`}
                           key={appointment.id}
                         >
@@ -415,6 +440,10 @@ export function WeeklyAgenda({
                               className={
                                 appointment.status === "confirmed"
                                   ? "cursor-pointer fill-[var(--color-brand)] stroke-[var(--color-brand-dark)]"
+                                  : appointment.status === "completed"
+                                    ? "cursor-pointer fill-[var(--color-brand-subtle)] stroke-[var(--color-brand-dark)]"
+                                    : appointment.status === "no_show"
+                                      ? "cursor-pointer fill-[var(--color-warning-soft)] stroke-[var(--color-warning-foreground)]"
                                   : "cursor-pointer fill-[var(--color-brand-soft)] stroke-[var(--color-brand)]"
                               }
                               height={occupiedHeight}
@@ -440,7 +469,7 @@ export function WeeklyAgenda({
                               y={y}
                             >
                               <div
-                                className={`h-full overflow-hidden px-2 py-2 ${appointment.status === "confirmed" ? "text-white" : "text-[var(--color-brand-dark)]"}`}
+                                className={`h-full overflow-hidden px-2 py-2 ${appointment.status === "confirmed" ? "text-white" : appointment.status === "no_show" ? "text-[var(--color-warning-foreground)]" : "text-[var(--color-brand-dark)]"}`}
                               >
                                 <strong className="block truncate text-xs">
                                   {appointment.patientLastName},{" "}
@@ -451,6 +480,9 @@ export function WeeklyAgenda({
                                   {getAppointmentSpecialtyLabel(
                                     appointment.specialty,
                                   )}
+                                </span>
+                                <span className="mt-0.5 block truncate text-[0.62rem] font-bold">
+                                  {getAppointmentStatusLabel(appointment.status)}
                                 </span>
                               </div>
                             </foreignObject>
@@ -513,17 +545,17 @@ export function WeeklyAgenda({
                     {appointment.cleanupMinutes} min de acondicionamiento
                   </p>
                   <span className="mt-3 inline-flex rounded-full border border-[var(--color-border)] bg-white px-2.5 py-1 text-[0.68rem] font-bold text-[var(--color-brand-dark)]">
-                    {appointment.status === "confirmed"
-                      ? "Confirmado"
-                      : "Pendiente de confirmación"}
+                    {getAppointmentStatusLabel(appointment.status)}
                   </span>
                   <Link
                     className="mt-3 flex min-h-10 items-center justify-center rounded-xl border border-[var(--color-border)] bg-white px-3 text-xs font-bold text-[var(--color-brand-dark)] no-underline"
                     href={`/app/agenda?semana=${week.startDate}&turno=${appointment.id}`}
                   >
-                    {appointment.status === "confirmed"
-                      ? "Ver turno"
-                      : "Gestionar turno"}
+                    {isHistoricalAppointment(appointment.status)
+                      ? "Ver historial"
+                      : appointment.status === "confirmed"
+                        ? "Ver turno"
+                        : "Gestionar turno"}
                   </Link>
                 </article>
               ))}

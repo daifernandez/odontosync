@@ -42,11 +42,36 @@ BEGIN
     ) OR NOT EXISTS (
         SELECT 1 FROM pg_policy
         WHERE polrelid = 'public.appointments'::regclass
-          AND polname = 'appointments_update_own_pending'
+          AND polname = 'appointments_update_own_manageable'
           AND polqual IS NOT NULL
           AND polwithcheck IS NOT NULL
     ) THEN
         RAISE EXCEPTION 'Appointment ownership policies are incomplete';
+    END IF;
+
+    IF to_regprocedure(
+        'private.enforce_appointment_status_transition()'
+    ) IS NULL OR NOT EXISTS (
+        SELECT 1
+        FROM pg_trigger
+        WHERE tgrelid = 'public.appointments'::regclass
+          AND tgname = 'appointments_enforce_status_transition'
+          AND NOT tgisinternal
+          AND tgenabled <> 'D'
+    ) THEN
+        RAISE EXCEPTION 'Appointment status transition guard is incomplete';
+    END IF;
+
+    IF has_function_privilege(
+        'authenticated',
+        'private.enforce_appointment_status_transition()',
+        'EXECUTE'
+    ) OR has_function_privilege(
+        'anon',
+        'private.enforce_appointment_status_transition()',
+        'EXECUTE'
+    ) THEN
+        RAISE EXCEPTION 'Appointment status guard is callable by API roles';
     END IF;
 
     IF has_table_privilege('anon', 'public.appointments', 'SELECT')
@@ -374,8 +399,125 @@ BEGIN
     END IF;
 
     UPDATE public.appointments
+    SET status = 'completed'
+    WHERE starts_at = '2026-08-10 13:00:00+00';
+
+    IF NOT EXISTS (
+        SELECT 1 FROM public.appointments
+        WHERE starts_at = '2026-08-10 13:00:00+00'
+          AND status = 'completed'
+    ) THEN
+        RAISE EXCEPTION 'The owner could not complete a finished appointment';
+    END IF;
+
+    UPDATE public.appointments
+    SET status = 'no_show'
+    WHERE status = 'completed';
+
+    IF FOUND THEN
+        RAISE EXCEPTION 'A completed appointment changed historical status';
+    END IF;
+
+    INSERT INTO public.appointments (
+        user_id,
+        patient_id,
+        starts_at,
+        occupied_until,
+        duration_minutes,
+        cleanup_minutes,
+        specialty
+    )
+    SELECT
+        owner_id,
+        active_patient_id,
+        '2026-08-10 16:00:00+00',
+        '2026-08-10 16:35:00+00',
+        30,
+        5,
+        'general'
+    FROM appointments_rls_test_context;
+
+    UPDATE public.appointments
+    SET status = 'confirmed'
+    WHERE starts_at = '2026-08-10 16:00:00+00';
+
+    UPDATE public.appointments
+    SET status = 'no_show'
+    WHERE starts_at = '2026-08-10 16:00:00+00';
+
+    IF NOT EXISTS (
+        SELECT 1 FROM public.appointments
+        WHERE starts_at = '2026-08-10 16:00:00+00'
+          AND status = 'no_show'
+    ) THEN
+        RAISE EXCEPTION 'The owner could not mark a finished appointment absent';
+    END IF;
+
+    INSERT INTO public.appointments (
+        user_id,
+        patient_id,
+        starts_at,
+        occupied_until,
+        duration_minutes,
+        cleanup_minutes,
+        specialty
+    )
+    SELECT
+        owner_id,
+        active_patient_id,
+        '2099-08-10 16:00:00+00',
+        '2099-08-10 16:35:00+00',
+        30,
+        5,
+        'general'
+    FROM appointments_rls_test_context;
+
+    UPDATE public.appointments
+    SET status = 'confirmed'
+    WHERE starts_at = '2099-08-10 16:00:00+00';
+
+    UPDATE public.appointments
+    SET status = 'completed'
+    WHERE starts_at = '2099-08-10 16:00:00+00';
+
+    IF FOUND THEN
+        RAISE EXCEPTION 'A future appointment was completed';
+    END IF;
+
+    INSERT INTO public.appointments (
+        user_id,
+        patient_id,
+        starts_at,
+        occupied_until,
+        duration_minutes,
+        cleanup_minutes,
+        specialty
+    )
+    SELECT
+        owner_id,
+        active_patient_id,
+        '2026-08-10 17:00:00+00',
+        '2026-08-10 17:35:00+00',
+        30,
+        5,
+        'general'
+    FROM appointments_rls_test_context;
+
+    BEGIN
+        UPDATE public.appointments
+        SET status = 'completed'
+        WHERE starts_at = '2026-08-10 17:00:00+00';
+
+        IF FOUND THEN
+            RAISE EXCEPTION 'A pending appointment skipped confirmation';
+        END IF;
+    EXCEPTION
+        WHEN check_violation OR insufficient_privilege THEN NULL;
+    END;
+
+    UPDATE public.appointments
     SET status = 'pending_confirmation'
-    WHERE status IN ('cancelled', 'confirmed');
+    WHERE status IN ('cancelled', 'confirmed', 'completed', 'no_show');
 
     IF FOUND THEN
         RAISE EXCEPTION 'A completed status transition was modified';
