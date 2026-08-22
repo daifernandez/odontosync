@@ -2,6 +2,18 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { DashboardHome } from "@/components/dashboard-home";
+import { createClient } from "@/lib/supabase/server";
+import { getAvailableAppointmentSlots } from "@/modules/appointments/domain/availability";
+import {
+  listAppointmentOccupancy,
+  listAppointmentsForRange,
+  listUpcomingAppointments,
+} from "@/modules/appointments/repository";
+import {
+  buildDashboardData,
+  getDashboardDayRange,
+} from "@/modules/dashboard/domain/dashboard";
+import { listExceptionalBlocks } from "@/modules/exceptional-blocks/repository";
 import { getInitialConfiguration } from "@/modules/initial-configuration/repository";
 
 export const metadata: Metadata = {
@@ -16,5 +28,42 @@ export default async function HomePage() {
     redirect("/app/configuracion");
   }
 
-  return <DashboardHome />;
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const userId = claimsData?.claims?.sub;
+
+  if (typeof userId !== "string") {
+    redirect("/ingresar");
+  }
+
+  const now = new Date();
+  const { date, from, to } = getDashboardDayRange(now);
+  const [todayAppointments, upcomingAppointments, occupancy, exceptionalBlocks] =
+    await Promise.all([
+      listAppointmentsForRange(from, to, userId),
+      listUpcomingAppointments(now, userId, 3),
+      listAppointmentOccupancy(now, userId),
+      listExceptionalBlocks(now, userId),
+    ]);
+  const availableSlotsToday = getAvailableAppointmentSlots({
+    date,
+    availability: configuration.availability,
+    appointments: occupancy,
+    exceptionalBlocks,
+    durationMinutes: configuration.defaultAppointmentDurationMinutes,
+    cleanupMinutes: configuration.defaultCleanupMinutes,
+    gridIntervalMinutes: configuration.gridIntervalMinutes,
+    now,
+  }).length;
+
+  return (
+    <DashboardHome
+      data={buildDashboardData({
+        todayAppointments,
+        upcomingAppointments,
+        availableSlotsToday,
+        now,
+      })}
+    />
+  );
 }

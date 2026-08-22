@@ -58,15 +58,23 @@ function mapAppointment(row: AppointmentRow): Appointment {
 
 export async function listUpcomingAppointments(
   from = new Date(),
+  userId?: string,
+  limit = 50,
 ): Promise<Appointment[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  let query = supabase
     .from("appointments")
-    .select(appointmentColumns)
+    .select(appointmentColumns);
+
+  if (userId) {
+    query = query.eq("user_id", userId);
+  }
+
+  const { data, error } = await query
     .gte("starts_at", from.toISOString())
     .in("status", ["pending_confirmation", "confirmed"])
     .order("starts_at")
-    .limit(50);
+    .limit(limit);
 
   if (error) {
     throw new Error("Could not read appointments");
@@ -78,11 +86,18 @@ export async function listUpcomingAppointments(
 export async function listAppointmentsForRange(
   from: Date,
   to: Date,
+  userId?: string,
 ): Promise<Appointment[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  let query = supabase
     .from("appointments")
-    .select(appointmentColumns)
+    .select(appointmentColumns);
+
+  if (userId) {
+    query = query.eq("user_id", userId);
+  }
+
+  const { data, error } = await query
     .gte("starts_at", from.toISOString())
     .lt("starts_at", to.toISOString())
     .in("status", [
@@ -144,11 +159,18 @@ type AppointmentOccupancyRow = {
 
 export async function listAppointmentOccupancy(
   from = new Date(),
+  userId?: string,
 ): Promise<AppointmentOccupancy[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  let query = supabase
     .from("appointments")
-    .select("starts_at, duration_minutes, cleanup_minutes")
+    .select("starts_at, duration_minutes, cleanup_minutes");
+
+  if (userId) {
+    query = query.eq("user_id", userId);
+  }
+
+  const { data, error } = await query
     .gt("occupied_until", from.toISOString())
     .in("status", ["pending_confirmation", "confirmed"])
     .order("starts_at")

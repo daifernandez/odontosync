@@ -26,11 +26,18 @@ function mapExceptionalBlock(row: ExceptionalBlockRow): ExceptionalBlock {
 
 export async function listExceptionalBlocks(
   from = new Date(),
+  userId?: string,
 ): Promise<ExceptionalBlock[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  let query = supabase
     .from("exceptional_availability_blocks")
-    .select(exceptionalBlockColumns)
+    .select(exceptionalBlockColumns);
+
+  if (userId) {
+    query = query.eq("user_id", userId);
+  }
+
+  const { data, error } = await query
     .gt("ends_at", from.toISOString())
     .order("starts_at")
     .limit(100);

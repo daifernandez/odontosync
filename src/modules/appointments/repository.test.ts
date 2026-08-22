@@ -11,6 +11,7 @@ vi.mock("@/lib/supabase/server", () => ({
 import {
   cancelAppointment,
   closeAppointment,
+  listUpcomingAppointments,
   rescheduleAppointment,
 } from "./repository";
 
@@ -33,6 +34,37 @@ function createUpdateQuery(result: {
 
   return query;
 }
+
+describe("listUpcomingAppointments", () => {
+  it("scopes dashboard reads to the authenticated owner and requested limit", async () => {
+    const query = {
+      select: vi.fn(),
+      eq: vi.fn(),
+      gte: vi.fn(),
+      in: vi.fn(),
+      order: vi.fn(),
+      limit: vi.fn().mockResolvedValue({ data: [], error: null }),
+    };
+
+    query.select.mockReturnValue(query);
+    query.eq.mockReturnValue(query);
+    query.gte.mockReturnValue(query);
+    query.in.mockReturnValue(query);
+    query.order.mockReturnValue(query);
+    mocks.createClient.mockResolvedValue({
+      from: vi.fn().mockReturnValue(query),
+    });
+
+    await listUpcomingAppointments(
+      new Date("2099-08-10T14:00:00.000Z"),
+      "owner-id",
+      3,
+    );
+
+    expect(query.eq).toHaveBeenCalledWith("user_id", "owner-id");
+    expect(query.limit).toHaveBeenCalledWith(3);
+  });
+});
 
 describe("cancelAppointment", () => {
   beforeEach(() => {

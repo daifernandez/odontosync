@@ -10,20 +10,31 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-const appointments = [
+import type { DashboardData } from "@/modules/dashboard/domain/dashboard";
+
+const demoAppointments = [
   {
+    id: "demo-09-00",
+    date: "",
+    dateLabel: "Hoy",
     time: "09:00",
     patient: "Paciente de ejemplo",
     specialty: "Odontología general",
     status: "Confirmado",
   },
   {
+    id: "demo-10-30",
+    date: "",
+    dateLabel: "Hoy",
     time: "10:30",
     patient: "Paciente de muestra",
     specialty: "Ortodoncia",
     status: "Pendiente",
   },
   {
+    id: "demo-12-00",
+    date: "",
+    dateLabel: "Hoy",
     time: "12:00",
     patient: "Horario disponible",
     specialty: "Sin asignar",
@@ -41,16 +52,33 @@ const statusStyles = {
   Confirmado: "bg-[var(--color-brand-soft)] text-[var(--color-brand-dark)]",
   Pendiente:
     "bg-[var(--color-warning-soft)] text-[var(--color-warning-foreground)]",
+  Atendido: "bg-[var(--color-brand-soft)] text-[var(--color-brand-dark)]",
+  "No asistió": "bg-[var(--color-neutral-soft)] text-[var(--color-muted)]",
   Libre: "bg-[var(--color-neutral-soft)] text-[var(--color-muted)]",
+};
+
+const emptyDashboardData: DashboardData = {
+  todayAppointments: 0,
+  confirmedToday: 0,
+  availableSlotsToday: 0,
+  upcomingAppointments: [],
 };
 
 export function DashboardHome({
   demoMode = false,
-}: Readonly<{ demoMode?: boolean }>) {
+  data = emptyDashboardData,
+}: Readonly<{ demoMode?: boolean; data?: DashboardData }>) {
   const agendaHref = demoMode ? "/demo/agenda" : "/app/agenda";
   const newAppointmentHref = demoMode
     ? "/demo/agenda?nuevo=1#nuevo-turno"
     : "/app/agenda?nuevo=1#nuevo-turno";
+  const displayedAppointments = demoMode
+    ? demoAppointments
+    : data.upcomingAppointments;
+  const nextAppointment = displayedAppointments[0];
+  const todayAppointments = demoMode ? 2 : data.todayAppointments;
+  const confirmedToday = demoMode ? 1 : data.confirmedToday;
+  const availableSlotsToday = demoMode ? 1 : data.availableSlotsToday;
 
   return (
     <main className="mx-auto w-full max-w-[90rem] px-4 py-7 md:px-[clamp(1.5rem,3.5vw,4rem)] md:py-12">
@@ -100,11 +128,12 @@ export function DashboardHome({
               Turnos de hoy
             </p>
             <strong className="text-2xl tracking-[-0.035em]">
-              {demoMode ? 2 : 6}
+              {todayAppointments}
             </strong>
           </div>
           <span className="self-end text-[0.7rem] whitespace-nowrap text-[var(--color-muted)]">
-            {demoMode ? "1 confirmado" : "4 confirmados"}
+            {confirmedToday}{" "}
+            {confirmedToday === 1 ? "confirmado" : "confirmados"}
           </span>
         </article>
         <article className="grid grid-cols-[auto_1fr_auto] items-center gap-3.5 rounded-[var(--radius-medium)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)]">
@@ -115,10 +144,14 @@ export function DashboardHome({
             <p className="m-0 mb-0.5 text-[0.72rem] text-[var(--color-muted)]">
               Próximo turno
             </p>
-            <strong className="text-xl tracking-[-0.035em]">10:30</strong>
+            <strong className="text-xl tracking-[-0.035em]">
+              {nextAppointment?.time ?? "Sin turnos"}
+            </strong>
           </div>
           <span className="self-end text-[0.7rem] whitespace-nowrap text-[var(--color-muted)]">
-            Ortodoncia
+            {nextAppointment
+              ? `${nextAppointment.dateLabel} · ${nextAppointment.specialty}`
+              : "Agenda libre"}
           </span>
         </article>
         <article className="grid grid-cols-[auto_1fr_auto] items-center gap-3.5 rounded-[var(--radius-medium)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)]">
@@ -130,7 +163,7 @@ export function DashboardHome({
               Espacios libres
             </p>
             <strong className="text-2xl tracking-[-0.035em]">
-              {demoMode ? 1 : 2}
+              {availableSlotsToday}
             </strong>
           </div>
           <span className="self-end text-[0.7rem] whitespace-nowrap text-[var(--color-muted)]">
@@ -166,40 +199,60 @@ export function DashboardHome({
           </div>
 
           <div className="mt-4 flex flex-col">
-            {appointments.map((appointment) => (
-              <article
-                className="grid min-h-17.5 grid-cols-[3rem_minmax(0,1fr)] items-center gap-3.5 border-t border-[var(--color-border)] min-[421px]:grid-cols-[3.3rem_1px_minmax(0,1fr)_auto] md:grid-cols-[3.3rem_1px_minmax(0,1fr)_auto_auto]"
-                key={appointment.time}
-              >
-                <time className="text-[0.82rem] font-bold">
-                  {appointment.time}
-                </time>
-                <span
-                  className="hidden h-8 w-px bg-[var(--color-border)] min-[421px]:block"
-                  aria-hidden="true"
-                />
-                <div className="flex min-w-0 flex-col gap-1">
-                  <strong className="overflow-hidden text-[0.82rem] text-ellipsis whitespace-nowrap">
-                    {appointment.patient}
-                  </strong>
-                  <span className="text-[0.7rem] text-[var(--color-muted)]">
-                    {appointment.specialty}
+            {displayedAppointments.map((appointment) => {
+              const appointmentHref = demoMode
+                ? agendaHref
+                : `${agendaHref}?vista=day&fecha=${appointment.date}&turno=${appointment.id}`;
+
+              return (
+                <article
+                  className="grid min-h-17.5 grid-cols-[3rem_minmax(0,1fr)] items-center gap-3.5 border-t border-[var(--color-border)] min-[421px]:grid-cols-[3.3rem_1px_minmax(0,1fr)_auto] md:grid-cols-[3.3rem_1px_minmax(0,1fr)_auto_auto]"
+                  key={appointment.id}
+                >
+                  <time className="text-[0.82rem] font-bold">
+                    {appointment.time}
+                  </time>
+                  <span
+                    className="hidden h-8 w-px bg-[var(--color-border)] min-[421px]:block"
+                    aria-hidden="true"
+                  />
+                  <div className="flex min-w-0 flex-col gap-1">
+                    <strong className="overflow-hidden text-[0.82rem] text-ellipsis whitespace-nowrap">
+                      {appointment.patient}
+                    </strong>
+                    <span className="text-[0.7rem] text-[var(--color-muted)]">
+                      {appointment.dateLabel} · {appointment.specialty}
+                    </span>
+                  </div>
+                  <span
+                    className={`hidden rounded-full px-2.5 py-1.5 text-[0.65rem] font-bold min-[421px]:inline md:inline ${statusStyles[appointment.status]}`}
+                  >
+                    {appointment.status}
                   </span>
-                </div>
-                <span
-                  className={`hidden rounded-full px-2.5 py-1.5 text-[0.65rem] font-bold min-[421px]:inline md:inline ${statusStyles[appointment.status]}`}
-                >
-                  {appointment.status}
-                </span>
+                  <Link
+                    aria-label={`Ver turno de las ${appointment.time} en la agenda`}
+                    className="hidden size-8 place-items-center rounded-full text-[var(--color-muted)] no-underline hover:bg-[var(--color-brand-subtle)] hover:text-[var(--color-brand)] md:grid"
+                    href={appointmentHref}
+                  >
+                    <ChevronRight aria-hidden="true" size={18} />
+                  </Link>
+                </article>
+              );
+            })}
+            {!demoMode && displayedAppointments.length === 0 ? (
+              <div className="flex min-h-40 flex-col items-center justify-center border-t border-[var(--color-border)] px-4 py-8 text-center">
+                <strong className="text-sm">No hay próximos turnos</strong>
+                <p className="mt-2 mb-4 max-w-sm text-[0.76rem] leading-5 text-[var(--color-muted)]">
+                  La agenda no tiene turnos pendientes ni confirmados a partir de ahora.
+                </p>
                 <Link
-                  aria-label={`Ver turno de las ${appointment.time} en la agenda`}
-                  className="hidden size-8 place-items-center rounded-full text-[var(--color-muted)] no-underline hover:bg-[var(--color-brand-subtle)] hover:text-[var(--color-brand)] md:grid"
-                  href={agendaHref}
+                  className="text-[0.76rem] font-bold text-[var(--color-brand)] no-underline"
+                  href={newAppointmentHref}
                 >
-                  <ChevronRight aria-hidden="true" size={18} />
+                  Crear turno
                 </Link>
-              </article>
-            ))}
+              </div>
+            ) : null}
           </div>
         </section>
 
@@ -252,9 +305,11 @@ export function DashboardHome({
         </section>
       </div>
 
-      <footer className="mt-4 text-left text-[0.67rem] text-[var(--color-muted)] md:text-right">
-        Los nombres, horarios y cantidades mostrados son datos de demostración.
-      </footer>
+      {demoMode ? (
+        <footer className="mt-4 text-left text-[0.67rem] text-[var(--color-muted)] md:text-right">
+          Los nombres, horarios y cantidades mostrados son datos de demostración.
+        </footer>
+      ) : null}
     </main>
   );
 }
