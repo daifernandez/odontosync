@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { AgendaViewPreferenceLink } from "@/components/agenda-view-preference-link";
 import {
   buildAgendaDay,
   buildAgendaPath,
@@ -146,35 +147,38 @@ export function MonthlyAgenda({
               aria-label="Cambiar vista de agenda"
               className="flex rounded-xl border border-[var(--color-border)] bg-[var(--color-brand-subtle)] p-1"
             >
-              <Link
+              <AgendaViewPreferenceLink
                 className="flex min-h-10 flex-1 items-center justify-center rounded-lg px-2 text-xs font-bold text-[var(--color-muted)] no-underline hover:text-[var(--color-brand-dark)] sm:flex-none sm:px-3"
                 href={buildAgendaPath({
                   weekStartDate: month.startDate,
                   view: "week",
                 })}
+                view="week"
               >
                 Vista semanal
-              </Link>
-              <Link
+              </AgendaViewPreferenceLink>
+              <AgendaViewPreferenceLink
                 className="flex min-h-10 flex-1 items-center justify-center rounded-lg px-2 text-xs font-bold text-[var(--color-muted)] no-underline hover:text-[var(--color-brand-dark)] sm:flex-none sm:px-3"
                 href={buildAgendaPath({
                   weekStartDate: month.startDate,
                   view: "day",
                   selectedDate: month.startDate,
                 })}
+                view="day"
               >
                 Vista diaria
-              </Link>
-              <Link
-                aria-current="page"
+              </AgendaViewPreferenceLink>
+              <AgendaViewPreferenceLink
+                ariaCurrent="page"
                 className="flex min-h-10 flex-1 items-center justify-center rounded-lg bg-white px-2 text-xs font-bold text-[var(--color-brand-dark)] no-underline shadow-sm sm:flex-none sm:px-3"
                 href={buildAgendaPath({
                   view: "month",
                   selectedDate: month.startDate,
                 })}
+                view="month"
               >
                 Vista mensual
-              </Link>
+              </AgendaViewPreferenceLink>
             </nav>
             <nav aria-label="Navegar meses" className="flex flex-wrap gap-2">
               <Link

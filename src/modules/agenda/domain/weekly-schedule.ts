@@ -143,8 +143,26 @@ export function buildAgendaMonth(selectedDate?: string, now = new Date()) {
 
 export type AgendaMonth = ReturnType<typeof buildAgendaMonth>;
 
+export function parseOptionalAgendaView(
+  value: string | undefined,
+): AgendaDisplayView | null {
+  switch (value) {
+    case "dia":
+    case "day":
+      return "day";
+    case "mes":
+    case "month":
+      return "month";
+    case "semana":
+    case "week":
+      return "week";
+    default:
+      return null;
+  }
+}
+
 export function parseAgendaView(value: string | undefined): AgendaDisplayView {
-  return value === "dia" ? "day" : value === "mes" ? "month" : "week";
+  return parseOptionalAgendaView(value) ?? "week";
 }
 
 export function buildAgendaPath({
