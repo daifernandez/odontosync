@@ -19,6 +19,7 @@ describe("AppointmentForm", () => {
         currentTime="2026-08-10T12:20:00.000Z"
         defaultCleanupMinutes={10}
         defaultDurationMinutes={45}
+        exceptionalBlocks={[]}
         gridIntervalMinutes={15}
         minimumDate="2026-08-10"
         onClose={vi.fn()}
@@ -64,6 +65,7 @@ describe("AppointmentForm", () => {
         currentTime="2026-08-10T12:20:00.000Z"
         defaultCleanupMinutes={5}
         defaultDurationMinutes={30}
+        exceptionalBlocks={[]}
         gridIntervalMinutes={15}
         initialDate="2026-08-11"
         initialTime="09:30"
@@ -86,5 +88,35 @@ describe("AppointmentForm", () => {
     );
     expect(markup).toContain('name="weekStartDate" value="2026-08-10"');
     expect(markup).toContain("11/08/2026 a las 09:30");
+  });
+
+  it("does not offer times that intersect an exceptional block", () => {
+    const markup = renderToStaticMarkup(
+      <AppointmentForm
+        appointmentOccupancy={[]}
+        availability={[
+          { dayOfWeek: 2, startTime: "09:00", endTime: "11:00" },
+        ]}
+        created={false}
+        currentTime="2026-08-10T12:20:00.000Z"
+        defaultCleanupMinutes={5}
+        defaultDurationMinutes={30}
+        exceptionalBlocks={[
+          {
+            startsAt: "2026-08-11T12:30:00.000Z",
+            endsAt: "2026-08-11T13:00:00.000Z",
+          },
+        ]}
+        gridIntervalMinutes={15}
+        initialDate="2026-08-11"
+        minimumDate="2026-08-10"
+        onClose={vi.fn()}
+        patients={[]}
+      />,
+    );
+
+    expect(markup).not.toContain('value="2026-08-11T09:00"');
+    expect(markup).not.toContain('value="2026-08-11T09:30"');
+    expect(markup).toContain('value="2026-08-11T10:00"');
   });
 });

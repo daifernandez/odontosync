@@ -168,7 +168,8 @@ export async function listAppointmentOccupancy(
 export type CreateAppointmentResult =
   | "created"
   | "patient_unavailable"
-  | "overlap";
+  | "overlap"
+  | "blocked";
 
 export async function createAppointment(
   appointment: AppointmentInput,
@@ -214,6 +215,10 @@ export async function createAppointment(
     return "overlap";
   }
 
+  if (error.code === "P1001") {
+    return "blocked";
+  }
+
   if (error.code === "42501") {
     return "patient_unavailable";
   }
@@ -221,7 +226,11 @@ export async function createAppointment(
   throw new Error("Could not create appointment");
 }
 
-export type UpdateAppointmentResult = "updated" | "unavailable" | "overlap";
+export type UpdateAppointmentResult =
+  | "updated"
+  | "unavailable"
+  | "overlap"
+  | "blocked";
 
 export async function updateAppointment(
   appointmentId: string,
@@ -253,6 +262,10 @@ export async function updateAppointment(
 
   if (error.code === "23P01") {
     return "overlap";
+  }
+
+  if (error.code === "P1001") {
+    return "blocked";
   }
 
   if (error.code === "42501") {
@@ -327,7 +340,8 @@ export async function closeAppointment(
 export type RescheduleAppointmentResult =
   | "rescheduled"
   | "unavailable"
-  | "overlap";
+  | "overlap"
+  | "blocked";
 
 export async function rescheduleAppointment(
   appointmentId: string,
@@ -347,6 +361,10 @@ export async function rescheduleAppointment(
 
   if (error.code === "23P01") {
     return "overlap";
+  }
+
+  if (error.code === "P1001") {
+    return "blocked";
   }
 
   if (["23514", "42501", "P0002"].includes(error.code)) {

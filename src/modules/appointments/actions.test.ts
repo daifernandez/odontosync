@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   createAppointment: vi.fn(),
   getClaims: vi.fn(),
   getInitialConfiguration: vi.fn(),
+  listExceptionalBlocks: vi.fn(),
   getConfirmedAppointmentById: vi.fn(),
   getPendingAppointmentById: vi.fn(),
   rescheduleAppointment: vi.fn(),
@@ -33,6 +34,10 @@ vi.mock("@/lib/supabase/server", () => ({
 
 vi.mock("@/modules/initial-configuration/repository", () => ({
   getInitialConfiguration: mocks.getInitialConfiguration,
+}));
+
+vi.mock("@/modules/exceptional-blocks/repository", () => ({
+  listExceptionalBlocks: mocks.listExceptionalBlocks,
 }));
 
 vi.mock("./repository", () => ({
@@ -76,6 +81,7 @@ describe("createAppointmentAction", () => {
         { dayOfWeek: 1, startTime: "09:00", endTime: "11:00" },
       ],
     });
+    mocks.listExceptionalBlocks.mockResolvedValue([]);
   });
 
   it("returns submitted values when validation fails", async () => {
@@ -169,6 +175,46 @@ describe("createAppointmentAction", () => {
       message: "Ese horario se superpone con otro turno.",
       fieldErrors: { startsAt: "Elegí otro horario disponible." },
     });
+  });
+
+  it("rejects a stale submitted time that is now exceptionally blocked", async () => {
+    mocks.getInitialConfiguration.mockResolvedValue({
+      fullName: "Profesional de prueba",
+      licenseNumber: null,
+      licenseJurisdiction: null,
+      gridIntervalMinutes: 15,
+      defaultAppointmentDurationMinutes: 30,
+      defaultCleanupMinutes: 5,
+      availability: [
+        { dayOfWeek: 2, startTime: "09:00", endTime: "11:00" },
+      ],
+    });
+    mocks.listExceptionalBlocks.mockResolvedValue([
+      {
+        id: "00000000-0000-4000-8000-000000000020",
+        startsAt: "2099-08-11T12:00:00.000Z",
+        endsAt: "2099-08-11T13:00:00.000Z",
+        category: "vacation",
+      },
+    ]);
+    const formData = new FormData();
+    formData.set("patientId", "00000000-0000-4000-8000-000000000001");
+    formData.set("startsAt", "2099-08-11T09:00");
+    formData.set("durationMinutes", "30");
+    formData.set("cleanupMinutes", "5");
+    formData.set("specialty", "general");
+
+    const result = await createAppointmentAction(
+      appointmentFormState,
+      formData,
+    );
+
+    expect(result).toMatchObject({
+      status: "error",
+      message: "Ese período está marcado como no disponible.",
+      fieldErrors: { startsAt: "Elegí otro horario disponible." },
+    });
+    expect(mocks.createAppointment).not.toHaveBeenCalled();
   });
 });
 
@@ -334,6 +380,7 @@ describe("rescheduleAppointmentAction", () => {
         { dayOfWeek: 2, startTime: "09:00", endTime: "11:00" },
       ],
     });
+    mocks.listExceptionalBlocks.mockResolvedValue([]);
     mocks.rescheduleAppointment.mockResolvedValue("rescheduled");
   });
 

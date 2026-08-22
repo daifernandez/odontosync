@@ -24,6 +24,7 @@ import {
 import {
   getAvailableAppointmentSlots,
   type AppointmentOccupancy,
+  type ExceptionalBlockOccupancy,
 } from "@/modules/appointments/domain/availability";
 import type { AvailabilityBlock } from "@/modules/initial-configuration/domain/initial-configuration";
 
@@ -35,6 +36,7 @@ export function AppointmentManagementPanel({
   appointmentOccupancy,
   availability,
   currentTime,
+  exceptionalBlocks,
   gridIntervalMinutes,
   minimumDate,
   weekStartDate,
@@ -43,6 +45,7 @@ export function AppointmentManagementPanel({
   appointmentOccupancy: AppointmentOccupancy[];
   availability: AvailabilityBlock[];
   currentTime: string;
+  exceptionalBlocks: ExceptionalBlockOccupancy[];
   gridIntervalMinutes: number;
   minimumDate: string;
   weekStartDate: string;
@@ -77,6 +80,7 @@ export function AppointmentManagementPanel({
     date,
     availability,
     appointments: appointmentOccupancy,
+    exceptionalBlocks,
     durationMinutes: Number(durationMinutes),
     cleanupMinutes: Number(cleanupMinutes),
     gridIntervalMinutes,
@@ -86,6 +90,7 @@ export function AppointmentManagementPanel({
     date,
     availability,
     appointments: [],
+    exceptionalBlocks,
     durationMinutes: appointment.durationMinutes,
     cleanupMinutes: appointment.cleanupMinutes,
     gridIntervalMinutes,

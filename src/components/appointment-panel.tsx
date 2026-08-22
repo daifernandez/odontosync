@@ -6,7 +6,10 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 import { AppointmentForm } from "@/components/appointment-form";
-import type { AppointmentOccupancy } from "@/modules/appointments/domain/availability";
+import type {
+  AppointmentOccupancy,
+  ExceptionalBlockOccupancy,
+} from "@/modules/appointments/domain/availability";
 import type { AvailabilityBlock } from "@/modules/initial-configuration/domain/initial-configuration";
 import type { Patient } from "@/modules/patients/domain/patient";
 
@@ -21,6 +24,7 @@ export function AppointmentPanel({
   availability,
   created,
   currentTime,
+  exceptionalBlocks,
   patients,
   defaultDurationMinutes,
   defaultCleanupMinutes,
@@ -35,6 +39,7 @@ export function AppointmentPanel({
   availability: AvailabilityBlock[];
   created: boolean;
   currentTime: string;
+  exceptionalBlocks: ExceptionalBlockOccupancy[];
   patients: AppointmentPatientOption[];
   defaultDurationMinutes: number;
   defaultCleanupMinutes: number;
@@ -145,6 +150,7 @@ export function AppointmentPanel({
                 defaultCleanupMinutes={defaultCleanupMinutes}
                 defaultDurationMinutes={defaultDurationMinutes}
                 gridIntervalMinutes={gridIntervalMinutes}
+                exceptionalBlocks={exceptionalBlocks}
                 initialDate={initialDate}
                 initialTime={initialTime}
                 minimumDate={minimumDate}

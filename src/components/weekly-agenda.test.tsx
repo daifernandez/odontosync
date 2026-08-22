@@ -81,6 +81,11 @@ describe("WeeklyAgenda", () => {
           ],
         }}
         created={false}
+        exceptionalBlockCreated={false}
+        exceptionalBlockDeleted={false}
+        exceptionalBlockManagementError={false}
+        exceptionalBlockPanelOpen={false}
+        exceptionalBlocks={[]}
         managementError={false}
         patients={[
           {
@@ -155,6 +160,11 @@ describe("WeeklyAgenda", () => {
           ],
         }}
         created={false}
+        exceptionalBlockCreated={false}
+        exceptionalBlockDeleted={false}
+        exceptionalBlockManagementError={false}
+        exceptionalBlockPanelOpen={false}
+        exceptionalBlocks={[]}
         managementError={false}
         patients={[]}
         selectedAppointment={selectedAppointment}
@@ -164,5 +174,54 @@ describe("WeeklyAgenda", () => {
     );
 
     expect(markup).toContain("Ocupado");
+  });
+
+  it("renders exceptional periods as unavailable and removes their links", () => {
+    const markup = renderToStaticMarkup(
+      <WeeklyAgenda
+        appointmentOccupancy={[]}
+        appointments={[]}
+        autoOpenNewAppointment={false}
+        cancelled={false}
+        confirmed={false}
+        configuration={{
+          fullName: "Profesional de prueba",
+          licenseNumber: null,
+          licenseJurisdiction: null,
+          gridIntervalMinutes: 15,
+          defaultAppointmentDurationMinutes: 30,
+          defaultCleanupMinutes: 5,
+          availability: [
+            { dayOfWeek: 2, startTime: "09:00", endTime: "12:00" },
+          ],
+        }}
+        created={false}
+        exceptionalBlockCreated={false}
+        exceptionalBlockDeleted={false}
+        exceptionalBlockManagementError={false}
+        exceptionalBlockPanelOpen={false}
+        exceptionalBlocks={[
+          {
+            id: "00000000-0000-4000-8000-000000000020",
+            startsAt: "2026-08-11T12:30:00.000Z",
+            endsAt: "2026-08-11T13:30:00.000Z",
+            category: "vacation",
+          },
+        ]}
+        managementError={false}
+        patients={[]}
+        updated={false}
+        week={buildAgendaWeek("2026-08-10")}
+      />,
+    );
+
+    expect(markup).toContain("No disponible");
+    expect(markup).toContain("Vacaciones");
+    expect(markup).not.toContain(
+      "semana=2026-08-10&amp;nuevo=1&amp;fecha=2026-08-11&amp;hora=09:00",
+    );
+    expect(markup).toContain(
+      "semana=2026-08-10&amp;nuevo=1&amp;fecha=2026-08-11&amp;hora=10:30",
+    );
   });
 });

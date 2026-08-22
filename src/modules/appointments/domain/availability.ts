@@ -1,4 +1,5 @@
 import type { AvailabilityBlock } from "@/modules/initial-configuration/domain/initial-configuration";
+import type { ExceptionalBlock } from "@/modules/exceptional-blocks/domain/exceptional-block";
 
 import {
   getArgentinaDateTimeParts,
@@ -11,10 +12,16 @@ export type AppointmentOccupancy = Pick<
   "startsAt" | "durationMinutes" | "cleanupMinutes"
 >;
 
+export type ExceptionalBlockOccupancy = Pick<
+  ExceptionalBlock,
+  "startsAt" | "endsAt"
+>;
+
 type AvailableSlotsInput = {
   date: string;
   availability: AvailabilityBlock[];
   appointments: AppointmentOccupancy[];
+  exceptionalBlocks: ExceptionalBlockOccupancy[];
   durationMinutes: number;
   cleanupMinutes: number;
   gridIntervalMinutes: number;
@@ -94,10 +101,84 @@ function overlapsAppointment(
   );
 }
 
+export function doesAppointmentOverlapExceptionalBlock(
+  appointment: AppointmentOccupancy,
+  exceptionalBlocks: ExceptionalBlockOccupancy[],
+) {
+  const startsAt = new Date(appointment.startsAt);
+  const occupiedUntil = new Date(
+    startsAt.getTime() +
+      (appointment.durationMinutes + appointment.cleanupMinutes) * 60_000,
+  );
+
+  if (
+    Number.isNaN(startsAt.getTime()) ||
+    Number.isNaN(occupiedUntil.getTime())
+  ) {
+    return false;
+  }
+
+  return exceptionalBlocks.some((block) => {
+    const blockStart = new Date(block.startsAt);
+    const blockEnd = new Date(block.endsAt);
+
+    return (
+      !Number.isNaN(blockStart.getTime()) &&
+      !Number.isNaN(blockEnd.getTime()) &&
+      startsAt < blockEnd &&
+      blockStart < occupiedUntil
+    );
+  });
+}
+
+export function getExceptionalBlockSegmentForDate(
+  block: ExceptionalBlockOccupancy,
+  date: string,
+) {
+  if (getDayOfWeek(date) === null) {
+    return null;
+  }
+
+  const dateParts = date.split("-").map(Number);
+  const nextDate = new Date(
+    Date.UTC(dateParts[0], dateParts[1] - 1, dateParts[2] + 1),
+  )
+    .toISOString()
+    .slice(0, 10);
+  const dayStart = parseArgentinaDateTime(`${date}T00:00`);
+  const dayEnd = parseArgentinaDateTime(`${nextDate}T00:00`);
+  const blockStart = new Date(block.startsAt);
+  const blockEnd = new Date(block.endsAt);
+
+  if (
+    !dayStart ||
+    !dayEnd ||
+    Number.isNaN(blockStart.getTime()) ||
+    Number.isNaN(blockEnd.getTime()) ||
+    blockStart >= dayEnd ||
+    blockEnd <= dayStart
+  ) {
+    return null;
+  }
+
+  const clippedStart = blockStart > dayStart ? blockStart : dayStart;
+  const clippedEnd = blockEnd < dayEnd ? blockEnd : dayEnd;
+
+  return {
+    startMinutes: Math.round(
+      (clippedStart.getTime() - dayStart.getTime()) / 60_000,
+    ),
+    endMinutes: Math.round(
+      (clippedEnd.getTime() - dayStart.getTime()) / 60_000,
+    ),
+  };
+}
+
 export function getAvailableAppointmentSlots({
   date,
   availability,
   appointments,
+  exceptionalBlocks,
   durationMinutes,
   cleanupMinutes,
   gridIntervalMinutes,
@@ -155,6 +236,19 @@ export function getAvailableAppointmentSlots({
         continue;
       }
 
+      if (
+        doesAppointmentOverlapExceptionalBlock(
+          {
+            startsAt: startsAt.toISOString(),
+            durationMinutes,
+            cleanupMinutes,
+          },
+          exceptionalBlocks,
+        )
+      ) {
+        continue;
+      }
+
       slots.push(time);
     }
   }
@@ -166,6 +260,7 @@ export function isAppointmentWithinWeeklyAvailability(
   appointment: AppointmentOccupancy,
   availability: AvailabilityBlock[],
   gridIntervalMinutes: number,
+  exceptionalBlocks: ExceptionalBlockOccupancy[],
 ) {
   if (
     !hasValidDuration(
@@ -189,6 +284,12 @@ export function isAppointmentWithinWeeklyAvailability(
   const startMinutes = parts.hour * 60 + parts.minute;
   const occupiedMinutes =
     appointment.durationMinutes + appointment.cleanupMinutes;
+
+  if (
+    doesAppointmentOverlapExceptionalBlock(appointment, exceptionalBlocks)
+  ) {
+    return false;
+  }
 
   return availability.some((block) => {
     const blockStart = parseTime(block.startTime);

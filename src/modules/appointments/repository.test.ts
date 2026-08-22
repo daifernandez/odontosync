@@ -159,6 +159,23 @@ describe("rescheduleAppointment", () => {
     ).resolves.toBe("overlap");
   });
 
+  it("distinguishes an exceptional block from a confirmable overlap", async () => {
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn().mockResolvedValue({
+        data: null,
+        error: { code: "P1001" },
+      }),
+    });
+
+    await expect(
+      rescheduleAppointment(
+        "00000000-0000-4000-8000-000000000010",
+        "2099-08-11T12:00:00.000Z",
+        true,
+      ),
+    ).resolves.toBe("blocked");
+  });
+
   it.each(["23514", "42501", "P0002"])(
     "maps database rejection %s to an unavailable appointment",
     async (code) => {
