@@ -373,3 +373,85 @@ editen o reprogramen turnos dentro de esos bloqueos.
 - Incorporar vistas diaria y mensual.
 - Activar la protección contra contraseñas filtradas antes de que resulte
   indispensable para el proyecto.
+
+## Sprint 007 — Vista diaria de agenda
+
+- **Fecha:** 22 de agosto de 2026
+- **Estado:** publicado y mergeado
+- **Issue:** [#32](https://github.com/daifernandez/odontosync/issues/32)
+- **Rama:** `codex/sprint-007-vista-diaria`
+- **Publicación:** [PR #33](https://github.com/daifernandez/odontosync/pull/33),
+  merge commit `5aac573`
+
+### Objetivo
+
+Permitir que un usuario autenticado consulte y gestione la agenda de un día
+específico, reutilizando las reglas y operaciones existentes de la vista
+semanal.
+
+### Resultado
+
+- Se incorporó un selector entre las vistas semanal y diaria; la vista semanal
+  continúa siendo la opción predeterminada.
+- La vista y la fecha seleccionadas se conservan en la URL, con una
+  recuperación segura ante parámetros ausentes o inválidos.
+- La navegación diaria permite avanzar, retroceder y volver a hoy, incluyendo
+  días no laborables con un estado vacío explícito.
+- La grilla diaria muestra únicamente los horarios, turnos, bloqueos y
+  disponibilidad de la fecha elegida.
+- Crear, editar, confirmar, cancelar, cerrar y reprogramar turnos conserva el
+  contexto diario; una reprogramación abre la nueva fecha correspondiente.
+- El panel de bloqueos excepcionales también mantiene la vista y la fecha
+  seleccionadas.
+- No se modificaron reglas de negocio, persistencia, esquema, migraciones,
+  políticas RLS ni privilegios.
+
+### Criterios verificados
+
+- Cambiar entre semana y día conserva la fecha, y la URL permite recargar o
+  compartir el mismo contexto.
+- La navegación anterior, siguiente y hoy selecciona la fecha correcta.
+- La vista diaria respeta los horarios configurados, representa los estados de
+  los turnos con texto y mantiene los bloqueos como no disponibles.
+- Los formularios y operaciones de gestión preservan el contexto diario.
+- Los parámetros inválidos se normalizan sin interrumpir la agenda.
+- La interfaz se revisó en escritorio y en un viewport de 390 × 844 px sin
+  desbordamiento horizontal; los controles de navegación son enlaces nativos,
+  tienen nombres accesibles y reciben foco.
+- El QA visual no creó ni modificó datos persistentes.
+
+### Skills aplicadas
+
+- Next.js para los parámetros asíncronos del App Router, los límites entre
+  servidor y cliente y la conservación del contexto en enlaces y formularios.
+- `usability-review` para navegación, URL compartible, estados vacíos,
+  accesibilidad y comportamiento responsive.
+- `react-best-practices` para revisar la estructura y el comportamiento de los
+  componentes TSX modificados.
+- Browser para verificar la agenda real en escritorio y móvil, los parámetros
+  inválidos y la consola sin escrituras persistentes.
+- Supabase y `security-sprint-review` para comprobar que la vista reutiliza los
+  controles de datos y seguridad existentes sin cambios.
+- `odontosync-release-check` para la batería final y el control previo a
+  publicación.
+
+### Verificaciones
+
+- Pruebas: 20 archivos y 131 casos aprobados.
+- RLS: cuatro suites aprobadas sobre Supabase enlazado.
+- Prisma: esquema válido y base al día con 16 migraciones.
+- TypeScript, ESLint y build de producción: aprobados.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- GitHub Actions: aprobado en el PR de publicación.
+- Asesor de Supabase: sin errores; permanece el aviso externo conocido de
+  protección contra contraseñas filtradas, postergado por decisión del
+  proyecto.
+
+### Fuera de alcance y próximos pasos
+
+- Incorporar una vista mensual.
+- Recordar la última vista fuera de la URL o entre dispositivos.
+- Editar un bloqueo excepcional existente.
+- Gestionar la agenda mediante instrucciones en lenguaje natural.
+- Activar la protección contra contraseñas filtradas cuando resulte
+  indispensable para el proyecto.
