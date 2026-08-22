@@ -529,3 +529,82 @@ calculado con los datos reales del usuario, sin alterar la demostración públic
 - Retomar la demostración pública cuando la aplicación real esté finalizada.
 - Activar la protección contra contraseñas filtradas cuando resulte
   indispensable para el proyecto.
+
+## Sprint 009 — Ficha administrativa y turnos del paciente
+
+- **Fecha:** 22 de agosto de 2026
+- **Estado:** publicado y mergeado
+- **Rama:** `codex/sprint-009-detalle-paciente`
+- **Publicación:** [PR #39](https://github.com/daifernandez/odontosync/pull/39),
+  merge commit `155ead5`
+
+### Objetivo
+
+Permitir que un usuario autenticado abra la ficha administrativa de un
+paciente y consulte sus próximos turnos y su historial asociado.
+
+### Resultado
+
+- El directorio de pacientes abre una ruta propia y recargable para cada ficha.
+- La ficha muestra nombre, estado activo o inactivo, teléfono y correo
+  electrónico, con acceso a la edición existente.
+- Los turnos se separan entre próximos e históricos y muestran fecha, hora,
+  especialidad, duración y estado mediante texto.
+- Cada turno enlaza la fecha, vista diaria e identificador exactos para abrirlo
+  directamente en Agenda.
+- Los pacientes activos disponen de una acción para crear un nuevo turno.
+- Se agregaron estados vacíos diferenciados y una respuesta de ficha no
+  encontrada que no revela si el recurso pertenece a otra cuenta.
+- Las lecturas filtran explícitamente por paciente y `user_id`, además de las
+  políticas RLS forzadas existentes.
+- No se modificaron el esquema, las migraciones, las políticas RLS, los
+  privilegios ni los datos persistentes.
+
+### Criterios verificados
+
+- Un usuario autenticado solo puede consultar fichas y turnos de su propia
+  cuenta.
+- Un identificador inválido, un recurso inexistente o ajeno y una sesión
+  vencida no exponen datos.
+- El enlace desde el directorio abre la ficha correcta y el enlace de cada
+  turno abre su día y panel exactos en Agenda.
+- La ficha comunica datos ausentes, estado del paciente, listas vacías y
+  estados de los turnos sin depender únicamente del color.
+- El recorrido se verificó con la cuenta y los datos ficticios de evaluación
+  en escritorio y en un viewport de 390 × 844 px, sin escrituras persistentes,
+  desbordamiento horizontal ni errores o advertencias de consola.
+
+### Skills aplicadas
+
+- Next.js para la ruta dinámica, parámetros asíncronos, renderizado de servidor
+  y estados de recurso no encontrado.
+- Supabase, `supabase-postgres-best-practices` y `security-sprint-review` para
+  aislamiento por usuario, RLS, consultas indexadas y casos negativos.
+- `usability-review` para navegación, estados vacíos, claridad, accesibilidad y
+  comportamiento responsive.
+- `react-best-practices` para revisar paralelización, inmutabilidad y estructura
+  de los componentes TSX.
+- Browser para recorrer la ficha y Agenda en escritorio y móvil con datos
+  ficticios.
+- `odontosync-release-check` para la batería final y la publicación.
+
+### Verificaciones
+
+- Pruebas: 28 archivos y 165 casos aprobados.
+- RLS: cuatro suites aprobadas sobre Supabase enlazado.
+- TypeScript, ESLint y build de producción: aprobados.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- GitHub Actions: aprobado en el PR de publicación.
+- Asesor de Supabase: sin errores; permanece el aviso externo conocido de
+  protección contra contraseñas filtradas, postergado por decisión del
+  proyecto.
+
+### Fuera de alcance y próximos pasos
+
+- Incorporar al historial visible los registros internos cancelados y
+  reprogramados.
+- Agregar paginación cuando el volumen real de turnos por paciente lo requiera.
+- Incorporar la vista mensual de Agenda y recordar la última vista elegida.
+- Retomar la demostración pública cuando la aplicación real esté finalizada.
+- Activar la protección contra contraseñas filtradas cuando resulte
+  indispensable para el proyecto.
