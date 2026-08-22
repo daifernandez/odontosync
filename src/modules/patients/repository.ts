@@ -58,13 +58,21 @@ export async function listPatients(
   return (data as PatientRow[]).map(mapPatient);
 }
 
-export async function getPatient(patientId: string): Promise<Patient | null> {
+export async function getPatient(
+  patientId: string,
+  userId?: string,
+): Promise<Patient | null> {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  let query = supabase
     .from("patients")
     .select(patientColumns)
-    .eq("id", patientId)
-    .maybeSingle();
+    .eq("id", patientId);
+
+  if (userId) {
+    query = query.eq("user_id", userId);
+  }
+
+  const { data, error } = await query.maybeSingle();
 
   if (error) {
     throw new Error("Could not read patient");

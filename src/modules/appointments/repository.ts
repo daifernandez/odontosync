@@ -115,6 +115,31 @@ export async function listAppointmentsForRange(
   return (data as unknown as AppointmentRow[]).map(mapAppointment);
 }
 
+export async function listPatientAppointments(
+  patientId: string,
+  userId: string,
+): Promise<Appointment[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("appointments")
+    .select(appointmentColumns)
+    .eq("patient_id", patientId)
+    .eq("user_id", userId)
+    .in("status", [
+      "pending_confirmation",
+      "confirmed",
+      "completed",
+      "no_show",
+    ])
+    .order("starts_at", { ascending: false });
+
+  if (error) {
+    throw new Error("Could not read patient appointments");
+  }
+
+  return (data as unknown as AppointmentRow[]).map(mapAppointment);
+}
+
 export async function getPendingAppointmentById(
   appointmentId: string,
 ): Promise<Appointment | null> {

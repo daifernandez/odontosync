@@ -1,6 +1,6 @@
 import {
+  ChevronRight,
   Mail,
-  Pencil,
   Phone,
   Search,
   UserRoundPlus,
@@ -230,10 +230,10 @@ export default async function PatientsPage({
                   </div>
                   <Link
                     className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-xl border border-[var(--color-border)] bg-white px-3 text-xs font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-soft)]"
-                    href={`/app/pacientes/${patient.id}/editar`}
+                    href={`/app/pacientes/${patient.id}`}
                   >
-                    <Pencil aria-hidden="true" size={14} />
-                    Editar ficha
+                    Ver ficha
+                    <ChevronRight aria-hidden="true" size={14} />
                   </Link>
                 </article>
               ))}
