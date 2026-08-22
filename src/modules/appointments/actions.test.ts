@@ -240,6 +240,18 @@ describe("confirmAppointmentAction", () => {
     );
   });
 
+  it("preserves the selected daily view after confirming", async () => {
+    const formData = new FormData();
+    formData.set("appointmentId", "00000000-0000-4000-8000-000000000010");
+    formData.set("weekStartDate", "2026-08-10");
+    formData.set("agendaView", "day");
+    formData.set("agendaDate", "2026-08-12");
+
+    await expect(confirmAppointmentAction(formData)).rejects.toThrow(
+      "redirect:/app/agenda?semana=2026-08-10&vista=dia&fecha=2026-08-12&confirmado=1",
+    );
+  });
+
   it("does not confirm when the session is unavailable", async () => {
     mocks.getClaims.mockResolvedValue({ data: { claims: null } });
     const formData = new FormData();
@@ -398,6 +410,20 @@ describe("rescheduleAppointmentAction", () => {
       appointment.id,
       "2099-08-11T12:00:00.000Z",
       false,
+    );
+  });
+
+  it("moves the daily view to the rescheduled date", async () => {
+    const formData = new FormData();
+    formData.set("appointmentId", appointment.id);
+    formData.set("startsAt", "2099-08-11T09:00");
+    formData.set("agendaView", "day");
+    formData.set("agendaDate", "2099-08-10");
+
+    await expect(
+      rescheduleAppointmentAction(appointmentRescheduleState, formData),
+    ).rejects.toThrow(
+      "redirect:/app/agenda?semana=2099-08-10&vista=dia&fecha=2099-08-11&reprogramado=1",
     );
   });
 

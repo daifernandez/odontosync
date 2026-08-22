@@ -6,6 +6,11 @@ import { useActionState, useEffect, useRef } from "react";
 import { useFormStatus } from "react-dom";
 
 import { SubmitButton } from "@/components/auth/submit-button";
+import { AgendaContextFields } from "@/components/agenda-context-fields";
+import {
+  buildAgendaPath,
+  type AgendaView,
+} from "@/modules/agenda/domain/weekly-schedule";
 import {
   createExceptionalBlockAction,
   deleteExceptionalBlockAction,
@@ -52,6 +57,8 @@ export function ExceptionalBlocksPanel({
   created,
   deleted,
   managementError,
+  selectedDate,
+  view = "week",
   weekStartDate,
 }: Readonly<{
   autoOpen: boolean;
@@ -59,6 +66,8 @@ export function ExceptionalBlocksPanel({
   created: boolean;
   deleted: boolean;
   managementError: boolean;
+  selectedDate?: string;
+  view?: AgendaView;
   weekStartDate: string;
 }>) {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -81,7 +90,10 @@ export function ExceptionalBlocksPanel({
 
   function clearPanelQuery() {
     if (autoOpen) {
-      router.replace(`/app/agenda?semana=${weekStartDate}`, { scroll: false });
+      router.replace(
+        buildAgendaPath({ weekStartDate, view, selectedDate }),
+        { scroll: false },
+      );
     }
   }
 
@@ -157,7 +169,11 @@ export function ExceptionalBlocksPanel({
             ) : null}
 
             <form action={action} className="mt-5 flex flex-col gap-4" noValidate>
-              <input name="weekStartDate" type="hidden" value={weekStartDate} />
+              <AgendaContextFields
+                selectedDate={selectedDate ?? weekStartDate}
+                view={view}
+                weekStartDate={weekStartDate}
+              />
 
               {state.message ? (
                 <p
@@ -314,10 +330,10 @@ export function ExceptionalBlocksPanel({
                                 type="hidden"
                                 value={block.id}
                               />
-                              <input
-                                name="weekStartDate"
-                                type="hidden"
-                                value={weekStartDate}
+                              <AgendaContextFields
+                                selectedDate={selectedDate ?? weekStartDate}
+                                view={view}
+                                weekStartDate={weekStartDate}
                               />
                               <DeleteButton />
                             </form>

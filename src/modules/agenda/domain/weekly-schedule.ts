@@ -17,6 +17,8 @@ const weekDays = [
 const calendarWeekDays = weekDays.slice(0, 5);
 const localDatePattern = /^(\d{4})-(\d{2})-(\d{2})$/;
 
+export type AgendaView = "week" | "day";
+
 function parseLocalDate(value: string | undefined) {
   const match = value ? localDatePattern.exec(value) : null;
 
@@ -73,6 +75,60 @@ export function buildAgendaWeek(selectedDate?: string, now = new Date()) {
 }
 
 export type AgendaWeek = ReturnType<typeof buildAgendaWeek>;
+
+export function buildAgendaDay(selectedDate?: string, now = new Date()) {
+  const selected =
+    parseLocalDate(selectedDate) ??
+    parseLocalDate(formatArgentinaDateInput(now)) ??
+    new Date();
+  const dayOfWeek = selected.getUTCDay() || 7;
+  const day = weekDays.find((candidate) => candidate.dayOfWeek === dayOfWeek);
+
+  if (!day) {
+    throw new Error("Could not build agenda day");
+  }
+
+  return {
+    ...day,
+    date: formatLocalDate(selected),
+    previousDate: formatLocalDate(addDays(selected, -1)),
+    nextDate: formatLocalDate(addDays(selected, 1)),
+  };
+}
+
+export type AgendaDay = ReturnType<typeof buildAgendaDay>;
+
+export function parseAgendaView(value: string | undefined): AgendaView {
+  return value === "dia" ? "day" : "week";
+}
+
+export function buildAgendaPath({
+  params,
+  selectedDate,
+  view,
+  weekStartDate,
+}: {
+  params?: Record<string, string | undefined>;
+  selectedDate?: string;
+  view: AgendaView;
+  weekStartDate?: string;
+}) {
+  const week = buildAgendaWeek(weekStartDate);
+  const searchParams = new URLSearchParams({ semana: week.startDate });
+
+  if (view === "day") {
+    searchParams.set("vista", "dia");
+    searchParams.set("fecha", buildAgendaDay(selectedDate).date);
+  }
+
+  for (const [key, value] of Object.entries(params ?? {})) {
+    if (value) {
+      searchParams.set(key, value);
+    }
+  }
+
+  return `/app/agenda?${searchParams.toString().replaceAll("%3A", ":")}`;
+}
 
 export function getAgendaWeekRange(selectedDate?: string, now = new Date()) {
   const week = buildAgendaWeek(selectedDate, now);

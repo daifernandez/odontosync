@@ -4,9 +4,13 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
+import {
+  buildAgendaPath,
+  buildAgendaWeek,
+  type AgendaView,
+} from "@/modules/agenda/domain/weekly-schedule";
 import { listExceptionalBlocks } from "@/modules/exceptional-blocks/repository";
 import { getInitialConfiguration } from "@/modules/initial-configuration/repository";
-import { buildAgendaWeek } from "@/modules/agenda/domain/weekly-schedule";
 
 import {
   type AppointmentFormState,
@@ -33,6 +37,25 @@ import {
 function readText(formData: FormData, field: string) {
   const value = formData.get(field);
   return typeof value === "string" ? value : "";
+}
+
+function buildActionAgendaPath(
+  formData: FormData,
+  params: Record<string, string>,
+  dailyDate?: string,
+  followTargetWeek = false,
+) {
+  const view: AgendaView =
+    readText(formData, "agendaView") === "day" ? "day" : "week";
+  const selectedDate =
+    view === "day" ? dailyDate ?? readText(formData, "agendaDate") : undefined;
+  const weekStartDate = buildAgendaWeek(
+    followTargetWeek || view === "day"
+      ? dailyDate ?? selectedDate
+      : readText(formData, "weekStartDate"),
+  ).startDate;
+
+  return buildAgendaPath({ weekStartDate, view, selectedDate, params });
 }
 
 export async function createAppointmentAction(
@@ -148,10 +171,13 @@ export async function createAppointmentAction(
   }
 
   revalidatePath("/app/agenda");
-  const weekStartDate = buildAgendaWeek(
-    readText(formData, "weekStartDate"),
-  ).startDate;
-  redirect(`/app/agenda?semana=${weekStartDate}&creado=1`);
+  redirect(
+    buildActionAgendaPath(
+      formData,
+      { creado: "1" },
+      values.startsAt.slice(0, 10),
+    ),
+  );
 }
 
 export async function updateAppointmentAction(
@@ -159,9 +185,6 @@ export async function updateAppointmentAction(
   formData: FormData,
 ): Promise<AppointmentFormState> {
   const appointmentId = readText(formData, "appointmentId");
-  const weekStartDate = buildAgendaWeek(
-    readText(formData, "weekStartDate"),
-  ).startDate;
 
   if (!isAppointmentId(appointmentId)) {
     return {
@@ -284,7 +307,13 @@ export async function updateAppointmentAction(
   }
 
   revalidatePath("/app/agenda");
-  redirect(`/app/agenda?semana=${weekStartDate}&actualizado=1`);
+  redirect(
+    buildActionAgendaPath(
+      formData,
+      { actualizado: "1" },
+      readText(formData, "startsAt").slice(0, 10),
+    ),
+  );
 }
 
 export async function rescheduleAppointmentAction(
@@ -436,25 +465,28 @@ export async function rescheduleAppointmentAction(
   }
 
   revalidatePath("/app/agenda");
-  const newWeekStart = buildAgendaWeek(values.startsAt.slice(0, 10)).startDate;
-  redirect(`/app/agenda?semana=${newWeekStart}&reprogramado=1`);
+  redirect(
+    buildActionAgendaPath(
+      formData,
+      { reprogramado: "1" },
+      values.startsAt.slice(0, 10),
+      true,
+    ),
+  );
 }
 
 export async function cancelAppointmentAction(formData: FormData) {
   const appointmentId = readText(formData, "appointmentId");
-  const weekStartDate = buildAgendaWeek(
-    readText(formData, "weekStartDate"),
-  ).startDate;
 
   if (!isAppointmentId(appointmentId)) {
-    redirect(`/app/agenda?semana=${weekStartDate}&errorGestion=1`);
+    redirect(buildActionAgendaPath(formData, { errorGestion: "1" }));
   }
 
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
 
   if (typeof data?.claims?.sub !== "string") {
-    redirect(`/app/agenda?semana=${weekStartDate}&errorGestion=1`);
+    redirect(buildActionAgendaPath(formData, { errorGestion: "1" }));
   }
 
   let result: Awaited<ReturnType<typeof cancelAppointment>>;
@@ -462,32 +494,29 @@ export async function cancelAppointmentAction(formData: FormData) {
   try {
     result = await cancelAppointment(appointmentId);
   } catch {
-    redirect(`/app/agenda?semana=${weekStartDate}&errorGestion=1`);
+    redirect(buildActionAgendaPath(formData, { errorGestion: "1" }));
   }
 
   if (result === "unavailable") {
-    redirect(`/app/agenda?semana=${weekStartDate}&errorGestion=1`);
+    redirect(buildActionAgendaPath(formData, { errorGestion: "1" }));
   }
 
   revalidatePath("/app/agenda");
-  redirect(`/app/agenda?semana=${weekStartDate}&cancelado=1`);
+  redirect(buildActionAgendaPath(formData, { cancelado: "1" }));
 }
 
 export async function confirmAppointmentAction(formData: FormData) {
   const appointmentId = readText(formData, "appointmentId");
-  const weekStartDate = buildAgendaWeek(
-    readText(formData, "weekStartDate"),
-  ).startDate;
 
   if (!isAppointmentId(appointmentId)) {
-    redirect(`/app/agenda?semana=${weekStartDate}&errorGestion=1`);
+    redirect(buildActionAgendaPath(formData, { errorGestion: "1" }));
   }
 
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
 
   if (typeof data?.claims?.sub !== "string") {
-    redirect(`/app/agenda?semana=${weekStartDate}&errorGestion=1`);
+    redirect(buildActionAgendaPath(formData, { errorGestion: "1" }));
   }
 
   let result: Awaited<ReturnType<typeof confirmAppointment>>;
@@ -495,36 +524,33 @@ export async function confirmAppointmentAction(formData: FormData) {
   try {
     result = await confirmAppointment(appointmentId);
   } catch {
-    redirect(`/app/agenda?semana=${weekStartDate}&errorGestion=1`);
+    redirect(buildActionAgendaPath(formData, { errorGestion: "1" }));
   }
 
   if (result === "unavailable") {
-    redirect(`/app/agenda?semana=${weekStartDate}&errorGestion=1`);
+    redirect(buildActionAgendaPath(formData, { errorGestion: "1" }));
   }
 
   revalidatePath("/app/agenda");
-  redirect(`/app/agenda?semana=${weekStartDate}&confirmado=1`);
+  redirect(buildActionAgendaPath(formData, { confirmado: "1" }));
 }
 
 export async function closeAppointmentAction(formData: FormData) {
   const appointmentId = readText(formData, "appointmentId");
   const closureStatus = readText(formData, "closureStatus");
-  const weekStartDate = buildAgendaWeek(
-    readText(formData, "weekStartDate"),
-  ).startDate;
 
   if (
     !isAppointmentId(appointmentId) ||
     !isAppointmentClosureStatus(closureStatus)
   ) {
-    redirect(`/app/agenda?semana=${weekStartDate}&errorGestion=1`);
+    redirect(buildActionAgendaPath(formData, { errorGestion: "1" }));
   }
 
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
 
   if (typeof data?.claims?.sub !== "string") {
-    redirect(`/app/agenda?semana=${weekStartDate}&errorGestion=1`);
+    redirect(buildActionAgendaPath(formData, { errorGestion: "1" }));
   }
 
   let result: Awaited<ReturnType<typeof closeAppointment>>;
@@ -532,15 +558,13 @@ export async function closeAppointmentAction(formData: FormData) {
   try {
     result = await closeAppointment(appointmentId, closureStatus);
   } catch {
-    redirect(`/app/agenda?semana=${weekStartDate}&errorGestion=1`);
+    redirect(buildActionAgendaPath(formData, { errorGestion: "1" }));
   }
 
   if (result === "unavailable") {
-    redirect(`/app/agenda?semana=${weekStartDate}&errorGestion=1`);
+    redirect(buildActionAgendaPath(formData, { errorGestion: "1" }));
   }
 
   revalidatePath("/app/agenda");
-  redirect(
-    `/app/agenda?semana=${weekStartDate}&cierre=${closureStatus}`,
-  );
+  redirect(buildActionAgendaPath(formData, { cierre: closureStatus }));
 }

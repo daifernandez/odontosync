@@ -224,4 +224,76 @@ describe("WeeklyAgenda", () => {
       "semana=2026-08-10&amp;nuevo=1&amp;fecha=2026-08-11&amp;hora=10:30",
     );
   });
+
+  it("renders only the selected day and preserves its URL context", () => {
+    const selectedAppointment = {
+      id: "00000000-0000-4000-8000-000000000010",
+      patientId: "00000000-0000-4000-8000-000000000001",
+      patientFirstName: "Lucía",
+      patientLastName: "Martes",
+      startsAt: "2026-08-11T12:00:00.000Z",
+      occupiedUntil: "2026-08-11T12:35:00.000Z",
+      durationMinutes: 30,
+      cleanupMinutes: 5,
+      specialty: "general" as const,
+      status: "pending_confirmation" as const,
+    };
+    const otherDayAppointment = {
+      ...selectedAppointment,
+      id: "00000000-0000-4000-8000-000000000011",
+      patientLastName: "Miércoles",
+      startsAt: "2026-08-12T12:00:00.000Z",
+      occupiedUntil: "2026-08-12T12:35:00.000Z",
+    };
+    const markup = renderToStaticMarkup(
+      <WeeklyAgenda
+        appointmentOccupancy={[selectedAppointment, otherDayAppointment]}
+        appointments={[selectedAppointment, otherDayAppointment]}
+        autoOpenNewAppointment={false}
+        cancelled={false}
+        confirmed={false}
+        configuration={{
+          fullName: "Profesional de prueba",
+          licenseNumber: null,
+          licenseJurisdiction: null,
+          gridIntervalMinutes: 15,
+          defaultAppointmentDurationMinutes: 30,
+          defaultCleanupMinutes: 5,
+          availability: [
+            { dayOfWeek: 2, startTime: "09:00", endTime: "12:00" },
+            { dayOfWeek: 3, startTime: "09:00", endTime: "12:00" },
+          ],
+        }}
+        created={false}
+        exceptionalBlockCreated={false}
+        exceptionalBlockDeleted={false}
+        exceptionalBlockManagementError={false}
+        exceptionalBlockPanelOpen={false}
+        exceptionalBlocks={[]}
+        managementError={false}
+        patients={[]}
+        selectedDate="2026-08-11"
+        updated={false}
+        view="day"
+        week={buildAgendaWeek("2026-08-11")}
+      />,
+    );
+
+    expect(markup).toContain("Agenda diaria");
+    expect(markup).toContain("Martes, Lucía");
+    expect(markup).not.toContain("Miércoles, Lucía");
+    expect(markup).toContain("Navegar días");
+    expect(markup).toContain(
+      "semana=2026-08-10&amp;vista=dia&amp;fecha=2026-08-10",
+    );
+    expect(markup).toContain(
+      "semana=2026-08-10&amp;vista=dia&amp;fecha=2026-08-12",
+    );
+    expect(markup).toContain(
+      "semana=2026-08-10&amp;vista=dia&amp;fecha=2026-08-11&amp;turno=00000000-0000-4000-8000-000000000010",
+    );
+    expect(markup).toContain(
+      "semana=2026-08-10&amp;fecha=2026-08-11\">Vista semanal",
+    );
+  });
 });

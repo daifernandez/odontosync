@@ -4,6 +4,8 @@ import { CalendarCheck, Check, Clock3, UserRound } from "lucide-react";
 import { useActionState, useRef, useState } from "react";
 
 import { SubmitButton } from "@/components/auth/submit-button";
+import { AgendaContextFields } from "@/components/agenda-context-fields";
+import type { AgendaView } from "@/modules/agenda/domain/weekly-schedule";
 import { createAppointmentAction } from "@/modules/appointments/actions";
 import {
   appointmentFormState,
@@ -47,6 +49,8 @@ export function AppointmentForm({
   initialTime = "",
   minimumDate,
   onClose,
+  selectedDate,
+  view = "week",
   weekStartDate,
 }: Readonly<{
   appointmentOccupancy: AppointmentOccupancy[];
@@ -62,6 +66,8 @@ export function AppointmentForm({
   initialTime?: string;
   minimumDate: string;
   onClose: () => void;
+  selectedDate?: string;
+  view?: AgendaView;
   weekStartDate?: string;
 }>) {
   const [state, action] = useActionState(
@@ -112,7 +118,11 @@ export function AppointmentForm({
       noValidate
     >
       {weekStartDate ? (
-        <input name="weekStartDate" type="hidden" value={weekStartDate} />
+        <AgendaContextFields
+          selectedDate={selectedDate ?? weekStartDate}
+          view={view}
+          weekStartDate={weekStartDate}
+        />
       ) : null}
       {created && state.status === "idle" ? (
         <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-brand-soft)] px-4 py-4 text-[var(--color-brand-dark)]">

@@ -2,8 +2,15 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { WeeklyAgenda } from "@/components/weekly-agenda";
-import { getAgendaWeekRange } from "@/modules/agenda/domain/weekly-schedule";
-import { isAppointmentClosureStatus } from "@/modules/appointments/domain/appointment";
+import {
+  buildAgendaDay,
+  getAgendaWeekRange,
+  parseAgendaView,
+} from "@/modules/agenda/domain/weekly-schedule";
+import {
+  formatArgentinaDateInput,
+  isAppointmentClosureStatus,
+} from "@/modules/appointments/domain/appointment";
 import {
   listAppointmentsForRange,
   listAppointmentOccupancy,
@@ -35,6 +42,7 @@ type AgendaPageProps = {
     reprogramado?: string | string[];
     semana?: string | string[];
     turno?: string | string[];
+    vista?: string | string[];
   }>;
 };
 
@@ -43,7 +51,17 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
   const selectedWeek = Array.isArray(params.semana)
     ? params.semana[0]
     : params.semana;
-  const { from, to, week } = getAgendaWeekRange(selectedWeek);
+  const requestedDate =
+    typeof params.fecha === "string" ? params.fecha : undefined;
+  const view = parseAgendaView(
+    typeof params.vista === "string" ? params.vista : undefined,
+  );
+  const selectedDate = buildAgendaDay(
+    view === "day" ? requestedDate : requestedDate ?? selectedWeek,
+  ).date;
+  const { from, to, week } = getAgendaWeekRange(
+    view === "day" ? selectedDate : selectedWeek,
+  );
   const [
     configuration,
     patients,
@@ -65,7 +83,13 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
 
   const selectedAppointment =
     typeof params.turno === "string"
-      ? appointments.find((appointment) => appointment.id === params.turno)
+      ? appointments.find(
+          (appointment) =>
+            appointment.id === params.turno &&
+            (view === "week" ||
+              formatArgentinaDateInput(new Date(appointment.startsAt)) ===
+                selectedDate),
+        )
       : undefined;
 
   return (
@@ -86,7 +110,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
       exceptionalBlockPanelOpen={params.bloqueos === "1"}
       exceptionalBlocks={exceptionalBlocks}
       managementError={params.errorGestion === "1"}
-      initialDate={typeof params.fecha === "string" ? params.fecha : undefined}
+      initialDate={view === "day" ? selectedDate : requestedDate}
       initialTime={typeof params.hora === "string" ? params.hora : undefined}
       patients={patients.map(({ id, firstName, lastName }) => ({
         id,
@@ -94,8 +118,10 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
         lastName,
       }))}
       selectedAppointment={selectedAppointment}
+      selectedDate={selectedDate}
       rescheduled={params.reprogramado === "1"}
       updated={params.actualizado === "1"}
+      view={view}
       week={week}
     />
   );

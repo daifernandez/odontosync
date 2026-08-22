@@ -6,6 +6,10 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 import { AppointmentForm } from "@/components/appointment-form";
+import {
+  buildAgendaPath,
+  type AgendaView,
+} from "@/modules/agenda/domain/weekly-schedule";
 import type {
   AppointmentOccupancy,
   ExceptionalBlockOccupancy,
@@ -32,6 +36,8 @@ export function AppointmentPanel({
   initialDate,
   initialTime,
   minimumDate,
+  selectedDate,
+  view = "week",
   weekStartDate,
 }: Readonly<{
   autoOpen: boolean;
@@ -47,6 +53,8 @@ export function AppointmentPanel({
   initialDate?: string;
   initialTime?: string;
   minimumDate: string;
+  selectedDate?: string;
+  view?: AgendaView;
   weekStartDate: string;
 }>) {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -70,7 +78,10 @@ export function AppointmentPanel({
 
   function clearPanelQuery() {
     if (autoOpen) {
-      router.replace(`/app/agenda?semana=${weekStartDate}`, { scroll: false });
+      router.replace(
+        buildAgendaPath({ weekStartDate, view, selectedDate }),
+        { scroll: false },
+      );
     }
   }
 
@@ -156,6 +167,8 @@ export function AppointmentPanel({
                 minimumDate={minimumDate}
                 onClose={closePanel}
                 patients={patients}
+                selectedDate={selectedDate ?? weekStartDate}
+                view={view}
                 weekStartDate={weekStartDate}
               />
             )}
