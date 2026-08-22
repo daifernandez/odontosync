@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { AgendaViewPreferenceLink } from "@/components/agenda-view-preference-link";
 import { AppointmentManagementPanel } from "@/components/appointment-management-panel";
 import { AppointmentPanel } from "@/components/appointment-panel";
 import { ExceptionalBlocksPanel } from "@/components/exceptional-blocks-panel";
@@ -344,37 +345,40 @@ export function WeeklyAgenda({
               aria-label="Cambiar vista de agenda"
               className="flex rounded-xl border border-[var(--color-border)] bg-[var(--color-brand-subtle)] p-1"
             >
-              <Link
-                aria-current={view === "week" ? "page" : undefined}
+              <AgendaViewPreferenceLink
+                ariaCurrent={view === "week" ? "page" : undefined}
                 className={`flex min-h-10 flex-1 items-center justify-center rounded-lg px-3 text-xs font-bold no-underline sm:flex-none ${view === "week" ? "bg-white text-[var(--color-brand-dark)] shadow-sm" : "text-[var(--color-muted)] hover:text-[var(--color-brand-dark)]"}`}
                 href={buildAgendaPath({
                   weekStartDate: week.startDate,
                   view: "week",
                   params: view === "day" ? { fecha: day.date } : undefined,
                 })}
+                view="week"
               >
                 Vista semanal
-              </Link>
-              <Link
-                aria-current={view === "day" ? "page" : undefined}
+              </AgendaViewPreferenceLink>
+              <AgendaViewPreferenceLink
+                ariaCurrent={view === "day" ? "page" : undefined}
                 className={`flex min-h-10 flex-1 items-center justify-center rounded-lg px-3 text-xs font-bold no-underline sm:flex-none ${view === "day" ? "bg-white text-[var(--color-brand-dark)] shadow-sm" : "text-[var(--color-muted)] hover:text-[var(--color-brand-dark)]"}`}
                 href={buildAgendaPath({
                   weekStartDate: week.startDate,
                   view: "day",
                   selectedDate: day.date,
                 })}
+                view="day"
               >
                 Vista diaria
-              </Link>
-              <Link
+              </AgendaViewPreferenceLink>
+              <AgendaViewPreferenceLink
                 className="flex min-h-10 flex-1 items-center justify-center rounded-lg px-3 text-xs font-bold text-[var(--color-muted)] no-underline hover:text-[var(--color-brand-dark)] sm:flex-none"
                 href={buildAgendaPath({
                   view: "month",
                   selectedDate: day.date,
                 })}
+                view="month"
               >
                 Vista mensual
-              </Link>
+              </AgendaViewPreferenceLink>
             </nav>
             <nav
               aria-label={view === "day" ? "Navegar días" : "Navegar semanas"}

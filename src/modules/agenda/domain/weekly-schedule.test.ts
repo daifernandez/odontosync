@@ -9,6 +9,7 @@ import {
   getAgendaMonthRange,
   getAgendaWeekRange,
   parseAgendaView,
+  parseOptionalAgendaView,
 } from "./weekly-schedule";
 
 describe("buildWeeklySchedule", () => {
@@ -141,7 +142,16 @@ describe("parseAgendaView", () => {
     expect(parseAgendaView("dia")).toBe("day");
     expect(parseAgendaView("mes")).toBe("month");
     expect(parseAgendaView("semana")).toBe("week");
+    expect(parseAgendaView("day")).toBe("day");
+    expect(parseAgendaView("month")).toBe("month");
     expect(parseAgendaView("invalid")).toBe("week");
+  });
+
+  it("distinguishes a valid explicit view from an absent or invalid value", () => {
+    expect(parseOptionalAgendaView("dia")).toBe("day");
+    expect(parseOptionalAgendaView("month")).toBe("month");
+    expect(parseOptionalAgendaView("invalid")).toBeNull();
+    expect(parseOptionalAgendaView(undefined)).toBeNull();
   });
 });
 

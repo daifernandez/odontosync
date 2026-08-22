@@ -8,8 +8,9 @@ import {
   buildAgendaDay,
   getAgendaMonthRange,
   getAgendaWeekRange,
-  parseAgendaView,
+  parseOptionalAgendaView,
 } from "@/modules/agenda/domain/weekly-schedule";
+import { getLastAgendaView } from "@/modules/agenda/repository";
 import {
   formatArgentinaDateInput,
   isAppointmentClosureStatus,
@@ -59,9 +60,10 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
     : params.semana;
   const requestedDate =
     typeof params.fecha === "string" ? params.fecha : undefined;
-  const view = parseAgendaView(
-    typeof params.vista === "string" ? params.vista : undefined,
-  );
+  const explicitView =
+    parseOptionalAgendaView(
+      typeof params.vista === "string" ? params.vista : undefined,
+    ) ?? (selectedWeek || params.nuevo === "1" ? "week" : null);
 
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -70,6 +72,9 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
   if (typeof userId !== "string") {
     redirect("/ingresar");
   }
+
+  const view =
+    explicitView ?? (await getLastAgendaView(userId).catch(() => "week" as const));
 
   if (view === "month") {
     const { from, to, month } = getAgendaMonthRange(

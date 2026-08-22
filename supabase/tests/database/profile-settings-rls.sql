@@ -51,6 +51,19 @@ BEGIN
         RAISE EXCEPTION 'The private schema is exposed to API roles';
     END IF;
 
+    IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'agenda_settings'
+          AND column_name = 'last_agenda_view'
+          AND udt_name = 'agenda_view'
+          AND is_nullable = 'NO'
+          AND column_default = '''week''::agenda_view'
+    ) THEN
+        RAISE EXCEPTION 'Agenda view preference schema is incomplete';
+    END IF;
+
     IF has_function_privilege(
         'authenticated',
         'private.handle_new_auth_user()',
@@ -243,6 +256,12 @@ BEGIN
         RAISE EXCEPTION 'RLS allowed a cross-user settings update';
     END IF;
 
+    UPDATE public.agenda_settings SET last_agenda_view = 'month';
+    GET DIAGNOSTICS affected_rows = ROW_COUNT;
+    IF affected_rows <> 0 THEN
+        RAISE EXCEPTION 'RLS allowed a cross-user agenda view update';
+    END IF;
+
     DELETE FROM public.weekly_availability_blocks;
     GET DIAGNOSTICS affected_rows = ROW_COUNT;
     IF affected_rows <> 0 THEN
@@ -368,14 +387,17 @@ BEGIN
     END IF;
 
     UPDATE public.profiles SET full_name = 'RLS owner verification';
-    UPDATE public.agenda_settings SET grid_interval_minutes = 20;
+    UPDATE public.agenda_settings
+    SET grid_interval_minutes = 20,
+        last_agenda_view = 'month';
 
     IF NOT EXISTS (
         SELECT 1
         FROM public.agenda_settings
         WHERE grid_interval_minutes = 20
+          AND last_agenda_view = 'month'
     ) THEN
-        RAISE EXCEPTION 'The owner cannot update their settings';
+        RAISE EXCEPTION 'The owner cannot update their settings and agenda view';
     END IF;
 
     INSERT INTO public.weekly_availability_blocks (
