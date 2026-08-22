@@ -30,8 +30,18 @@ type NavigationItem = {
 
 const navigation: NavigationItem[] = [
   { label: "Inicio", icon: LayoutDashboard, href: "/app", demoHref: "/demo" },
-  { label: "Agenda", icon: CalendarDays, href: "/app/agenda" },
-  { label: "Pacientes", icon: UsersRound, href: "/app/pacientes" },
+  {
+    label: "Agenda",
+    icon: CalendarDays,
+    href: "/app/agenda",
+    demoHref: "/demo/agenda",
+  },
+  {
+    label: "Pacientes",
+    icon: UsersRound,
+    href: "/app/pacientes",
+    demoHref: "/demo/pacientes",
+  },
   { label: "Imprimibles", icon: FileText },
   { label: "Indicaciones", icon: ClipboardList },
 ];
@@ -59,6 +69,34 @@ export function AppShell({
   const pathname = usePathname();
   const initials = getInitials(user.fullName);
   const isConfigurationActive = pathname.startsWith("/app/configuracion");
+  const configurationClassName = `flex h-11.5 w-full items-center gap-3.5 rounded-xl border-0 px-3 text-left no-underline transition-colors ${
+    mode === "demo"
+      ? "cursor-not-allowed bg-transparent text-[var(--color-muted)] opacity-60"
+      : isConfigurationActive
+        ? "cursor-pointer bg-[var(--color-brand-soft)] font-semibold text-[var(--color-brand-dark)]"
+        : "cursor-pointer bg-transparent text-[var(--color-muted)] hover:bg-[var(--color-brand-subtle)] hover:text-[var(--color-brand-dark)]"
+  } ${isCollapsed ? "md:justify-center md:px-0" : ""}`;
+  const configurationContent = (
+    <>
+      <Settings aria-hidden="true" size={20} strokeWidth={1.8} />
+      <span
+        className={`overflow-hidden whitespace-nowrap ${
+          isCollapsed ? "md:hidden" : ""
+        }`}
+      >
+        Configuración
+      </span>
+      {mode === "demo" ? (
+        <span
+          className={`ml-auto text-[0.58rem] font-bold tracking-[0.05em] uppercase ${
+            isCollapsed ? "md:hidden" : ""
+          }`}
+        >
+          Próximamente
+        </span>
+      ) : null}
+    </>
+  );
 
   return (
     <div className="min-h-screen">
@@ -115,11 +153,19 @@ export function AppShell({
           </p>
           {navigation.map(({ label, icon: Icon, href, demoHref }) => {
             const resolvedHref = mode === "demo" ? demoHref : href;
-            const isActive = pathname === resolvedHref;
-            const className = `flex h-11.5 w-full cursor-pointer items-center gap-3.5 rounded-xl border-0 px-3 text-left no-underline transition-colors ${
-              isActive
+            const isActive = Boolean(
+              resolvedHref &&
+                (pathname === resolvedHref ||
+                  (resolvedHref !== "/app" &&
+                    resolvedHref !== "/demo" &&
+                    pathname.startsWith(`${resolvedHref}/`))),
+            );
+            const className = `flex h-11.5 w-full items-center gap-3.5 rounded-xl border-0 px-3 text-left no-underline transition-colors ${
+              !resolvedHref
+                ? "cursor-not-allowed bg-transparent text-[var(--color-muted)] opacity-60"
+                : isActive
                 ? "bg-[var(--color-brand-soft)] font-semibold text-[var(--color-brand-dark)]"
-                : "bg-transparent text-[var(--color-muted)] hover:bg-[var(--color-brand-subtle)] hover:text-[var(--color-brand-dark)]"
+                : "cursor-pointer bg-transparent text-[var(--color-muted)] hover:bg-[var(--color-brand-subtle)] hover:text-[var(--color-brand-dark)]"
             } ${isCollapsed ? "md:justify-center md:px-0" : ""}`;
             const content = (
               <>
@@ -131,6 +177,15 @@ export function AppShell({
                 >
                   {label}
                 </span>
+                {!resolvedHref ? (
+                  <span
+                    className={`ml-auto text-[0.58rem] font-bold tracking-[0.05em] uppercase ${
+                      isCollapsed ? "md:hidden" : ""
+                    }`}
+                  >
+                    Próximamente
+                  </span>
+                ) : null}
               </>
             );
 
@@ -146,9 +201,11 @@ export function AppShell({
               </Link>
             ) : (
               <button
+                aria-disabled="true"
                 className={className}
+                disabled
                 key={label}
-                title={isCollapsed ? label : undefined}
+                title={`${label}: próximamente`}
                 type="button"
               >
                 {content}
@@ -158,27 +215,26 @@ export function AppShell({
         </nav>
 
         <div className="flex flex-col gap-1 border-t border-[var(--color-border)] pt-4">
-          <Link
-            aria-current={isConfigurationActive ? "page" : undefined}
-            className={`flex h-11.5 w-full cursor-pointer items-center gap-3.5 rounded-xl border-0 px-3 text-left no-underline transition-colors ${
-              isConfigurationActive
-                ? "bg-[var(--color-brand-soft)] font-semibold text-[var(--color-brand-dark)]"
-                : "bg-transparent text-[var(--color-muted)] hover:bg-[var(--color-brand-subtle)] hover:text-[var(--color-brand-dark)]"
-            } ${
-              isCollapsed ? "md:justify-center md:px-0" : ""
-            }`}
-            href="/app/configuracion"
-            title={isCollapsed ? "Configuración" : undefined}
-          >
-            <Settings aria-hidden="true" size={20} strokeWidth={1.8} />
-            <span
-              className={`overflow-hidden whitespace-nowrap ${
-                isCollapsed ? "md:hidden" : ""
-              }`}
+          {mode === "demo" ? (
+            <button
+              aria-disabled="true"
+              className={configurationClassName}
+              disabled
+              title="Configuración: próximamente"
+              type="button"
             >
-              Configuración
-            </span>
-          </Link>
+              {configurationContent}
+            </button>
+          ) : (
+            <Link
+              aria-current={isConfigurationActive ? "page" : undefined}
+              className={configurationClassName}
+              href="/app/configuracion"
+              title={isCollapsed ? "Configuración" : undefined}
+            >
+              {configurationContent}
+            </Link>
+          )}
 
           <div
             className={`mt-1 flex items-center gap-3 px-2.5 py-2.5 ${

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 
-import { AppShell } from "@/components/app-shell";
 import { DashboardHome } from "@/components/dashboard-home";
 
 export const metadata: Metadata = {
@@ -14,12 +13,5 @@ export const metadata: Metadata = {
 };
 
 export default function DemoPage() {
-  return (
-    <AppShell
-      mode="demo"
-      user={{ fullName: "Cuenta demo", email: "Datos ficticios" }}
-    >
-      <DashboardHome demoMode />
-    </AppShell>
-  );
+  return <DashboardHome demoMode />;
 }
