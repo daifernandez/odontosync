@@ -455,3 +455,77 @@ semanal.
 - Gestionar la agenda mediante instrucciones en lenguaje natural.
 - Activar la protección contra contraseñas filtradas cuando resulte
   indispensable para el proyecto.
+
+## Sprint 008 — Dashboard autenticado con datos reales
+
+- **Fecha:** 22 de agosto de 2026
+- **Estado:** publicado y mergeado
+- **Rama:** `codex/dashboard-real-usuarios`
+- **Publicación:** [PR #37](https://github.com/daifernandez/odontosync/pull/37),
+  merge commit `2e0a6e1`
+
+### Objetivo
+
+Reemplazar los valores estáticos del inicio autenticado por un resumen
+calculado con los datos reales del usuario, sin alterar la demostración pública.
+
+### Resultado
+
+- El inicio calcula los turnos del día, la cantidad de confirmados y los
+  horarios disponibles según la configuración, los turnos activos y los
+  bloqueos excepcionales.
+- El próximo turno y la lista de hasta tres turnos futuros provienen de
+  Supabase; cuando no existen, la interfaz muestra un estado vacío explícito.
+- Cada turno del resumen enlaza su fecha, vista diaria e identificador exactos
+  para abrir el contexto correcto en la agenda.
+- Las lecturas agregan un filtro explícito por `user_id` además de las políticas
+  RLS existentes.
+- La ruta `/demo` conserva sus datos ficticios y su comportamiento previo.
+- No se modificaron registros existentes, esquema, migraciones, políticas RLS
+  ni privilegios.
+
+### Criterios verificados
+
+- El usuario autenticado ve únicamente cantidades y turnos derivados de sus
+  propios datos.
+- Los límites del día se calculan en la zona horaria de Argentina.
+- Los espacios libres respetan horarios habituales, duración,
+  acondicionamiento, ocupación y bloqueos excepcionales.
+- Una cuenta sin turnos futuros no recibe pacientes, horarios ni cantidades
+  inventados y dispone de una acción clara para crear el primero.
+- Crear un turno desde el estado vacío abre el formulario real de Agenda.
+- La sesión evaluadora se revisó localmente en un viewport móvil, sin errores ni
+  advertencias de consola y sin escrituras persistentes.
+
+### Skills aplicadas
+
+- Next.js para el renderizado de servidor, la sesión autenticada y los enlaces
+  con contexto de la vista diaria.
+- Supabase, `supabase-postgres-best-practices` y `security-sprint-review` para
+  aislamiento por usuario, RLS y revisión de las consultas.
+- `usability-review` para los estados vacíos, claridad del resumen,
+  accesibilidad y comportamiento responsive.
+- Browser y `verification` para recorrer sesión, datos, respuesta y navegación
+  con la cuenta evaluadora.
+- `odontosync-release-check` para la batería final y la publicación.
+
+### Verificaciones
+
+- Pruebas: 26 archivos y 157 casos aprobados.
+- RLS: cuatro suites aprobadas sobre Supabase enlazado.
+- TypeScript, ESLint y build de producción: aprobados.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- GitHub Actions: aprobado en el PR de publicación.
+- Asesor de Supabase: sin errores; permanece el aviso externo conocido de
+  protección contra contraseñas filtradas, postergado por decisión del
+  proyecto.
+
+### Fuera de alcance y próximos pasos
+
+- Preparar un conjunto evaluador con turnos futuros para recorrer visualmente
+  el resumen poblado sin utilizar datos reales.
+- Revisar y depurar los registros ficticios actuales antes de la entrega.
+- Incorporar una vista mensual y los módulos todavía marcados como próximos.
+- Retomar la demostración pública cuando la aplicación real esté finalizada.
+- Activar la protección contra contraseñas filtradas cuando resulte
+  indispensable para el proyecto.
