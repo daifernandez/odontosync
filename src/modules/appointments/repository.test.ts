@@ -11,6 +11,7 @@ vi.mock("@/lib/supabase/server", () => ({
 import {
   cancelAppointment,
   closeAppointment,
+  listPatientAppointments,
   listUpcomingAppointments,
   rescheduleAppointment,
 } from "./repository";
@@ -63,6 +64,38 @@ describe("listUpcomingAppointments", () => {
 
     expect(query.eq).toHaveBeenCalledWith("user_id", "owner-id");
     expect(query.limit).toHaveBeenCalledWith(3);
+  });
+});
+
+describe("listPatientAppointments", () => {
+  it("scopes patient history reads to the patient and authenticated owner", async () => {
+    const query = {
+      select: vi.fn(),
+      eq: vi.fn(),
+      in: vi.fn(),
+      order: vi.fn().mockResolvedValue({ data: [], error: null }),
+    };
+
+    query.select.mockReturnValue(query);
+    query.eq.mockReturnValue(query);
+    query.in.mockReturnValue(query);
+    mocks.createClient.mockResolvedValue({
+      from: vi.fn().mockReturnValue(query),
+    });
+
+    await listPatientAppointments("patient-id", "owner-id");
+
+    expect(query.eq).toHaveBeenCalledWith("patient_id", "patient-id");
+    expect(query.eq).toHaveBeenCalledWith("user_id", "owner-id");
+    expect(query.in).toHaveBeenCalledWith("status", [
+      "pending_confirmation",
+      "confirmed",
+      "completed",
+      "no_show",
+    ]);
+    expect(query.order).toHaveBeenCalledWith("starts_at", {
+      ascending: false,
+    });
   });
 });
 
