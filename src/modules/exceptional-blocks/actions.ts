@@ -4,7 +4,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
-import { buildAgendaWeek } from "@/modules/agenda/domain/weekly-schedule";
+import {
+  buildAgendaPath,
+  buildAgendaWeek,
+  type AgendaView,
+} from "@/modules/agenda/domain/weekly-schedule";
 
 import {
   type ExceptionalBlockFormState,
@@ -19,6 +23,21 @@ import {
 function readText(formData: FormData, field: string) {
   const value = formData.get(field);
   return typeof value === "string" ? value : "";
+}
+
+function buildActionAgendaPath(
+  formData: FormData,
+  params: Record<string, string>,
+) {
+  const view: AgendaView =
+    readText(formData, "agendaView") === "day" ? "day" : "week";
+  const selectedDate =
+    view === "day" ? readText(formData, "agendaDate") : undefined;
+  const weekStartDate = buildAgendaWeek(
+    selectedDate || readText(formData, "weekStartDate"),
+  ).startDate;
+
+  return buildAgendaPath({ weekStartDate, view, selectedDate, params });
 }
 
 async function getAuthenticatedUserId() {
@@ -91,20 +110,20 @@ export async function createExceptionalBlockAction(
   }
 
   revalidatePath("/app/agenda");
-  const weekStartDate = buildAgendaWeek(
-    readText(formData, "weekStartDate"),
-  ).startDate;
   redirect(
-    `/app/agenda?semana=${weekStartDate}&bloqueos=1&bloqueoCreado=1`,
+    buildActionAgendaPath(formData, {
+      bloqueos: "1",
+      bloqueoCreado: "1",
+    }),
   );
 }
 
 export async function deleteExceptionalBlockAction(formData: FormData) {
   const blockId = validateExceptionalBlockId(readText(formData, "blockId"));
-  const weekStartDate = buildAgendaWeek(
-    readText(formData, "weekStartDate"),
-  ).startDate;
-  const errorPath = `/app/agenda?semana=${weekStartDate}&bloqueos=1&bloqueoError=1`;
+  const errorPath = buildActionAgendaPath(formData, {
+    bloqueos: "1",
+    bloqueoError: "1",
+  });
 
   if (!blockId) {
     redirect(errorPath);
@@ -130,6 +149,9 @@ export async function deleteExceptionalBlockAction(formData: FormData) {
 
   revalidatePath("/app/agenda");
   redirect(
-    `/app/agenda?semana=${weekStartDate}&bloqueos=1&bloqueoEliminado=1`,
+    buildActionAgendaPath(formData, {
+      bloqueos: "1",
+      bloqueoEliminado: "1",
+    }),
   );
 }

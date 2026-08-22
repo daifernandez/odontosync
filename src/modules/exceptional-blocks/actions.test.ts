@@ -128,6 +128,18 @@ describe("createExceptionalBlockAction", () => {
     );
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/app/agenda");
   });
+
+  it("preserves the selected daily view after creating a block", async () => {
+    const formData = validFormData();
+    formData.set("agendaView", "day");
+    formData.set("agendaDate", "2099-08-11");
+
+    await expect(
+      createExceptionalBlockAction(exceptionalBlockFormState, formData),
+    ).rejects.toThrow(
+      "redirect:/app/agenda?semana=2099-08-10&vista=dia&fecha=2099-08-11&bloqueos=1&bloqueoCreado=1",
+    );
+  });
 });
 
 describe("deleteExceptionalBlockAction", () => {

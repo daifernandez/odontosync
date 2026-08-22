@@ -5,6 +5,11 @@ import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useRef, useState } from "react";
 
 import { SubmitButton } from "@/components/auth/submit-button";
+import { AgendaContextFields } from "@/components/agenda-context-fields";
+import {
+  buildAgendaPath,
+  type AgendaView,
+} from "@/modules/agenda/domain/weekly-schedule";
 import {
   cancelAppointmentAction,
   closeAppointmentAction,
@@ -39,6 +44,8 @@ export function AppointmentManagementPanel({
   exceptionalBlocks,
   gridIntervalMinutes,
   minimumDate,
+  selectedDate,
+  view = "week",
   weekStartDate,
 }: Readonly<{
   appointment: Appointment;
@@ -48,6 +55,8 @@ export function AppointmentManagementPanel({
   exceptionalBlocks: ExceptionalBlockOccupancy[];
   gridIntervalMinutes: number;
   minimumDate: string;
+  selectedDate?: string;
+  view?: AgendaView;
   weekStartDate: string;
 }>) {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -150,10 +159,10 @@ export function AppointmentManagementPanel({
           className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4"
         >
           <input name="appointmentId" type="hidden" value={appointment.id} />
-          <input
-            name="weekStartDate"
-            type="hidden"
-            value={weekStartDate}
+          <AgendaContextFields
+            selectedDate={selectedDate ?? weekStartDate}
+            view={view}
+            weekStartDate={weekStartDate}
           />
           <p className="m-0 text-sm font-semibold text-red-800">
             ¿Confirmás que este paciente canceló el turno?
@@ -183,9 +192,10 @@ export function AppointmentManagementPanel({
       aria-labelledby="manage-appointment-title"
       className="fixed inset-y-0 right-0 left-auto m-0 h-dvh max-h-none w-full max-w-xl overflow-hidden border-0 bg-white p-0 text-[var(--color-foreground)] shadow-[-1rem_0_3rem_rgb(24_51_48/18%)] backdrop:bg-[rgb(24_51_48/45%)]"
       onClose={() =>
-        router.replace(`/app/agenda?semana=${weekStartDate}`, {
-          scroll: false,
-        })
+        router.replace(
+          buildAgendaPath({ weekStartDate, view, selectedDate }),
+          { scroll: false },
+        )
       }
       ref={dialogRef}
     >
@@ -278,10 +288,10 @@ export function AppointmentManagementPanel({
                               type="hidden"
                               value={appointment.id}
                             />
-                            <input
-                              name="weekStartDate"
-                              type="hidden"
-                              value={weekStartDate}
+                            <AgendaContextFields
+                              selectedDate={selectedDate ?? weekStartDate}
+                              view={view}
+                              weekStartDate={weekStartDate}
                             />
                             <input
                               name="closureStatus"
@@ -298,10 +308,10 @@ export function AppointmentManagementPanel({
                               type="hidden"
                               value={appointment.id}
                             />
-                            <input
-                              name="weekStartDate"
-                              type="hidden"
-                              value={weekStartDate}
+                            <AgendaContextFields
+                              selectedDate={selectedDate ?? weekStartDate}
+                              view={view}
+                              weekStartDate={weekStartDate}
                             />
                             <input
                               name="closureStatus"
@@ -335,6 +345,11 @@ export function AppointmentManagementPanel({
                           name="appointmentId"
                           type="hidden"
                           value={appointment.id}
+                        />
+                        <AgendaContextFields
+                          selectedDate={selectedDate ?? weekStartDate}
+                          view={view}
+                          weekStartDate={weekStartDate}
                         />
                         <p className="m-0 text-sm leading-6 text-[var(--color-muted)]">
                           Elegí la nueva fecha y el nuevo horario. El turno
@@ -463,7 +478,11 @@ export function AppointmentManagementPanel({
             <>
           <form action={action} className="flex flex-col gap-4" noValidate>
             <input name="appointmentId" type="hidden" value={appointment.id} />
-            <input name="weekStartDate" type="hidden" value={weekStartDate} />
+            <AgendaContextFields
+              selectedDate={selectedDate ?? weekStartDate}
+              view={view}
+              weekStartDate={weekStartDate}
+            />
 
             {state.message ? (
               <p
@@ -585,10 +604,10 @@ export function AppointmentManagementPanel({
                 type="hidden"
                 value={appointment.id}
               />
-              <input
-                name="weekStartDate"
-                type="hidden"
-                value={weekStartDate}
+              <AgendaContextFields
+                selectedDate={selectedDate ?? weekStartDate}
+                view={view}
+                weekStartDate={weekStartDate}
               />
               <SubmitButton pendingLabel="Confirmando turno…">
                 Confirmar turno
