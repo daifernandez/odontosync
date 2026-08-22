@@ -689,3 +689,88 @@ vista mensual y abra cualquier fecha en su Agenda diaria exacta.
 - Retomar la demostración pública cuando la aplicación real esté finalizada.
 - Activar la protección contra contraseñas filtradas cuando resulte
   indispensable para el proyecto.
+
+## Sprint 011 — Preferencia de vista de Agenda
+
+- **Fecha:** 22 de agosto de 2026
+- **Estado:** publicado y mergeado
+- **Rama:** `codex/sprint-011-preferencia-vista-agenda`
+- **Publicación:** [PR #43](https://github.com/daifernandez/odontosync/pull/43),
+  merge commit `3860fa5`
+
+### Objetivo
+
+Recordar por usuario la última vista elegida de Agenda entre Semana, Día y
+Mes, sin perder la prioridad de las URLs explícitas ni romper los flujos
+semanales existentes.
+
+### Resultado
+
+- Una entrada neutra a `/app/agenda` abre la última vista elegida por el
+  usuario y usa Semana cuando todavía no existe una preferencia legible.
+- El selector de vistas guarda Semana, Día o Mes antes de navegar y conserva
+  enlaces normales para accesibilidad, apertura en otra pestaña y navegación
+  sin JavaScript.
+- Una vista válida indicada en la URL tiene prioridad para ese acceso y no
+  sobrescribe por sí sola la preferencia guardada.
+- Las URLs históricas con `semana=...` continúan abriendo Semana, el flujo
+  `nuevo=1` sigue mostrando el formulario de nuevo turno y `vista=day` se
+  acepta por compatibilidad.
+- Un fallo al leer la preferencia vuelve de forma segura a Semana; un fallo al
+  guardarla no impide llegar a la vista solicitada.
+- La Server Action valida el valor recibido, obtiene la identidad autenticada
+  en el servidor y las consultas filtran explícitamente por `user_id`, además
+  de las políticas RLS forzadas existentes.
+- Se reutilizó `agenda_settings.last_agenda_view`, presente desde el esquema
+  inicial; no se agregaron migraciones, dependencias ni nuevos privilegios.
+
+### Criterios verificados
+
+- Cada usuario solo puede leer o modificar su propia preferencia de Agenda;
+  una identidad ajena no observa ni actualiza la fila del propietario.
+- Una sesión ausente o vencida y un valor no soportado no producen escrituras.
+- Semana, Día y Mes se recuerdan entre entradas a Agenda, mientras una URL
+  explícita conserva su contexto sin alterar la preferencia previa.
+- Los enlaces semanales y la creación de turnos mantienen su destino aunque
+  la vista preferida sea Mes.
+- El recorrido autenticado se verificó con el usuario ficticio de evaluación,
+  restaurando finalmente Semana y sin modificar turnos ni pacientes.
+- La navegación real no produjo errores ni advertencias de aplicación en la
+  consola del navegador.
+
+### Skills aplicadas
+
+- Next.js para parámetros asíncronos, renderizado de servidor, Server Actions
+  y prioridad de las rutas explícitas.
+- Supabase, `supabase-postgres-best-practices` y `security-sprint-review` para
+  validación en servidor, mínimo privilegio, aislamiento por usuario y pruebas
+  RLS positivas y negativas.
+- `usability-review` para conservar enlaces accesibles, contexto de navegación
+  y una degradación segura cuando la preferencia no está disponible.
+- `react-best-practices` para revisar el límite cliente-servidor, autenticación
+  de la acción y transiciones no urgentes.
+- Browser para probar persistencia, prioridad de URL, compatibilidad y consola
+  con el usuario ficticio.
+- `odontosync-release-check` para la batería final y la publicación.
+
+### Verificaciones
+
+- Pruebas: 32 archivos y 189 casos aprobados.
+- RLS: cuatro suites aprobadas sobre Supabase enlazado.
+- TypeScript, ESLint y build de producción: aprobados.
+- Prisma: esquema válido y 16 migraciones sincronizadas con la base enlazada.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- GitHub Actions: aprobado en el PR de publicación.
+- Asesor de Supabase: sin errores; permanece el aviso externo conocido de
+  protección contra contraseñas filtradas, postergado por decisión del
+  proyecto.
+
+### Fuera de alcance y próximos pasos
+
+- Crear o gestionar turnos y bloqueos directamente desde la vista mensual.
+- Realizar la comprobación visual manual de la vista mensual en un viewport
+  móvil autenticado.
+- Gestionar la Agenda mediante instrucciones en lenguaje natural.
+- Retomar la demostración pública cuando la aplicación real esté finalizada.
+- Activar la protección contra contraseñas filtradas cuando resulte
+  indispensable para el proyecto.
