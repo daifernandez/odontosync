@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
+import { listExceptionalBlocks } from "@/modules/exceptional-blocks/repository";
 import { getInitialConfiguration } from "@/modules/initial-configuration/repository";
 import { buildAgendaWeek } from "@/modules/agenda/domain/weekly-schedule";
 
@@ -14,7 +15,10 @@ import {
   isAppointmentId,
   validateAppointment,
 } from "./domain/appointment";
-import { isAppointmentWithinWeeklyAvailability } from "./domain/availability";
+import {
+  doesAppointmentOverlapExceptionalBlock,
+  isAppointmentWithinWeeklyAvailability,
+} from "./domain/availability";
 import {
   cancelAppointment,
   closeAppointment,
@@ -67,7 +71,24 @@ export async function createAppointmentAction(
   }
 
   try {
-    const configuration = await getInitialConfiguration();
+    const [configuration, exceptionalBlocks] = await Promise.all([
+      getInitialConfiguration(),
+      listExceptionalBlocks(),
+    ]);
+
+    if (
+      doesAppointmentOverlapExceptionalBlock(
+        validation.data,
+        exceptionalBlocks,
+      )
+    ) {
+      return {
+        status: "error",
+        message: "Ese período está marcado como no disponible.",
+        fieldErrors: { startsAt: "Elegí otro horario disponible." },
+        values,
+      };
+    }
 
     if (
       !configuration ||
@@ -75,6 +96,7 @@ export async function createAppointmentAction(
         validation.data,
         configuration.availability,
         configuration.gridIntervalMinutes,
+        exceptionalBlocks,
       )
     ) {
       return {
@@ -103,6 +125,15 @@ export async function createAppointmentAction(
         message:
           "Ese horario se superpone con otro turno. Elegí un horario disponible.",
         fieldErrors: { startsAt: "El horario seleccionado no está disponible." },
+        values,
+      };
+    }
+
+    if (result === "blocked") {
+      return {
+        status: "error",
+        message: "Ese período está marcado como no disponible.",
+        fieldErrors: { startsAt: "Elegí otro horario disponible." },
         values,
       };
     }
@@ -180,7 +211,24 @@ export async function updateAppointmentAction(
       };
     }
 
-    const configuration = await getInitialConfiguration();
+    const [configuration, exceptionalBlocks] = await Promise.all([
+      getInitialConfiguration(),
+      listExceptionalBlocks(),
+    ]);
+
+    if (
+      doesAppointmentOverlapExceptionalBlock(
+        validation.data,
+        exceptionalBlocks,
+      )
+    ) {
+      return {
+        status: "error",
+        message: "Ese período está marcado como no disponible.",
+        fieldErrors: { startsAt: "Elegí otro horario disponible." },
+        values,
+      };
+    }
 
     if (
       !configuration ||
@@ -188,6 +236,7 @@ export async function updateAppointmentAction(
         validation.data,
         configuration.availability,
         configuration.gridIntervalMinutes,
+        exceptionalBlocks,
       )
     ) {
       return {
@@ -204,6 +253,15 @@ export async function updateAppointmentAction(
       return {
         status: "error",
         message: "Ese horario se superpone con otro turno.",
+        fieldErrors: { startsAt: "Elegí otro horario disponible." },
+        values,
+      };
+    }
+
+    if (result === "blocked") {
+      return {
+        status: "error",
+        message: "Ese período está marcado como no disponible.",
         fieldErrors: { startsAt: "Elegí otro horario disponible." },
         values,
       };
@@ -299,7 +357,24 @@ export async function rescheduleAppointmentAction(
       };
     }
 
-    const configuration = await getInitialConfiguration();
+    const [configuration, exceptionalBlocks] = await Promise.all([
+      getInitialConfiguration(),
+      listExceptionalBlocks(),
+    ]);
+
+    if (
+      doesAppointmentOverlapExceptionalBlock(
+        validation.data,
+        exceptionalBlocks,
+      )
+    ) {
+      return {
+        status: "error",
+        message: "Ese período está marcado como no disponible.",
+        fieldErrors: { startsAt: "Elegí otro horario disponible." },
+        values,
+      };
+    }
 
     if (
       !configuration ||
@@ -307,6 +382,7 @@ export async function rescheduleAppointmentAction(
         validation.data,
         configuration.availability,
         configuration.gridIntervalMinutes,
+        exceptionalBlocks,
       )
     ) {
       return {
@@ -329,6 +405,15 @@ export async function rescheduleAppointmentAction(
         message:
           "Ese horario se superpone con otro turno. Confirmá la superposición para continuar.",
         fieldErrors: {},
+        values,
+      };
+    }
+
+    if (result === "blocked") {
+      return {
+        status: "error",
+        message: "Ese período está marcado como no disponible.",
+        fieldErrors: { startsAt: "Elegí otro horario disponible." },
         values,
       };
     }

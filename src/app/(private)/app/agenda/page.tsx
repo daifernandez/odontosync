@@ -8,6 +8,7 @@ import {
   listAppointmentsForRange,
   listAppointmentOccupancy,
 } from "@/modules/appointments/repository";
+import { listExceptionalBlocks } from "@/modules/exceptional-blocks/repository";
 import { getInitialConfiguration } from "@/modules/initial-configuration/repository";
 import { listPatients } from "@/modules/patients/repository";
 
@@ -19,6 +20,10 @@ export const metadata: Metadata = {
 type AgendaPageProps = {
   searchParams: Promise<{
     actualizado?: string | string[];
+    bloqueoCreado?: string | string[];
+    bloqueoEliminado?: string | string[];
+    bloqueoError?: string | string[];
+    bloqueos?: string | string[];
     cancelado?: string | string[];
     cierre?: string | string[];
     confirmado?: string | string[];
@@ -39,12 +44,19 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
     ? params.semana[0]
     : params.semana;
   const { from, to, week } = getAgendaWeekRange(selectedWeek);
-  const [configuration, patients, appointments, appointmentOccupancy] =
+  const [
+    configuration,
+    patients,
+    appointments,
+    appointmentOccupancy,
+    exceptionalBlocks,
+  ] =
     await Promise.all([
       getInitialConfiguration(),
       listPatients("", "active"),
       listAppointmentsForRange(from, to),
       listAppointmentOccupancy(),
+      listExceptionalBlocks(),
     ]);
 
   if (!configuration || configuration.availability.length === 0) {
@@ -68,6 +80,11 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
       confirmed={params.confirmado === "1"}
       configuration={configuration}
       created={params.creado === "1"}
+      exceptionalBlockCreated={params.bloqueoCreado === "1"}
+      exceptionalBlockDeleted={params.bloqueoEliminado === "1"}
+      exceptionalBlockManagementError={params.bloqueoError === "1"}
+      exceptionalBlockPanelOpen={params.bloqueos === "1"}
+      exceptionalBlocks={exceptionalBlocks}
       managementError={params.errorGestion === "1"}
       initialDate={typeof params.fecha === "string" ? params.fecha : undefined}
       initialTime={typeof params.hora === "string" ? params.hora : undefined}

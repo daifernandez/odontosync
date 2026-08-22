@@ -12,6 +12,7 @@ import {
 import {
   getAvailableAppointmentSlots,
   type AppointmentOccupancy,
+  type ExceptionalBlockOccupancy,
 } from "@/modules/appointments/domain/availability";
 import type { AvailabilityBlock } from "@/modules/initial-configuration/domain/initial-configuration";
 import type { Patient } from "@/modules/patients/domain/patient";
@@ -37,6 +38,7 @@ export function AppointmentForm({
   availability,
   created,
   currentTime,
+  exceptionalBlocks,
   patients,
   defaultDurationMinutes,
   defaultCleanupMinutes,
@@ -51,6 +53,7 @@ export function AppointmentForm({
   availability: AvailabilityBlock[];
   created: boolean;
   currentTime: string;
+  exceptionalBlocks: ExceptionalBlockOccupancy[];
   patients: AppointmentPatientOption[];
   defaultDurationMinutes: number;
   defaultCleanupMinutes: number;
@@ -87,6 +90,7 @@ export function AppointmentForm({
         date,
         availability,
         appointments: appointmentOccupancy,
+        exceptionalBlocks,
         durationMinutes: Number(durationMinutes),
         cleanupMinutes: Number(cleanupMinutes),
         gridIntervalMinutes,

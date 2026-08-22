@@ -15,6 +15,15 @@ enum AgendaView {
   @@map("agenda_view")
 }
 
+enum ExceptionalBlockCategory {
+  VACATION @map("vacation")
+  HOLIDAY  @map("holiday")
+  PERSONAL @map("personal")
+  OTHER    @map("other")
+
+  @@map("exceptional_block_category")
+}
+
 enum AppointmentStatus {
   PENDING_CONFIRMATION @map("pending_confirmation")
   CONFIRMED            @map("confirmed")
@@ -48,6 +57,7 @@ model Profile {
   agendaSettings      AgendaSettings?
   patients            Patient[]
   appointments        Appointment[]
+  exceptionalAvailabilityBlocks ExceptionalAvailabilityBlock[]
 
   @@map("profiles")
 }
@@ -88,6 +98,18 @@ model Appointment {
   @@index([userId, startsAt])
   @@index([patientId, startsAt])
   @@map("appointments")
+}
+
+model ExceptionalAvailabilityBlock {
+  id       String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId   String                   @map("user_id") @db.Uuid
+  startsAt DateTime                 @map("starts_at") @db.Timestamptz(0)
+  endsAt   DateTime                 @map("ends_at") @db.Timestamptz(0)
+  category ExceptionalBlockCategory
+  profile  Profile                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, startsAt])
+  @@map("exceptional_availability_blocks")
 }
 
 model AgendaSettings {

@@ -8,6 +8,7 @@ import Link from "next/link";
 
 import { AppointmentManagementPanel } from "@/components/appointment-management-panel";
 import { AppointmentPanel } from "@/components/appointment-panel";
+import { ExceptionalBlocksPanel } from "@/components/exceptional-blocks-panel";
 import {
   buildAgendaWeek,
   type AgendaWeek,
@@ -21,9 +22,14 @@ import {
   type AppointmentStatus,
 } from "@/modules/appointments/domain/appointment";
 import {
+  getExceptionalBlockSegmentForDate,
   getAvailableAppointmentSlots,
   type AppointmentOccupancy,
 } from "@/modules/appointments/domain/availability";
+import {
+  exceptionalBlockCategories,
+  type ExceptionalBlock,
+} from "@/modules/exceptional-blocks/domain/exceptional-block";
 import type { InitialConfiguration } from "@/modules/initial-configuration/domain/initial-configuration";
 import type { Patient } from "@/modules/patients/domain/patient";
 
@@ -71,6 +77,11 @@ export function WeeklyAgenda({
   confirmed,
   configuration,
   created,
+  exceptionalBlockCreated,
+  exceptionalBlockDeleted,
+  exceptionalBlockManagementError,
+  exceptionalBlockPanelOpen,
+  exceptionalBlocks,
   initialDate,
   initialTime,
   managementError,
@@ -88,6 +99,11 @@ export function WeeklyAgenda({
   confirmed: boolean;
   configuration: InitialConfiguration;
   created: boolean;
+  exceptionalBlockCreated: boolean;
+  exceptionalBlockDeleted: boolean;
+  exceptionalBlockManagementError: boolean;
+  exceptionalBlockPanelOpen: boolean;
+  exceptionalBlocks: ExceptionalBlock[];
   initialDate?: string;
   initialTime?: string;
   managementError: boolean;
@@ -167,11 +183,20 @@ export function WeeklyAgenda({
               configuration.defaultAppointmentDurationMinutes
             }
             gridIntervalMinutes={configuration.gridIntervalMinutes}
+            exceptionalBlocks={exceptionalBlocks}
             initialDate={initialDate}
             initialTime={initialTime}
             key={`${initialDate ?? ""}-${initialTime ?? ""}-${created}`}
             minimumDate={formatArgentinaDateInput(currentTime)}
             patients={patients}
+            weekStartDate={week.startDate}
+          />
+          <ExceptionalBlocksPanel
+            autoOpen={exceptionalBlockPanelOpen}
+            blocks={exceptionalBlocks}
+            created={exceptionalBlockCreated}
+            deleted={exceptionalBlockDeleted}
+            managementError={exceptionalBlockManagementError}
             weekStartDate={week.startDate}
           />
           <Link
@@ -192,6 +217,7 @@ export function WeeklyAgenda({
           )}
           availability={configuration.availability}
           currentTime={currentTime.toISOString()}
+          exceptionalBlocks={exceptionalBlocks}
           gridIntervalMinutes={configuration.gridIntervalMinutes}
           key={selectedAppointment.id}
           minimumDate={formatArgentinaDateInput(currentTime)}
@@ -354,12 +380,38 @@ export function WeeklyAgenda({
                   date: day.date,
                   availability: configuration.availability,
                   appointments: appointmentOccupancy,
+                  exceptionalBlocks,
                   durationMinutes:
                     configuration.defaultAppointmentDurationMinutes,
                   cleanupMinutes: configuration.defaultCleanupMinutes,
                   gridIntervalMinutes: configuration.gridIntervalMinutes,
                   now: currentTime,
                 });
+                const dayExceptionalBlocks = exceptionalBlocks.flatMap(
+                  (block) => {
+                    const segment = getExceptionalBlockSegmentForDate(
+                      block,
+                      day.date,
+                    );
+
+                    if (!segment) {
+                      return [];
+                    }
+
+                    const startMinutes = Math.max(
+                      segment.startMinutes,
+                      calendarStart,
+                    );
+                    const endMinutes = Math.min(
+                      segment.endMinutes,
+                      calendarEnd,
+                    );
+
+                    return startMinutes < endMinutes
+                      ? [{ block, startMinutes, endMinutes }]
+                      : [];
+                  },
+                );
 
                 return (
                   <svg
@@ -401,6 +453,52 @@ export function WeeklyAgenda({
                         />
                       );
                     })}
+
+                    {dayExceptionalBlocks.map(
+                      ({ block, startMinutes, endMinutes }) => {
+                        const category = exceptionalBlockCategories.find(
+                          ({ value }) => value === block.category,
+                        );
+                        const label = category?.label ?? "Bloqueo";
+                        const y =
+                          (startMinutes - calendarStart) * pixelsPerMinute;
+                        const height =
+                          (endMinutes - startMinutes) * pixelsPerMinute;
+
+                        return (
+                          <g
+                            aria-label={`No disponible: ${label}. ${formatTime(startMinutes)} a ${formatTime(endMinutes)}.`}
+                            key={block.id}
+                            role="img"
+                          >
+                            <rect
+                              className="pointer-events-none fill-[var(--color-neutral-soft)] stroke-[var(--color-muted)]"
+                              height={height}
+                              rx="7"
+                              width="calc(100% - 10px)"
+                              x="5"
+                              y={y}
+                            />
+                            <foreignObject
+                              className="pointer-events-none"
+                              height={height}
+                              width="calc(100% - 14px)"
+                              x="7"
+                              y={y}
+                            >
+                              <div className="h-full overflow-hidden px-2 py-2 text-[var(--color-foreground)]">
+                                <strong className="block truncate text-xs">
+                                  No disponible
+                                </strong>
+                                <span className="mt-0.5 block truncate text-[0.66rem] font-semibold">
+                                  {label}
+                                </span>
+                              </div>
+                            </foreignObject>
+                          </g>
+                        );
+                      },
+                    )}
 
                     {availableSlots.map((time) => {
                       const minutes = timeToMinutes(time);

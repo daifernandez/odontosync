@@ -28,6 +28,7 @@ describe("AppointmentManagementPanel", () => {
           { dayOfWeek: 2, startTime: "09:00", endTime: "13:00" },
         ]}
         currentTime="2026-08-10T12:00:00.000Z"
+        exceptionalBlocks={[]}
         gridIntervalMinutes={15}
         minimumDate="2026-08-10"
         weekStartDate="2026-08-10"
@@ -71,6 +72,7 @@ describe("AppointmentManagementPanel", () => {
           { dayOfWeek: 2, startTime: "09:00", endTime: "13:00" },
         ]}
         currentTime="2026-08-10T12:00:00.000Z"
+        exceptionalBlocks={[]}
         gridIntervalMinutes={15}
         minimumDate="2026-08-10"
         weekStartDate="2026-08-10"
@@ -114,6 +116,7 @@ describe("AppointmentManagementPanel", () => {
           { dayOfWeek: 1, startTime: "09:00", endTime: "13:00" },
         ]}
         currentTime="2026-08-10T12:30:00.000Z"
+        exceptionalBlocks={[]}
         gridIntervalMinutes={15}
         minimumDate="2026-08-10"
         weekStartDate="2026-08-10"
@@ -147,6 +150,7 @@ describe("AppointmentManagementPanel", () => {
           { dayOfWeek: 1, startTime: "09:00", endTime: "13:00" },
         ]}
         currentTime="2026-08-10T13:00:00.000Z"
+        exceptionalBlocks={[]}
         gridIntervalMinutes={15}
         minimumDate="2026-08-10"
         weekStartDate="2026-08-10"
@@ -183,6 +187,7 @@ describe("AppointmentManagementPanel", () => {
           { dayOfWeek: 1, startTime: "09:00", endTime: "13:00" },
         ]}
         currentTime="2026-08-10T14:00:00.000Z"
+        exceptionalBlocks={[]}
         gridIntervalMinutes={15}
         minimumDate="2026-08-10"
         weekStartDate="2026-08-10"
