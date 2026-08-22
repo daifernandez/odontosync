@@ -18,6 +18,7 @@ const calendarWeekDays = weekDays.slice(0, 5);
 const localDatePattern = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 export type AgendaView = "week" | "day";
+export type AgendaDisplayView = AgendaView | "month";
 
 function parseLocalDate(value: string | undefined) {
   const match = value ? localDatePattern.exec(value) : null;
@@ -98,8 +99,52 @@ export function buildAgendaDay(selectedDate?: string, now = new Date()) {
 
 export type AgendaDay = ReturnType<typeof buildAgendaDay>;
 
-export function parseAgendaView(value: string | undefined): AgendaView {
-  return value === "dia" ? "day" : "week";
+export function buildAgendaMonth(selectedDate?: string, now = new Date()) {
+  const selected =
+    parseLocalDate(selectedDate) ??
+    parseLocalDate(formatArgentinaDateInput(now)) ??
+    new Date();
+  const firstDay = new Date(
+    Date.UTC(selected.getUTCFullYear(), selected.getUTCMonth(), 1),
+  );
+  const firstDayOfWeek = firstDay.getUTCDay() || 7;
+  const gridStart = addDays(firstDay, 1 - firstDayOfWeek);
+  const previousMonth = new Date(
+    Date.UTC(firstDay.getUTCFullYear(), firstDay.getUTCMonth() - 1, 1),
+  );
+  const nextMonth = new Date(
+    Date.UTC(firstDay.getUTCFullYear(), firstDay.getUTCMonth() + 1, 1),
+  );
+
+  return {
+    startDate: formatLocalDate(firstDay),
+    previousStartDate: formatLocalDate(previousMonth),
+    nextStartDate: formatLocalDate(nextMonth),
+    days: Array.from({ length: 42 }, (_, index) => {
+      const date = addDays(gridStart, index);
+      const dayOfWeek = date.getUTCDay() || 7;
+      const day = weekDays.find(
+        (candidate) => candidate.dayOfWeek === dayOfWeek,
+      );
+
+      if (!day) {
+        throw new Error("Could not build agenda month day");
+      }
+
+      return {
+        ...day,
+        date: formatLocalDate(date),
+        dayOfMonth: date.getUTCDate(),
+        isCurrentMonth: date.getUTCMonth() === firstDay.getUTCMonth(),
+      };
+    }),
+  };
+}
+
+export type AgendaMonth = ReturnType<typeof buildAgendaMonth>;
+
+export function parseAgendaView(value: string | undefined): AgendaDisplayView {
+  return value === "dia" ? "day" : value === "mes" ? "month" : "week";
 }
 
 export function buildAgendaPath({
@@ -110,9 +155,25 @@ export function buildAgendaPath({
 }: {
   params?: Record<string, string | undefined>;
   selectedDate?: string;
-  view: AgendaView;
+  view: AgendaDisplayView;
   weekStartDate?: string;
 }) {
+  if (view === "month") {
+    const month = buildAgendaMonth(selectedDate ?? weekStartDate);
+    const searchParams = new URLSearchParams({
+      vista: "mes",
+      fecha: month.startDate,
+    });
+
+    for (const [key, value] of Object.entries(params ?? {})) {
+      if (value) {
+        searchParams.set(key, value);
+      }
+    }
+
+    return `/app/agenda?${searchParams.toString().replaceAll("%3A", ":")}`;
+  }
+
   const week = buildAgendaWeek(weekStartDate);
   const searchParams = new URLSearchParams({ semana: week.startDate });
 
@@ -141,4 +202,16 @@ export function getAgendaWeekRange(selectedDate?: string, now = new Date()) {
   }
 
   return { from, to, week };
+}
+
+export function getAgendaMonthRange(selectedDate?: string, now = new Date()) {
+  const month = buildAgendaMonth(selectedDate, now);
+  const from = parseArgentinaDateTime(`${month.startDate}T00:00`);
+  const to = parseArgentinaDateTime(`${month.nextStartDate}T00:00`);
+
+  if (!from || !to) {
+    throw new Error("Could not build agenda month range");
+  }
+
+  return { from, to, month };
 }

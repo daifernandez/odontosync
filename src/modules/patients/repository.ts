@@ -33,12 +33,19 @@ const patientColumns =
 export async function listPatients(
   search: string,
   status: PatientStatus,
+  userId?: string,
 ): Promise<Patient[]> {
   const supabase = await createClient();
   const searchTerm = normalizePatientSearch(search);
   let query = supabase
     .from("patients")
-    .select(patientColumns)
+    .select(patientColumns);
+
+  if (userId) {
+    query = query.eq("user_id", userId);
+  }
+
+  query = query
     .eq("is_active", status === "active")
     .order("last_name")
     .order("first_name");

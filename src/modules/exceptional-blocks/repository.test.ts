@@ -12,6 +12,7 @@ import {
   createExceptionalBlock,
   deleteExceptionalBlock,
   listExceptionalBlocks,
+  listExceptionalBlocksForRange,
 } from "./repository";
 
 describe("exceptional block repository", () => {
@@ -56,6 +57,40 @@ describe("exceptional block repository", () => {
     expect(query.gt).toHaveBeenCalledWith(
       "ends_at",
       "2099-08-10T14:00:00.000Z",
+    );
+    expect(query.order).toHaveBeenCalledWith("starts_at");
+  });
+
+  it("lists only owner blocks overlapping the requested month", async () => {
+    const query = {
+      select: vi.fn(),
+      eq: vi.fn(),
+      lt: vi.fn(),
+      gt: vi.fn(),
+      order: vi.fn().mockResolvedValue({ data: [], error: null }),
+    };
+    query.select.mockReturnValue(query);
+    query.eq.mockReturnValue(query);
+    query.lt.mockReturnValue(query);
+    query.gt.mockReturnValue(query);
+    mocks.createClient.mockResolvedValue({
+      from: vi.fn().mockReturnValue(query),
+    });
+
+    await listExceptionalBlocksForRange(
+      new Date("2026-08-01T03:00:00.000Z"),
+      new Date("2026-09-01T03:00:00.000Z"),
+      "owner-id",
+    );
+
+    expect(query.eq).toHaveBeenCalledWith("user_id", "owner-id");
+    expect(query.lt).toHaveBeenCalledWith(
+      "starts_at",
+      "2026-09-01T03:00:00.000Z",
+    );
+    expect(query.gt).toHaveBeenCalledWith(
+      "ends_at",
+      "2026-08-01T03:00:00.000Z",
     );
     expect(query.order).toHaveBeenCalledWith("starts_at");
   });

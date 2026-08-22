@@ -109,7 +109,7 @@ export async function listAppointmentsForRange(
     .order("starts_at");
 
   if (error) {
-    throw new Error("Could not read appointments for agenda week");
+    throw new Error("Could not read appointments for agenda range");
   }
 
   return (data as unknown as AppointmentRow[]).map(mapAppointment);

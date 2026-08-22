@@ -366,6 +366,15 @@ export function WeeklyAgenda({
               >
                 Vista diaria
               </Link>
+              <Link
+                className="flex min-h-10 flex-1 items-center justify-center rounded-lg px-3 text-xs font-bold text-[var(--color-muted)] no-underline hover:text-[var(--color-brand-dark)] sm:flex-none"
+                href={buildAgendaPath({
+                  view: "month",
+                  selectedDate: day.date,
+                })}
+              >
+                Vista mensual
+              </Link>
             </nav>
             <nav
               aria-label={view === "day" ? "Navegar días" : "Navegar semanas"}

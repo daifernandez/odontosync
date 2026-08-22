@@ -49,6 +49,27 @@ export async function listExceptionalBlocks(
   return (data as ExceptionalBlockRow[]).map(mapExceptionalBlock);
 }
 
+export async function listExceptionalBlocksForRange(
+  from: Date,
+  to: Date,
+  userId: string,
+): Promise<ExceptionalBlock[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("exceptional_availability_blocks")
+    .select(exceptionalBlockColumns)
+    .eq("user_id", userId)
+    .lt("starts_at", to.toISOString())
+    .gt("ends_at", from.toISOString())
+    .order("starts_at");
+
+  if (error) {
+    throw new Error("Could not read exceptional blocks for range");
+  }
+
+  return (data as ExceptionalBlockRow[]).map(mapExceptionalBlock);
+}
+
 export type CreateExceptionalBlockResult =
   | "created"
   | "conflict"

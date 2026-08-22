@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+import { MonthlyAgenda } from "@/components/monthly-agenda";
 import { WeeklyAgenda } from "@/components/weekly-agenda";
+import { createClient } from "@/lib/supabase/server";
 import {
   buildAgendaDay,
+  getAgendaMonthRange,
   getAgendaWeekRange,
   parseAgendaView,
 } from "@/modules/agenda/domain/weekly-schedule";
@@ -15,7 +18,10 @@ import {
   listAppointmentsForRange,
   listAppointmentOccupancy,
 } from "@/modules/appointments/repository";
-import { listExceptionalBlocks } from "@/modules/exceptional-blocks/repository";
+import {
+  listExceptionalBlocks,
+  listExceptionalBlocksForRange,
+} from "@/modules/exceptional-blocks/repository";
 import { getInitialConfiguration } from "@/modules/initial-configuration/repository";
 import { listPatients } from "@/modules/patients/repository";
 
@@ -56,6 +62,40 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
   const view = parseAgendaView(
     typeof params.vista === "string" ? params.vista : undefined,
   );
+
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const userId = claimsData?.claims?.sub;
+
+  if (typeof userId !== "string") {
+    redirect("/ingresar");
+  }
+
+  if (view === "month") {
+    const { from, to, month } = getAgendaMonthRange(
+      requestedDate ?? selectedWeek,
+    );
+    const [configuration, appointments, exceptionalBlocks] =
+      await Promise.all([
+        getInitialConfiguration(),
+        listAppointmentsForRange(from, to, userId),
+        listExceptionalBlocksForRange(from, to, userId),
+      ]);
+
+    if (!configuration || configuration.availability.length === 0) {
+      redirect("/app/configuracion");
+    }
+
+    return (
+      <MonthlyAgenda
+        appointments={appointments}
+        currentTime={new Date()}
+        exceptionalBlocks={exceptionalBlocks}
+        month={month}
+      />
+    );
+  }
+
   const selectedDate = buildAgendaDay(
     view === "day" ? requestedDate : requestedDate ?? selectedWeek,
   ).date;
@@ -71,10 +111,10 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
   ] =
     await Promise.all([
       getInitialConfiguration(),
-      listPatients("", "active"),
-      listAppointmentsForRange(from, to),
-      listAppointmentOccupancy(),
-      listExceptionalBlocks(),
+      listPatients("", "active", userId),
+      listAppointmentsForRange(from, to, userId),
+      listAppointmentOccupancy(undefined, userId),
+      listExceptionalBlocks(undefined, userId),
     ]);
 
   if (!configuration || configuration.availability.length === 0) {
