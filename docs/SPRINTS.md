@@ -291,3 +291,85 @@ turno pendiente vinculado.
   reprogramación.
 - Reabrir turnos reprogramados.
 - Incorporar vistas diaria y mensual.
+
+## Sprint 006 — Bloqueos excepcionales de agenda
+
+- **Fecha:** 22 de agosto de 2026
+- **Estado:** publicado y mergeado
+- **Issue:** [#29](https://github.com/daifernandez/odontosync/issues/29)
+- **Rama:** `codex/sprint-006-bloqueos-excepcionales`
+- **Publicación:** [PR #30](https://github.com/daifernandez/odontosync/pull/30),
+  merge commit `9b55451`
+
+### Objetivo
+
+Permitir registrar períodos excepcionales sin atención y evitar que se creen,
+editen o reprogramen turnos dentro de esos bloqueos.
+
+### Resultado
+
+- Se incorporaron bloqueos por vacaciones, feriados, asuntos personales u
+  otros motivos, con creación, listado y eliminación desde la agenda.
+- La grilla semanal representa cada período con el texto “No disponible” y su
+  motivo, y deja de ofrecer los horarios que lo intersectan.
+- Crear, editar y reprogramar turnos reutiliza la misma regla de disponibilidad
+  en la interfaz y en las Server Actions.
+- PostgreSQL conserva la autoridad final ante carreras: usa rangos semiabiertos,
+  un bloqueo transaccional por usuario y rechaza turnos dentro de un bloqueo con
+  un error específico no confirmable.
+- Confirmar una superposición durante la reprogramación no permite atravesar un
+  bloqueo excepcional y, ante el rechazo, el turno original queda intacto.
+- La tabla aplica RLS forzada, políticas de propiedad y privilegios mínimos;
+  los roles anónimo y de servicio no reciben acceso mediante la Data API.
+- La migración `20260822031334_add_exceptional_availability_blocks` se aplicó al
+  Supabase enlazado.
+
+### Criterios verificados
+
+- Un usuario autenticado puede crear, consultar y eliminar únicamente sus
+  propios bloqueos futuros o en curso.
+- No pueden coexistir bloqueos superpuestos ni crearse uno sobre un turno
+  pendiente o confirmado.
+- Un turno no puede crearse, editarse ni reprogramarse dentro de un bloqueo,
+  incluso cuando se confirme explícitamente una superposición.
+- Usuario anónimo, rol de servicio, usuario ajeno, sesión vencida, identificador
+  inválido y operaciones no permitidas son rechazados sin filtrar detalles
+  internos.
+- Eliminar un bloqueo restaura la disponibilidad del período sin modificar
+  turnos existentes.
+- La agenda comunica el bloqueo con texto además de color y conserva controles
+  nativos accesibles en el formulario.
+- El panel se revisó en escritorio y en un viewport de 390 px sin desbordamiento
+  ni errores de consola. No se guardaron datos reales durante el QA visual.
+
+### Skills aplicadas
+
+- Next.js para Server Actions, renderizado del App Router y carga paralela de
+  los datos de agenda.
+- Supabase y `security-sprint-review` para RLS, privilegios mínimos, integridad,
+  concurrencia, rollback y casos negativos entre identidades.
+- `usability-review` y `react-best-practices` para feedback, accesibilidad,
+  claridad del panel y comportamiento responsive.
+- Browser para revisar el flujo local, el viewport móvil y la consola sin
+  escrituras persistentes.
+- `odontosync-release-check` para la batería final y el control previo a
+  publicación.
+
+### Verificaciones
+
+- Pruebas: 20 archivos y 122 casos aprobados.
+- RLS: cuatro suites aprobadas sobre Supabase enlazado.
+- Prisma: esquema válido y base al día con 16 migraciones.
+- TypeScript, ESLint y build de producción: aprobados.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- GitHub Actions: aprobado en el PR de publicación.
+- Asesor de Supabase: sin errores; permanece el aviso externo conocido de
+  protección contra contraseñas filtradas, postergado por decisión del
+  proyecto.
+
+### Fuera de alcance y próximos pasos
+
+- Editar un bloqueo existente; por ahora se elimina y se crea uno nuevo.
+- Incorporar vistas diaria y mensual.
+- Activar la protección contra contraseñas filtradas antes de que resulte
+  indispensable para el proyecto.
