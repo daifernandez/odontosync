@@ -608,3 +608,84 @@ paciente y consulte sus próximos turnos y su historial asociado.
 - Retomar la demostración pública cuando la aplicación real esté finalizada.
 - Activar la protección contra contraseñas filtradas cuando resulte
   indispensable para el proyecto.
+
+## Sprint 010 — Vista mensual de Agenda
+
+- **Fecha:** 22 de agosto de 2026
+- **Estado:** publicado y mergeado
+- **Rama:** `codex/sprint-010-vista-mensual`
+- **Publicación:** [PR #41](https://github.com/daifernandez/odontosync/pull/41),
+  merge commit `1f295a8`
+
+### Objetivo
+
+Permitir que un usuario autenticado consulte la actividad de su Agenda en una
+vista mensual y abra cualquier fecha en su Agenda diaria exacta.
+
+### Resultado
+
+- Se agregó una grilla mensual estable de 42 días, organizada de lunes a
+  domingo e identificada mediante una URL recargable y compartible.
+- Cada día resume la cantidad de turnos y bloqueos excepcionales del usuario y
+  enlaza su fecha exacta en la vista diaria.
+- La navegación permite ir al mes anterior, al siguiente o al mes actual, y
+  cambiar entre las vistas semanal, diaria y mensual.
+- Los meses sin actividad muestran un estado vacío explícito.
+- La vista mensual funciona como consulta: la creación y gestión de turnos se
+  realizan desde la Agenda diaria.
+- Las lecturas mensuales se limitan al rango solicitado y filtran
+  explícitamente por `user_id`, además de las políticas RLS existentes.
+- No se modificaron el esquema, las migraciones, las políticas RLS, los
+  privilegios ni los datos persistentes.
+
+### Criterios verificados
+
+- Una sesión vencida se redirige antes de consultar información privada.
+- Los límites del mes se calculan con la zona horaria de Argentina y los
+  parámetros inválidos vuelven a un mes válido.
+- Los turnos y bloqueos se resumen en su fecha correspondiente sin cargar
+  pacientes ni ocupación innecesaria para esta vista.
+- Elegir un día con actividad abre la Agenda diaria, la semana y la fecha
+  correctas; navegar entre meses y recargar conserva el contexto de la URL.
+- El estado vacío y las etiquetas accesibles informan cantidades sin depender
+  únicamente del color.
+- El recorrido autenticado se verificó en escritorio con datos ficticios, sin
+  escrituras persistentes ni errores o advertencias de aplicación en consola.
+- La adaptación responsive quedó implementada y cubierta por pruebas de
+  componentes; la comprobación visual manual en viewport móvil permanece
+  pendiente porque la sesión autenticada no permitió emular sus dimensiones.
+
+### Skills aplicadas
+
+- Next.js para parámetros asíncronos, renderizado de servidor y separación de
+  las lecturas necesarias para cada vista.
+- Supabase, `supabase-postgres-best-practices` y `security-sprint-review` para
+  aislamiento por usuario, RLS, rangos indexados y sesión vencida.
+- `usability-review` para navegación, URLs compartibles, estados vacíos,
+  accesibilidad y comportamiento responsive.
+- `react-best-practices` para revisar paralelización, estructura de componentes
+  y conteos eficientes.
+- Browser para recorrer la Agenda mensual autenticada, sus enlaces, estados y
+  consola sin modificar datos.
+- `odontosync-release-check` para la batería final y la publicación.
+
+### Verificaciones
+
+- Pruebas: 30 archivos y 176 casos aprobados.
+- RLS: cuatro suites aprobadas sobre Supabase enlazado.
+- TypeScript, ESLint y build de producción: aprobados.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- GitHub Actions: aprobado en el PR de publicación.
+- Asesor de Supabase: sin errores; permanece el aviso externo conocido de
+  protección contra contraseñas filtradas, postergado por decisión del
+  proyecto.
+
+### Fuera de alcance y próximos pasos
+
+- Recordar la última vista elegida entre visitas o dispositivos.
+- Crear o gestionar turnos y bloqueos directamente desde la vista mensual.
+- Realizar la comprobación visual manual de la vista mensual en un viewport
+  móvil autenticado.
+- Retomar la demostración pública cuando la aplicación real esté finalizada.
+- Activar la protección contra contraseñas filtradas cuando resulte
+  indispensable para el proyecto.
