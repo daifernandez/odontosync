@@ -110,6 +110,9 @@ describe("WeeklyAgenda", () => {
     expect(markup).toContain("Ausente");
     expect(markup).toContain("Ver historial");
     expect(markup).toContain("Ver turno");
+    expect(markup).toContain(
+      'href="/app/agenda?vista=mes&amp;fecha=2026-08-01">Vista mensual',
+    );
     expect(markup).not.toContain(
       "semana=2026-08-10&amp;nuevo=1&amp;fecha=2026-08-11&amp;hora=09:45",
     );

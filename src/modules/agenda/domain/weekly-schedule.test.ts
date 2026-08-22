@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildAgendaDay,
+  buildAgendaMonth,
   buildAgendaPath,
   buildAgendaWeek,
   buildWeeklySchedule,
+  getAgendaMonthRange,
   getAgendaWeekRange,
   parseAgendaView,
 } from "./weekly-schedule";
@@ -86,9 +88,58 @@ describe("buildAgendaDay", () => {
   });
 });
 
+describe("buildAgendaMonth", () => {
+  it("returns a stable six-week grid for the selected calendar month", () => {
+    const month = buildAgendaMonth("2026-08-22");
+
+    expect(month).toMatchObject({
+      startDate: "2026-08-01",
+      previousStartDate: "2026-07-01",
+      nextStartDate: "2026-09-01",
+    });
+    expect(month.days).toHaveLength(42);
+    expect(month.days[0]).toMatchObject({
+      date: "2026-07-27",
+      dayOfMonth: 27,
+      isCurrentMonth: false,
+      label: "Lunes",
+    });
+    expect(month.days[5]).toMatchObject({
+      date: "2026-08-01",
+      dayOfMonth: 1,
+      isCurrentMonth: true,
+      label: "Sábado",
+    });
+    expect(month.days.at(-1)).toMatchObject({
+      date: "2026-09-06",
+      isCurrentMonth: false,
+      label: "Domingo",
+    });
+  });
+
+  it("falls back to the current Argentina month for an invalid value", () => {
+    expect(
+      buildAgendaMonth(
+        "not-a-date",
+        new Date("2026-09-01T02:00:00.000Z"),
+      ).startDate,
+    ).toBe("2026-08-01");
+  });
+});
+
+describe("getAgendaMonthRange", () => {
+  it("returns Argentina midnight boundaries for the selected month", () => {
+    const range = getAgendaMonthRange("2026-08-22");
+
+    expect(range.from.toISOString()).toBe("2026-08-01T03:00:00.000Z");
+    expect(range.to.toISOString()).toBe("2026-09-01T03:00:00.000Z");
+  });
+});
+
 describe("parseAgendaView", () => {
-  it("accepts the daily view and safely falls back to weekly", () => {
+  it("accepts daily and monthly views and safely falls back to weekly", () => {
     expect(parseAgendaView("dia")).toBe("day");
+    expect(parseAgendaView("mes")).toBe("month");
     expect(parseAgendaView("semana")).toBe("week");
     expect(parseAgendaView("invalid")).toBe("week");
   });
@@ -117,5 +168,14 @@ describe("buildAgendaPath", () => {
         params: { creado: "1" },
       }),
     ).toBe("/app/agenda?semana=2026-08-10&creado=1");
+  });
+
+  it("keeps the monthly view in a normalized and shareable URL", () => {
+    expect(
+      buildAgendaPath({
+        view: "month",
+        selectedDate: "2026-08-22",
+      }),
+    ).toBe("/app/agenda?vista=mes&fecha=2026-08-01");
   });
 });

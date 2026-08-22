@@ -11,6 +11,7 @@ vi.mock("@/lib/supabase/server", () => ({
 import {
   cancelAppointment,
   closeAppointment,
+  listAppointmentsForRange,
   listPatientAppointments,
   listUpcomingAppointments,
   rescheduleAppointment,
@@ -64,6 +65,44 @@ describe("listUpcomingAppointments", () => {
 
     expect(query.eq).toHaveBeenCalledWith("user_id", "owner-id");
     expect(query.limit).toHaveBeenCalledWith(3);
+  });
+});
+
+describe("listAppointmentsForRange", () => {
+  it("scopes calendar range reads to the authenticated owner", async () => {
+    const query = {
+      select: vi.fn(),
+      eq: vi.fn(),
+      gte: vi.fn(),
+      lt: vi.fn(),
+      in: vi.fn(),
+      order: vi.fn().mockResolvedValue({ data: [], error: null }),
+    };
+
+    query.select.mockReturnValue(query);
+    query.eq.mockReturnValue(query);
+    query.gte.mockReturnValue(query);
+    query.lt.mockReturnValue(query);
+    query.in.mockReturnValue(query);
+    mocks.createClient.mockResolvedValue({
+      from: vi.fn().mockReturnValue(query),
+    });
+
+    await listAppointmentsForRange(
+      new Date("2026-08-01T03:00:00.000Z"),
+      new Date("2026-09-01T03:00:00.000Z"),
+      "owner-id",
+    );
+
+    expect(query.eq).toHaveBeenCalledWith("user_id", "owner-id");
+    expect(query.gte).toHaveBeenCalledWith(
+      "starts_at",
+      "2026-08-01T03:00:00.000Z",
+    );
+    expect(query.lt).toHaveBeenCalledWith(
+      "starts_at",
+      "2026-09-01T03:00:00.000Z",
+    );
   });
 });
 
