@@ -47,6 +47,11 @@ const statusStyles = {
 export function DashboardHome({
   demoMode = false,
 }: Readonly<{ demoMode?: boolean }>) {
+  const agendaHref = demoMode ? "/demo/agenda" : "/app/agenda";
+  const newAppointmentHref = demoMode
+    ? "/demo/agenda?nuevo=1#nuevo-turno"
+    : "/app/agenda?nuevo=1#nuevo-turno";
+
   return (
     <main className="mx-auto w-full max-w-[90rem] px-4 py-7 md:px-[clamp(1.5rem,3.5vw,4rem)] md:py-12">
       <header className="flex flex-col items-start gap-5 md:flex-row md:items-end md:justify-between md:gap-8">
@@ -61,23 +66,13 @@ export function DashboardHome({
             Organizá tu jornada y accedé rápido a tus herramientas.
           </p>
         </div>
-        {demoMode ? (
-          <button
-            className="flex min-h-11.5 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-0 bg-[var(--color-brand)] px-4 py-3 text-[0.86rem] font-bold text-white shadow-[0_0.45rem_1.2rem_rgb(20_125_115/18%)] hover:bg-[var(--color-brand-dark)] md:w-auto"
-            type="button"
-          >
-            <Plus aria-hidden="true" size={18} />
-            Nuevo turno
-          </button>
-        ) : (
-          <Link
-            className="flex min-h-11.5 w-full items-center justify-center gap-2 rounded-xl border-0 bg-[var(--color-brand)] px-4 py-3 text-[0.86rem] font-bold text-white no-underline shadow-[0_0.45rem_1.2rem_rgb(20_125_115/18%)] hover:bg-[var(--color-brand-dark)] md:w-auto"
-            href="/app/agenda?nuevo=1#nuevo-turno"
-          >
-            <Plus aria-hidden="true" size={18} />
-            Nuevo turno
-          </Link>
-        )}
+        <Link
+          className="flex min-h-11.5 w-full items-center justify-center gap-2 rounded-xl border-0 bg-[var(--color-brand)] px-4 py-3 text-[0.86rem] font-bold text-white no-underline shadow-[0_0.45rem_1.2rem_rgb(20_125_115/18%)] hover:bg-[var(--color-brand-dark)] md:w-auto"
+          href={newAppointmentHref}
+        >
+          <Plus aria-hidden="true" size={18} />
+          Nuevo turno
+        </Link>
       </header>
 
       <aside className="mt-8 flex items-start gap-3 rounded-[var(--radius-medium)] border border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] px-4 py-3 text-[var(--color-warning-foreground)] md:items-center">
@@ -104,10 +99,12 @@ export function DashboardHome({
             <p className="m-0 mb-0.5 text-[0.72rem] text-[var(--color-muted)]">
               Turnos de hoy
             </p>
-            <strong className="text-2xl tracking-[-0.035em]">6</strong>
+            <strong className="text-2xl tracking-[-0.035em]">
+              {demoMode ? 2 : 6}
+            </strong>
           </div>
           <span className="self-end text-[0.7rem] whitespace-nowrap text-[var(--color-muted)]">
-            4 confirmados
+            {demoMode ? "1 confirmado" : "4 confirmados"}
           </span>
         </article>
         <article className="grid grid-cols-[auto_1fr_auto] items-center gap-3.5 rounded-[var(--radius-medium)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)]">
@@ -132,7 +129,9 @@ export function DashboardHome({
             <p className="m-0 mb-0.5 text-[0.72rem] text-[var(--color-muted)]">
               Espacios libres
             </p>
-            <strong className="text-2xl tracking-[-0.035em]">2</strong>
+            <strong className="text-2xl tracking-[-0.035em]">
+              {demoMode ? 1 : 2}
+            </strong>
           </div>
           <span className="self-end text-[0.7rem] whitespace-nowrap text-[var(--color-muted)]">
             Hoy
@@ -157,13 +156,13 @@ export function DashboardHome({
                 Próximos turnos
               </h2>
             </div>
-            <button
-              className="flex cursor-pointer items-center gap-1.5 border-0 bg-transparent text-[0.76rem] font-bold text-[var(--color-brand)]"
-              type="button"
+            <Link
+              className="flex items-center gap-1.5 text-[0.76rem] font-bold text-[var(--color-brand)] no-underline"
+              href={agendaHref}
             >
               Ver agenda
               <ArrowRight aria-hidden="true" size={16} />
-            </button>
+            </Link>
           </div>
 
           <div className="mt-4 flex flex-col">
@@ -192,13 +191,13 @@ export function DashboardHome({
                 >
                   {appointment.status}
                 </span>
-                <button
-                  aria-label={`Ver turno de las ${appointment.time}`}
-                  className="hidden size-8 cursor-pointer place-items-center rounded-full border-0 bg-transparent text-[var(--color-muted)] hover:bg-[var(--color-brand-subtle)] hover:text-[var(--color-brand)] md:grid"
-                  type="button"
+                <Link
+                  aria-label={`Ver turno de las ${appointment.time} en la agenda`}
+                  className="hidden size-8 place-items-center rounded-full text-[var(--color-muted)] no-underline hover:bg-[var(--color-brand-subtle)] hover:text-[var(--color-brand)] md:grid"
+                  href={agendaHref}
                 >
                   <ChevronRight aria-hidden="true" size={18} />
-                </button>
+                </Link>
               </article>
             ))}
           </div>
@@ -231,8 +230,11 @@ export function DashboardHome({
           <div className="mt-4 flex flex-col">
             {printables.map((printable) => (
               <button
-                className="flex min-h-17.5 cursor-pointer items-center justify-between gap-4 border-0 border-t border-[var(--color-border)] bg-transparent p-0 text-left text-[var(--color-foreground)] hover:text-[var(--color-brand)]"
+                aria-disabled="true"
+                className="flex min-h-17.5 cursor-not-allowed items-center justify-between gap-4 border-0 border-t border-[var(--color-border)] bg-transparent p-0 text-left text-[var(--color-foreground)] opacity-60"
+                disabled
                 key={printable.name}
+                title={`${printable.name}: próximamente`}
                 type="button"
               >
                 <span className="flex flex-col gap-1">
@@ -241,7 +243,9 @@ export function DashboardHome({
                     {printable.detail}
                   </small>
                 </span>
-                <ChevronRight aria-hidden="true" size={18} />
+                <span className="text-[0.58rem] font-bold tracking-[0.05em] text-[var(--color-muted)] uppercase">
+                  Próximamente
+                </span>
               </button>
             ))}
           </div>
