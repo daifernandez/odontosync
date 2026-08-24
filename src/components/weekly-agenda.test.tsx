@@ -179,6 +179,57 @@ describe("WeeklyAgenda", () => {
     expect(markup).toContain("Ocupado");
   });
 
+  it("presents a started pending appointment as consultation instead of management", () => {
+    const appointment = {
+      id: "00000000-0000-4000-8000-000000000010",
+      patientId: "00000000-0000-4000-8000-000000000001",
+      patientFirstName: "Lucía",
+      patientLastName: "Prueba",
+      startsAt: "2026-08-10T14:00:00.000Z",
+      occupiedUntil: "2026-08-10T14:35:00.000Z",
+      durationMinutes: 30,
+      cleanupMinutes: 5,
+      specialty: "general" as const,
+      status: "pending_confirmation" as const,
+    };
+    const markup = renderToStaticMarkup(
+      <WeeklyAgenda
+        appointmentOccupancy={[]}
+        appointments={[appointment]}
+        autoOpenNewAppointment={false}
+        cancelled={false}
+        confirmed={false}
+        configuration={{
+          fullName: "Profesional de prueba",
+          licenseNumber: null,
+          licenseJurisdiction: null,
+          gridIntervalMinutes: 15,
+          defaultAppointmentDurationMinutes: 30,
+          defaultCleanupMinutes: 5,
+          availability: [
+            { dayOfWeek: 1, startTime: "09:00", endTime: "12:00" },
+          ],
+        }}
+        created={false}
+        exceptionalBlockCreated={false}
+        exceptionalBlockDeleted={false}
+        exceptionalBlockManagementError={false}
+        exceptionalBlockPanelOpen={false}
+        exceptionalBlocks={[]}
+        managementError={false}
+        patients={[]}
+        selectedAppointment={appointment}
+        updated={false}
+        week={buildAgendaWeek("2026-08-10")}
+      />,
+    );
+
+    expect(markup).toContain("La fecha de este turno ya comenzó o pasó");
+    expect(markup).toContain("Ver turno");
+    expect(markup).not.toContain("Gestionar turno");
+    expect(markup).not.toContain("Guardar cambios");
+  });
+
   it("renders exceptional periods as unavailable and removes their links", () => {
     const markup = renderToStaticMarkup(
       <WeeklyAgenda

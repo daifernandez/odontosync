@@ -21,6 +21,7 @@ import {
   formatArgentinaDateInput,
   getArgentinaDateTimeParts,
   getAppointmentSpecialtyLabel,
+  isPendingAppointmentManageable,
   type Appointment,
   type AppointmentClosureStatus,
   type AppointmentStatus,
@@ -688,17 +689,27 @@ export function WeeklyAgenda({
                         occupiedMinutes * pixelsPerMinute;
                       const cleanupHeight =
                         appointment.cleanupMinutes * pixelsPerMinute;
+                      const appointmentReadOnly =
+                        readOnlyAppointment ||
+                        isHistoricalAppointment(appointment.status) ||
+                        (appointment.status === "pending_confirmation" &&
+                          !isPendingAppointmentManageable(
+                            appointment,
+                            currentTime,
+                          ));
 
                       return (
                         <Link
-                          aria-label={`${readOnlyAppointment || isHistoricalAppointment(appointment.status) ? "Ver historial de" : appointment.status === "confirmed" ? "Ver" : "Gestionar"} turno de ${appointment.patientLastName}, ${appointment.patientFirstName}`}
+                          aria-label={`${isHistoricalAppointment(appointment.status) ? "Ver historial de" : appointmentReadOnly || appointment.status === "confirmed" ? "Ver" : "Gestionar"} turno de ${appointment.patientLastName}, ${appointment.patientFirstName}`}
                           href={buildAgendaPath({
                             weekStartDate: week.startDate,
                             view,
                             selectedDate: day.date,
                             params: {
                               turno: appointment.id,
-                              ...(readOnlyAppointment ? { consulta: "1" } : {}),
+                              ...(appointmentReadOnly
+                                ? { consulta: "1" }
+                                : {}),
                             },
                           })}
                           key={appointment.id}
@@ -800,11 +811,18 @@ export function WeeklyAgenda({
             </div>
           ) : (
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              {visibleAppointments.map((appointment) => (
-                <article
-                  className="rounded-xl border border-[var(--color-border)] bg-[var(--color-brand-subtle)] p-4"
-                  key={appointment.id}
-                >
+              {visibleAppointments.map((appointment) => {
+                const appointmentReadOnly =
+                  readOnlyAppointment ||
+                  isHistoricalAppointment(appointment.status) ||
+                  (appointment.status === "pending_confirmation" &&
+                    !isPendingAppointmentManageable(appointment, currentTime));
+
+                return (
+                  <article
+                    className="rounded-xl border border-[var(--color-border)] bg-[var(--color-brand-subtle)] p-4"
+                    key={appointment.id}
+                  >
                   <p className="m-0 text-xs font-bold text-[var(--color-brand-dark)]">
                     {dateFormatter.format(new Date(appointment.startsAt))}
                   </p>
@@ -833,18 +851,19 @@ export function WeeklyAgenda({
                             ),
                       params: {
                         turno: appointment.id,
-                        ...(readOnlyAppointment ? { consulta: "1" } : {}),
+                        ...(appointmentReadOnly ? { consulta: "1" } : {}),
                       },
                     })}
                   >
-                    {readOnlyAppointment || isHistoricalAppointment(appointment.status)
+                    {isHistoricalAppointment(appointment.status)
                       ? "Ver historial"
-                      : appointment.status === "confirmed"
+                      : appointmentReadOnly || appointment.status === "confirmed"
                         ? "Ver turno"
                         : "Gestionar turno"}
                   </Link>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           )}
         </section>

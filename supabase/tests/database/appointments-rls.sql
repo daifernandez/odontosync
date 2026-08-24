@@ -6,7 +6,10 @@ SELECT
     gen_random_uuid() AS other_id,
     gen_random_uuid() AS active_patient_id,
     gen_random_uuid() AS inactive_patient_id,
-    gen_random_uuid() AS appointment_id,
+    gen_random_uuid() AS completed_appointment_id,
+    gen_random_uuid() AS no_show_appointment_id,
+    gen_random_uuid() AS past_pending_appointment_id,
+    gen_random_uuid() AS ongoing_confirmed_appointment_id,
     gen_random_uuid() AS reschedule_original_id,
     gen_random_uuid() AS overlap_original_id,
     gen_random_uuid() AS overlap_blocker_id
@@ -149,6 +152,96 @@ FROM appointments_rls_test_context;
 
 INSERT INTO public.patients (id, user_id, first_name, last_name, is_active)
 SELECT inactive_patient_id, owner_id, 'Turno', 'Inactivo', false
+FROM appointments_rls_test_context;
+
+INSERT INTO public.appointments (
+    id,
+    user_id,
+    patient_id,
+    starts_at,
+    occupied_until,
+    duration_minutes,
+    cleanup_minutes,
+    specialty,
+    status
+)
+SELECT
+    completed_appointment_id,
+    owner_id,
+    active_patient_id,
+    CURRENT_TIMESTAMP - INTERVAL '3 hours',
+    CURRENT_TIMESTAMP - INTERVAL '2 hours 25 minutes',
+    30,
+    5,
+    'general',
+    'confirmed'
+FROM appointments_rls_test_context;
+
+INSERT INTO public.appointments (
+    id,
+    user_id,
+    patient_id,
+    starts_at,
+    occupied_until,
+    duration_minutes,
+    cleanup_minutes,
+    specialty,
+    status
+)
+SELECT
+    no_show_appointment_id,
+    owner_id,
+    active_patient_id,
+    CURRENT_TIMESTAMP - INTERVAL '2 hours',
+    CURRENT_TIMESTAMP - INTERVAL '1 hour 25 minutes',
+    30,
+    5,
+    'general',
+    'confirmed'
+FROM appointments_rls_test_context;
+
+INSERT INTO public.appointments (
+    id,
+    user_id,
+    patient_id,
+    starts_at,
+    occupied_until,
+    duration_minutes,
+    cleanup_minutes,
+    specialty
+)
+SELECT
+    past_pending_appointment_id,
+    owner_id,
+    active_patient_id,
+    CURRENT_TIMESTAMP - INTERVAL '1 day',
+    CURRENT_TIMESTAMP - INTERVAL '1 day' + INTERVAL '35 minutes',
+    30,
+    5,
+    'general'
+FROM appointments_rls_test_context;
+
+INSERT INTO public.appointments (
+    id,
+    user_id,
+    patient_id,
+    starts_at,
+    occupied_until,
+    duration_minutes,
+    cleanup_minutes,
+    specialty,
+    status
+)
+SELECT
+    ongoing_confirmed_appointment_id,
+    owner_id,
+    active_patient_id,
+    CURRENT_TIMESTAMP - INTERVAL '10 minutes',
+    CURRENT_TIMESTAMP + INTERVAL '20 minutes',
+    25,
+    5,
+    'general',
+    'confirmed'
 FROM appointments_rls_test_context;
 
 INSERT INTO public.appointments (
@@ -375,6 +468,53 @@ BEGIN
             occupied_until,
             duration_minutes,
             cleanup_minutes,
+            specialty
+        )
+        SELECT
+            owner_id,
+            active_patient_id,
+            CURRENT_TIMESTAMP - INTERVAL '1 hour',
+            CURRENT_TIMESTAMP - INTERVAL '25 minutes',
+            30,
+            5,
+            'general'
+        FROM appointments_rls_test_context;
+        RAISE EXCEPTION 'The owner created a pending appointment in the past';
+    EXCEPTION
+        WHEN insufficient_privilege THEN NULL;
+    END;
+
+    UPDATE public.appointments
+    SET status = 'confirmed'
+    WHERE id = (
+        SELECT past_pending_appointment_id
+        FROM appointments_rls_test_context
+    );
+
+    IF FOUND THEN
+        RAISE EXCEPTION 'A started pending appointment was confirmed';
+    END IF;
+
+    UPDATE public.appointments
+    SET starts_at = CURRENT_TIMESTAMP + INTERVAL '1 day',
+        occupied_until = CURRENT_TIMESTAMP + INTERVAL '1 day 35 minutes'
+    WHERE id = (
+        SELECT past_pending_appointment_id
+        FROM appointments_rls_test_context
+    );
+
+    IF FOUND THEN
+        RAISE EXCEPTION 'A started pending appointment was rescheduled';
+    END IF;
+
+    BEGIN
+        INSERT INTO public.appointments (
+            user_id,
+            patient_id,
+            starts_at,
+            occupied_until,
+            duration_minutes,
+            cleanup_minutes,
             specialty,
             rescheduled_from_id
         )
@@ -527,8 +667,8 @@ BEGIN
     SELECT
         owner_id,
         active_patient_id,
-        '2026-08-10 12:00:00+00',
-        '2026-08-10 12:35:00+00',
+        '2098-08-10 12:00:00+00',
+        '2098-08-10 12:35:00+00',
         30,
         5,
         'general'
@@ -541,6 +681,7 @@ BEGIN
             SELECT active_patient_id FROM appointments_rls_test_context
         )
           AND status = 'pending_confirmation'
+          AND starts_at = '2098-08-10 12:00:00+00'
           AND NOT overlap_confirmed
     ) THEN
         RAISE EXCEPTION 'The owner could not create and read their appointment';
@@ -583,8 +724,8 @@ BEGIN
         SELECT
             owner_id,
             active_patient_id,
-            '2026-08-10 12:20:00+00',
-            '2026-08-10 12:55:00+00',
+            '2098-08-10 12:20:00+00',
+            '2098-08-10 12:55:00+00',
             30,
             5,
             'orthodontics'
@@ -608,8 +749,8 @@ BEGIN
         SELECT
             owner_id,
             active_patient_id,
-            '2026-08-10 12:20:00+00',
-            '2026-08-10 12:55:00+00',
+            '2098-08-10 12:20:00+00',
+            '2098-08-10 12:55:00+00',
             30,
             5,
             'orthodontics',
@@ -621,20 +762,20 @@ BEGIN
     END;
 
     UPDATE public.appointments
-    SET starts_at = '2026-08-10 13:00:00+00',
-        occupied_until = '2026-08-10 13:50:00+00',
+    SET starts_at = '2098-08-10 13:00:00+00',
+        occupied_until = '2098-08-10 13:50:00+00',
         duration_minutes = 40,
         cleanup_minutes = 10,
         specialty = 'implantology'
     WHERE patient_id = (
         SELECT active_patient_id FROM appointments_rls_test_context
     )
-      AND starts_at = '2026-08-10 12:00:00+00';
+      AND starts_at = '2098-08-10 12:00:00+00';
 
     IF NOT EXISTS (
         SELECT 1 FROM public.appointments
-        WHERE starts_at = '2026-08-10 13:00:00+00'
-          AND occupied_until = '2026-08-10 13:50:00+00'
+        WHERE starts_at = '2098-08-10 13:00:00+00'
+          AND occupied_until = '2098-08-10 13:50:00+00'
           AND specialty = 'implantology'
     ) THEN
         RAISE EXCEPTION 'The owner could not reprogram their appointment';
@@ -652,8 +793,8 @@ BEGIN
     SELECT
         owner_id,
         active_patient_id,
-        '2026-08-10 15:00:00+00',
-        '2026-08-10 15:35:00+00',
+        '2098-08-10 15:00:00+00',
+        '2098-08-10 15:35:00+00',
         30,
         5,
         'general'
@@ -661,7 +802,7 @@ BEGIN
 
     UPDATE public.appointments
     SET status = 'cancelled'
-    WHERE starts_at = '2026-08-10 15:00:00+00';
+    WHERE starts_at = '2098-08-10 15:00:00+00';
 
     IF NOT EXISTS (
         SELECT 1 FROM public.appointments
@@ -672,11 +813,11 @@ BEGIN
 
     UPDATE public.appointments
     SET status = 'confirmed'
-    WHERE starts_at = '2026-08-10 13:00:00+00';
+    WHERE starts_at = '2098-08-10 13:00:00+00';
 
     IF NOT EXISTS (
         SELECT 1 FROM public.appointments
-        WHERE starts_at = '2026-08-10 13:00:00+00'
+        WHERE starts_at = '2098-08-10 13:00:00+00'
           AND status = 'confirmed'
     ) THEN
         RAISE EXCEPTION 'The owner could not confirm their appointment';
@@ -684,11 +825,17 @@ BEGIN
 
     UPDATE public.appointments
     SET status = 'completed'
-    WHERE starts_at = '2026-08-10 13:00:00+00';
+    WHERE id = (
+        SELECT completed_appointment_id
+        FROM appointments_rls_test_context
+    );
 
     IF NOT EXISTS (
         SELECT 1 FROM public.appointments
-        WHERE starts_at = '2026-08-10 13:00:00+00'
+        WHERE id = (
+            SELECT completed_appointment_id
+            FROM appointments_rls_test_context
+        )
           AND status = 'completed'
     ) THEN
         RAISE EXCEPTION 'The owner could not complete a finished appointment';
@@ -696,42 +843,28 @@ BEGIN
 
     UPDATE public.appointments
     SET status = 'no_show'
-    WHERE status = 'completed';
+    WHERE id = (
+        SELECT completed_appointment_id
+        FROM appointments_rls_test_context
+    );
 
     IF FOUND THEN
         RAISE EXCEPTION 'A completed appointment changed historical status';
     END IF;
 
-    INSERT INTO public.appointments (
-        user_id,
-        patient_id,
-        starts_at,
-        occupied_until,
-        duration_minutes,
-        cleanup_minutes,
-        specialty
-    )
-    SELECT
-        owner_id,
-        active_patient_id,
-        '2026-08-10 16:00:00+00',
-        '2026-08-10 16:35:00+00',
-        30,
-        5,
-        'general'
-    FROM appointments_rls_test_context;
-
-    UPDATE public.appointments
-    SET status = 'confirmed'
-    WHERE starts_at = '2026-08-10 16:00:00+00';
-
     UPDATE public.appointments
     SET status = 'no_show'
-    WHERE starts_at = '2026-08-10 16:00:00+00';
+    WHERE id = (
+        SELECT no_show_appointment_id
+        FROM appointments_rls_test_context
+    );
 
     IF NOT EXISTS (
         SELECT 1 FROM public.appointments
-        WHERE starts_at = '2026-08-10 16:00:00+00'
+        WHERE id = (
+            SELECT no_show_appointment_id
+            FROM appointments_rls_test_context
+        )
           AND status = 'no_show'
     ) THEN
         RAISE EXCEPTION 'The owner could not mark a finished appointment absent';
@@ -784,44 +917,11 @@ BEGIN
         RAISE EXCEPTION 'The owner could not cancel a future confirmed appointment';
     END IF;
 
-    INSERT INTO public.appointments (
-        user_id,
-        patient_id,
-        starts_at,
-        occupied_until,
-        duration_minutes,
-        cleanup_minutes,
-        specialty
-    )
-    SELECT
-        owner_id,
-        active_patient_id,
-        CURRENT_TIMESTAMP - INTERVAL '10 minutes',
-        CURRENT_TIMESTAMP + INTERVAL '20 minutes',
-        25,
-        5,
-        'general'
-    FROM appointments_rls_test_context;
-
-    UPDATE public.appointments
-    SET status = 'confirmed'
-    WHERE starts_at <= CURRENT_TIMESTAMP
-      AND occupied_until > CURRENT_TIMESTAMP;
-
     BEGIN
         PERFORM public.reschedule_appointment(
             (
-                SELECT id
-                FROM public.appointments
-                WHERE patient_id = (
-                    SELECT active_patient_id
-                    FROM appointments_rls_test_context
-                )
-                  AND starts_at <= CURRENT_TIMESTAMP
-                  AND occupied_until > CURRENT_TIMESTAMP
-                  AND status = 'confirmed'
-                ORDER BY starts_at DESC
-                LIMIT 1
+                SELECT ongoing_confirmed_appointment_id
+                FROM appointments_rls_test_context
             ),
             CURRENT_TIMESTAMP + INTERVAL '1 day',
             false
@@ -833,41 +933,29 @@ BEGIN
 
     UPDATE public.appointments
     SET status = 'cancelled'
-    WHERE starts_at <= CURRENT_TIMESTAMP
-      AND occupied_until > CURRENT_TIMESTAMP;
+    WHERE id = (
+        SELECT ongoing_confirmed_appointment_id
+        FROM appointments_rls_test_context
+    );
 
     IF FOUND OR EXISTS (
         SELECT 1 FROM public.appointments
-        WHERE starts_at <= CURRENT_TIMESTAMP
-          AND occupied_until > CURRENT_TIMESTAMP
+        WHERE id = (
+            SELECT ongoing_confirmed_appointment_id
+            FROM appointments_rls_test_context
+        )
           AND status <> 'confirmed'
     ) THEN
         RAISE EXCEPTION 'An ongoing confirmed appointment was cancelled';
     END IF;
 
-    INSERT INTO public.appointments (
-        user_id,
-        patient_id,
-        starts_at,
-        occupied_until,
-        duration_minutes,
-        cleanup_minutes,
-        specialty
-    )
-    SELECT
-        owner_id,
-        active_patient_id,
-        '2026-08-10 17:00:00+00',
-        '2026-08-10 17:35:00+00',
-        30,
-        5,
-        'general'
-    FROM appointments_rls_test_context;
-
     BEGIN
         UPDATE public.appointments
         SET status = 'completed'
-        WHERE starts_at = '2026-08-10 17:00:00+00';
+        WHERE id = (
+            SELECT past_pending_appointment_id
+            FROM appointments_rls_test_context
+        );
 
         IF FOUND THEN
             RAISE EXCEPTION 'A pending appointment skipped confirmation';
@@ -876,13 +964,17 @@ BEGIN
         WHEN check_violation OR insufficient_privilege THEN NULL;
     END;
 
-    UPDATE public.appointments
-    SET status = 'pending_confirmation'
-    WHERE status IN ('cancelled', 'confirmed', 'completed', 'no_show');
+    BEGIN
+        UPDATE public.appointments
+        SET status = 'pending_confirmation'
+        WHERE status IN ('cancelled', 'confirmed', 'completed', 'no_show');
 
-    IF FOUND THEN
-        RAISE EXCEPTION 'A completed status transition was modified';
-    END IF;
+        IF FOUND THEN
+            RAISE EXCEPTION 'A completed status transition was modified';
+        END IF;
+    EXCEPTION
+        WHEN check_violation OR insufficient_privilege THEN NULL;
+    END;
 
     BEGIN
         DELETE FROM public.appointments;

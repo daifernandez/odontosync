@@ -54,6 +54,16 @@ export type AppointmentInput = Pick<
   | "specialty"
 >;
 
+export function isPendingAppointmentManageable(
+  appointment: Pick<Appointment, "startsAt" | "status">,
+  now = new Date(),
+) {
+  return (
+    appointment.status === "pending_confirmation" &&
+    new Date(appointment.startsAt).getTime() > now.getTime()
+  );
+}
+
 type AppointmentField = keyof AppointmentInput;
 
 export type AppointmentFormValues = Record<AppointmentField, string>;

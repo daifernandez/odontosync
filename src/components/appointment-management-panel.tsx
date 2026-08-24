@@ -24,6 +24,7 @@ import {
   formatArgentinaDateInput,
   getArgentinaDateTimeParts,
   getAppointmentSpecialtyLabel,
+  isPendingAppointmentManageable,
   type Appointment,
 } from "@/modules/appointments/domain/appointment";
 import {
@@ -63,7 +64,9 @@ export function AppointmentManagementPanel({
 }>) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const router = useRouter();
-  const isPending = appointment.status === "pending_confirmation" && !readOnly;
+  const now = new Date(currentTime);
+  const isPending =
+    isPendingAppointmentManageable(appointment, now) && !readOnly;
   const isConfirmed = appointment.status === "confirmed" && !readOnly;
   const initialDate = formatArgentinaDateInput(new Date(appointment.startsAt));
   const initialParts = getArgentinaDateTimeParts(new Date(appointment.startsAt));
@@ -95,7 +98,7 @@ export function AppointmentManagementPanel({
     durationMinutes: Number(durationMinutes),
     cleanupMinutes: Number(cleanupMinutes),
     gridIntervalMinutes,
-    now: new Date(currentTime),
+    now,
   });
   const rescheduleSlots = getAvailableAppointmentSlots({
     date,
@@ -105,7 +108,7 @@ export function AppointmentManagementPanel({
     durationMinutes: appointment.durationMinutes,
     cleanupMinutes: appointment.cleanupMinutes,
     gridIntervalMinutes,
-    now: new Date(currentTime),
+    now,
   }).filter((time) => `${date}T${time}` !== `${initialDate}T${initialTime}`);
   const overlapRequiresConfirmation =
     rescheduleState.status === "overlap" &&
@@ -117,11 +120,10 @@ export function AppointmentManagementPanel({
   }).format(new Date(appointment.startsAt));
   const canCancel =
     isConfirmed &&
-    new Date(appointment.startsAt).getTime() > new Date(currentTime).getTime();
+    new Date(appointment.startsAt).getTime() > now.getTime();
   const canClose =
     isConfirmed &&
-    new Date(appointment.occupiedUntil).getTime() <=
-      new Date(currentTime).getTime();
+    new Date(appointment.occupiedUntil).getTime() <= now.getTime();
   const canReschedule = canCancel;
   const statusTitle =
     appointment.status === "pending_confirmation"
@@ -219,6 +221,8 @@ export function AppointmentManagementPanel({
             <p className="mt-2 mb-0 text-sm text-[var(--color-muted)]">
               {isPending
                 ? "Modificá, confirmá o cancelá el turno sin eliminar el registro."
+                : appointment.status === "pending_confirmation"
+                  ? "Consultá este turno pendiente en modo de solo lectura."
                 : isConfirmed
                   ? canClose
                     ? "Consultá los datos y registrá el resultado del turno."
@@ -478,7 +482,9 @@ export function AppointmentManagementPanel({
                 </>
               ) : (
                 <p className="mt-5 mb-0 text-sm leading-6 text-[var(--color-muted)]">
-                  Este estado forma parte del historial y no admite cambios.
+                  {appointment.status === "pending_confirmation"
+                    ? "La fecha de este turno ya comenzó o pasó. El registro es solo de consulta y no admite cambios."
+                    : "Este estado forma parte del historial y no admite cambios."}
                 </p>
               )}
             </section>

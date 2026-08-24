@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   appointmentFormState,
+  isPendingAppointmentManageable,
   validateAppointment,
 } from "./appointment";
 
@@ -79,5 +80,44 @@ describe("validateAppointment", () => {
         cleanupMinutes: "Ingresá un margen de entre 0 y 1440 minutos.",
       },
     });
+  });
+});
+
+describe("isPendingAppointmentManageable", () => {
+  const appointment = {
+    id: "00000000-0000-4000-8000-000000000010",
+    patientId: "00000000-0000-4000-8000-000000000001",
+    patientFirstName: "Lucía",
+    patientLastName: "Prueba",
+    startsAt: "2026-08-10T12:00:00.000Z",
+    occupiedUntil: "2026-08-10T12:35:00.000Z",
+    durationMinutes: 30,
+    cleanupMinutes: 5,
+    specialty: "general" as const,
+    status: "pending_confirmation" as const,
+  };
+
+  it("allows management only before a pending appointment starts", () => {
+    expect(
+      isPendingAppointmentManageable(
+        appointment,
+        new Date("2026-08-10T11:59:59.000Z"),
+      ),
+    ).toBe(true);
+    expect(
+      isPendingAppointmentManageable(
+        appointment,
+        new Date("2026-08-10T12:00:00.000Z"),
+      ),
+    ).toBe(false);
+  });
+
+  it("rejects non-pending appointments regardless of their date", () => {
+    expect(
+      isPendingAppointmentManageable(
+        { ...appointment, status: "confirmed" },
+        new Date("2026-08-10T11:00:00.000Z"),
+      ),
+    ).toBe(false);
   });
 });
