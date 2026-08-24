@@ -41,6 +41,7 @@ export function AppointmentForm({
   created,
   currentTime,
   exceptionalBlocks,
+  initialPatientId = "",
   patients,
   defaultDurationMinutes,
   defaultCleanupMinutes,
@@ -58,6 +59,7 @@ export function AppointmentForm({
   created: boolean;
   currentTime: string;
   exceptionalBlocks: ExceptionalBlockOccupancy[];
+  initialPatientId?: string;
   patients: AppointmentPatientOption[];
   defaultDurationMinutes: number;
   defaultCleanupMinutes: number;
@@ -75,7 +77,7 @@ export function AppointmentForm({
     appointmentFormState,
   );
   const patientSelectRef = useRef<HTMLSelectElement>(null);
-  const [patientId, setPatientId] = useState("");
+  const [patientId, setPatientId] = useState(initialPatientId);
   const [date, setDate] = useState(initialDate);
   const [startsAt, setStartsAt] = useState(
     initialDate && initialTime ? `${initialDate}T${initialTime}` : "",
@@ -177,7 +179,7 @@ export function AppointmentForm({
             }
             aria-invalid={Boolean(state.fieldErrors.patientId)}
             className={inputClassName}
-            defaultValue={state.values?.patientId ?? ""}
+            defaultValue={state.values?.patientId ?? initialPatientId}
             name="patientId"
             onChange={(event) => setPatientId(event.target.value)}
             ref={patientSelectRef}

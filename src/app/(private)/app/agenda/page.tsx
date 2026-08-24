@@ -45,6 +45,7 @@ type AgendaPageProps = {
     errorGestion?: string | string[];
     fecha?: string | string[];
     hora?: string | string[];
+    paciente?: string | string[];
     nuevo?: string | string[];
     reprogramado?: string | string[];
     semana?: string | string[];
@@ -60,6 +61,8 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
     : params.semana;
   const requestedDate =
     typeof params.fecha === "string" ? params.fecha : undefined;
+  const initialPatientId =
+    typeof params.paciente === "string" ? params.paciente : undefined;
   const explicitView =
     parseOptionalAgendaView(
       typeof params.vista === "string" ? params.vista : undefined,
@@ -156,6 +159,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
       exceptionalBlocks={exceptionalBlocks}
       managementError={params.errorGestion === "1"}
       initialDate={view === "day" ? selectedDate : requestedDate}
+      initialPatientId={initialPatientId}
       initialTime={typeof params.hora === "string" ? params.hora : undefined}
       patients={patients.map(({ id, firstName, lastName }) => ({
         id,

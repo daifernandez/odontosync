@@ -38,7 +38,7 @@ describe("DashboardHome", () => {
     expect(markup).toContain('href="/app/agenda"');
     expect(markup).toContain('href="/app/agenda"');
     expect(markup).toContain(
-      'href="/app/agenda?vista=day&amp;fecha=2026-08-22&amp;turno=appointment-id"',
+      'href="/app/agenda?semana=2026-08-17&amp;vista=dia&amp;fecha=2026-08-22&amp;turno=appointment-id"',
     );
   });
 

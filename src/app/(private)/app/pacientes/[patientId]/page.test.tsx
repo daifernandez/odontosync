@@ -115,6 +115,9 @@ describe("PatientDetailPage", () => {
     expect(markup).toContain("No hay próximos turnos");
     expect(markup).toContain("Este paciente todavía no tiene historial");
     expect(markup).toContain("Crear turno");
+    expect(markup).toContain(
+      `/app/agenda?nuevo=1&amp;paciente=${patientId}#nuevo-turno`,
+    );
   });
 
   it("uses the authenticated owner in both database reads", async () => {

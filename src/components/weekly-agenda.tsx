@@ -87,6 +87,7 @@ export function WeeklyAgenda({
   exceptionalBlockPanelOpen,
   exceptionalBlocks,
   initialDate,
+  initialPatientId,
   initialTime,
   managementError,
   patients,
@@ -111,6 +112,7 @@ export function WeeklyAgenda({
   exceptionalBlockPanelOpen: boolean;
   exceptionalBlocks: ExceptionalBlock[];
   initialDate?: string;
+  initialPatientId?: string;
   initialTime?: string;
   managementError: boolean;
   patients: AppointmentPatientOption[];
@@ -215,8 +217,9 @@ export function WeeklyAgenda({
             gridIntervalMinutes={configuration.gridIntervalMinutes}
             exceptionalBlocks={exceptionalBlocks}
             initialDate={initialDate}
+            initialPatientId={initialPatientId}
             initialTime={initialTime}
-            key={`${initialDate ?? ""}-${initialTime ?? ""}-${created}`}
+            key={`${initialDate ?? ""}-${initialTime ?? ""}-${initialPatientId ?? ""}-${created}`}
             minimumDate={formatArgentinaDateInput(currentTime)}
             patients={patients}
             selectedDate={day.date}

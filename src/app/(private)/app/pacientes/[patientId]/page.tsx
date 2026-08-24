@@ -265,7 +265,7 @@ export default async function PatientDetailPage({
             {patient.isActive ? (
               <Link
                 className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[var(--color-brand)] px-3 text-xs font-bold text-white no-underline hover:bg-[var(--color-brand-dark)]"
-                href="/app/agenda?nuevo=1#nuevo-turno"
+                href={`/app/agenda?nuevo=1&paciente=${patient.id}#nuevo-turno`}
               >
                 <Plus aria-hidden="true" size={15} />
                 Crear turno

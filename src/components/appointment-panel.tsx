@@ -29,6 +29,7 @@ export function AppointmentPanel({
   created,
   currentTime,
   exceptionalBlocks,
+  initialPatientId,
   patients,
   defaultDurationMinutes,
   defaultCleanupMinutes,
@@ -46,6 +47,7 @@ export function AppointmentPanel({
   created: boolean;
   currentTime: string;
   exceptionalBlocks: ExceptionalBlockOccupancy[];
+  initialPatientId?: string;
   patients: AppointmentPatientOption[];
   defaultDurationMinutes: number;
   defaultCleanupMinutes: number;
@@ -163,6 +165,7 @@ export function AppointmentPanel({
                 gridIntervalMinutes={gridIntervalMinutes}
                 exceptionalBlocks={exceptionalBlocks}
                 initialDate={initialDate}
+                initialPatientId={initialPatientId}
                 initialTime={initialTime}
                 minimumDate={minimumDate}
                 onClose={closePanel}

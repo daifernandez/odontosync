@@ -143,6 +143,15 @@ describe("AgendaPage monthly view", () => {
     expect(result.props.autoOpenNewAppointment).toBe(true);
   });
 
+  it("passes the patient context to the new appointment workflow", async () => {
+    const result = await AgendaPage({
+      searchParams: Promise.resolve({ nuevo: "1", paciente: "patient-id" }),
+    });
+
+    expect(result.type).toBe(mocks.WeeklyAgenda);
+    expect(result.props.initialPatientId).toBe("patient-id");
+  });
+
   it("falls back to weekly agenda when the preference cannot be read", async () => {
     mocks.getLastAgendaView.mockRejectedValue(new Error("database unavailable"));
 
