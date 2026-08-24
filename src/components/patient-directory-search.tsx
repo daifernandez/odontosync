@@ -91,7 +91,7 @@ export function PatientDirectorySearch({
         />
         <input
           aria-describedby="patient-search-help"
-          className="min-h-11 w-full rounded-xl border border-[var(--color-border)] bg-white pr-11 pl-10 text-sm outline-none focus:border-[var(--color-brand)] focus:ring-3 focus:ring-[rgb(20_125_115/12%)]"
+          className="min-h-11 w-full appearance-none rounded-xl border border-[var(--color-border)] bg-white pr-11 pl-10 text-sm outline-none focus:border-[var(--color-brand)] focus:ring-3 focus:ring-[rgb(20_125_115/12%)] [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
           id="patient-search"
           maxLength={80}
           onChange={(event) => setQuery(event.target.value)}
