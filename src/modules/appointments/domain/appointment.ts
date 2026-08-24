@@ -17,7 +17,9 @@ export type AppointmentStatus =
   | "pending_confirmation"
   | "confirmed"
   | "completed"
-  | "no_show";
+  | "no_show"
+  | "cancelled"
+  | "rescheduled";
 
 export type AppointmentClosureStatus = Extract<
   AppointmentStatus,

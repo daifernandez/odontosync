@@ -130,6 +130,8 @@ export async function listPatientAppointments(
       "confirmed",
       "completed",
       "no_show",
+      "cancelled",
+      "rescheduled",
     ])
     .order("starts_at", { ascending: false });
 

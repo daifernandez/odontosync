@@ -55,6 +55,10 @@ function getAppointmentStatusLabel(status: AppointmentStatus) {
       return "Atendido";
     case "no_show":
       return "No asistió";
+    case "cancelled":
+      return "Cancelado";
+    case "rescheduled":
+      return "Reprogramado";
     default:
       return "Pendiente de confirmación";
   }
@@ -63,9 +67,9 @@ function getAppointmentStatusLabel(status: AppointmentStatus) {
 function getAppointmentStatusClassName(status: AppointmentStatus) {
   return status === "no_show"
     ? "bg-[var(--color-warning-soft)] text-[var(--color-warning-foreground)]"
-    : status === "pending_confirmation"
+    : status === "pending_confirmation" || status === "cancelled"
       ? "bg-[var(--color-warning-soft)] text-[var(--color-warning-foreground)]"
-      : "bg-[var(--color-brand-soft)] text-[var(--color-brand-dark)]";
+    : "bg-[var(--color-brand-soft)] text-[var(--color-brand-dark)]";
 }
 
 function formatAppointmentDate(date: Date) {

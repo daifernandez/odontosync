@@ -55,6 +55,10 @@ const statusStyles = {
     "bg-[var(--color-warning-soft)] text-[var(--color-warning-foreground)]",
   Atendido: "bg-[var(--color-brand-soft)] text-[var(--color-brand-dark)]",
   "No asistió": "bg-[var(--color-neutral-soft)] text-[var(--color-muted)]",
+  Cancelado:
+    "bg-[var(--color-warning-soft)] text-[var(--color-warning-foreground)]",
+  Reprogramado:
+    "bg-[var(--color-warning-soft)] text-[var(--color-warning-foreground)]",
   Libre: "bg-[var(--color-neutral-soft)] text-[var(--color-muted)]",
 };
 
