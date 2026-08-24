@@ -176,8 +176,7 @@ export default async function PatientDetailPage({
   const upcomingAppointments = appointments
     .filter(
       (appointment) =>
-        (appointment.status === "pending_confirmation" ||
-          appointment.status === "confirmed") &&
+        appointment.status === "pending_confirmation" &&
         new Date(appointment.startsAt).getTime() >= now,
     )
     .toSorted(
