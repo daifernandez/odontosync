@@ -215,29 +215,8 @@ export function AppShell({
         </nav>
 
         <div className="flex flex-col gap-1 border-t border-[var(--color-border)] pt-4">
-          {mode === "demo" ? (
-            <button
-              aria-disabled="true"
-              className={configurationClassName}
-              disabled
-              title="Configuración: próximamente"
-              type="button"
-            >
-              {configurationContent}
-            </button>
-          ) : (
-            <Link
-              aria-current={isConfigurationActive ? "page" : undefined}
-              className={configurationClassName}
-              href="/app/configuracion"
-              title={isCollapsed ? "Configuración" : undefined}
-            >
-              {configurationContent}
-            </Link>
-          )}
-
           <div
-            className={`mt-1 flex items-center gap-3 px-2.5 py-2.5 ${
+            className={`flex items-center gap-3 px-2.5 py-2.5 ${
               isCollapsed ? "md:justify-center md:px-0" : ""
             }`}
           >
@@ -260,6 +239,27 @@ export function AppShell({
               </small>
             </span>
           </div>
+
+          {mode === "demo" ? (
+            <button
+              aria-disabled="true"
+              className={configurationClassName}
+              disabled
+              title="Configuración: próximamente"
+              type="button"
+            >
+              {configurationContent}
+            </button>
+          ) : (
+            <Link
+              aria-current={isConfigurationActive ? "page" : undefined}
+              className={configurationClassName}
+              href="/app/configuracion"
+              title={isCollapsed ? "Configuración" : undefined}
+            >
+              {configurationContent}
+            </Link>
+          )}
 
           {mode === "demo" ? (
             <Link
@@ -299,28 +299,30 @@ export function AppShell({
             </form>
           )}
 
-          <button
-            aria-label={isCollapsed ? "Expandir menú" : "Contraer menú"}
-            className={`mt-1 hidden h-11.5 w-full cursor-pointer items-center gap-3.5 rounded-xl border border-[var(--color-border)] bg-transparent px-3 text-left text-[var(--color-muted)] transition-colors hover:bg-[var(--color-brand-subtle)] hover:text-[var(--color-brand-dark)] md:flex ${
-              isCollapsed ? "justify-center px-0" : ""
-            }`}
-            onClick={() => setIsCollapsed((current) => !current)}
-            title={isCollapsed ? "Expandir menú" : "Contraer menú"}
-            type="button"
-          >
-            {isCollapsed ? (
-              <PanelLeftOpen aria-hidden="true" size={19} />
-            ) : (
-              <PanelLeftClose aria-hidden="true" size={19} />
-            )}
-            <span
-              className={`overflow-hidden whitespace-nowrap ${
-                isCollapsed ? "hidden" : ""
+          <div className="mt-2 hidden border-t border-[var(--color-border)] pt-3 md:block">
+            <button
+              aria-label={isCollapsed ? "Expandir menú" : "Contraer menú"}
+              className={`flex h-11.5 w-full cursor-pointer items-center gap-3.5 rounded-xl border border-[var(--color-border)] bg-transparent px-3 text-left text-[var(--color-muted)] transition-colors hover:bg-[var(--color-brand-subtle)] hover:text-[var(--color-brand-dark)] ${
+                isCollapsed ? "justify-center px-0" : ""
               }`}
+              onClick={() => setIsCollapsed((current) => !current)}
+              title={isCollapsed ? "Expandir menú" : "Contraer menú"}
+              type="button"
             >
-              Contraer menú
-            </span>
-          </button>
+              {isCollapsed ? (
+                <PanelLeftOpen aria-hidden="true" size={19} />
+              ) : (
+                <PanelLeftClose aria-hidden="true" size={19} />
+              )}
+              <span
+                className={`overflow-hidden whitespace-nowrap ${
+                  isCollapsed ? "hidden" : ""
+                }`}
+              >
+                Contraer menú
+              </span>
+            </button>
+          </div>
         </div>
       </aside>
 

@@ -34,6 +34,21 @@ describe("AppShell", () => {
     expect(markup).toContain('href="/app/configuracion"');
   });
 
+  it("groups account actions below the user and keeps the shell control last", () => {
+    const markup = renderToStaticMarkup(
+      <AppShell user={user}>Contenido</AppShell>,
+    );
+    const userPosition = markup.indexOf(user.fullName);
+    const configurationPosition = markup.indexOf(">Configuración</span>");
+    const logoutPosition = markup.indexOf(">Cerrar sesión</span>");
+    const collapsePosition = markup.indexOf(">Contraer menú</span>");
+
+    expect(userPosition).toBeGreaterThan(-1);
+    expect(configurationPosition).toBeGreaterThan(userPosition);
+    expect(logoutPosition).toBeGreaterThan(configurationPosition);
+    expect(collapsePosition).toBeGreaterThan(logoutPosition);
+  });
+
   it("keeps a section active on its nested routes", () => {
     pathname = "/app/pacientes/patient-1/editar";
 
