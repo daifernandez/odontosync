@@ -30,6 +30,9 @@ export const metadata: Metadata = {
 
 type PatientDetailPageProps = {
   params: Promise<{ patientId: string }>;
+  searchParams?: Promise<{
+    historial?: string | string[];
+  }>;
 };
 
 const appointmentDateFormatter = new Intl.DateTimeFormat("es-AR", {
@@ -80,11 +83,11 @@ function formatAppointmentDate(date: Date) {
 function AppointmentList({
   appointments,
   emptyMessage,
-  readOnly = false,
+  historyPatientId,
 }: Readonly<{
   appointments: Appointment[];
   emptyMessage: string;
-  readOnly?: boolean;
+  historyPatientId?: string;
 }>) {
   if (appointments.length === 0) {
     return (
@@ -127,17 +130,18 @@ function AppointmentList({
             </div>
             <Link
               className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-xl border border-[var(--color-border)] bg-white px-3 text-xs font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-soft)]"
-              href={buildAgendaPath({
-                weekStartDate: date,
-                view: "day",
-                selectedDate: date,
-                params: {
-                  turno: appointment.id,
-                  ...(readOnly ? { consulta: "1" } : {}),
-                },
-              })}
+              href={
+                historyPatientId
+                  ? `/app/pacientes/${historyPatientId}?historial=${appointment.id}#historial-turno`
+                  : buildAgendaPath({
+                      weekStartDate: date,
+                      view: "day",
+                      selectedDate: date,
+                      params: { turno: appointment.id },
+                    })
+              }
             >
-              Ver en Agenda
+              {historyPatientId ? "Ver detalle histórico" : "Ver en Agenda"}
             </Link>
           </article>
         );
@@ -146,8 +150,72 @@ function AppointmentList({
   );
 }
 
+function HistoricalAppointmentDetail({
+  appointment,
+  patientId,
+}: Readonly<{ appointment: Appointment; patientId: string }>) {
+  const startsAt = new Date(appointment.startsAt);
+
+  return (
+    <section
+      aria-labelledby="historical-appointment-title"
+      className="mt-5 rounded-[var(--radius-large)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-card)] md:p-6"
+      id="historial-turno"
+    >
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="mb-2 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
+            Detalle histórico
+          </p>
+          <h2 className="m-0 text-xl" id="historical-appointment-title">
+            {getAppointmentStatusLabel(appointment.status)}
+          </h2>
+          <p className="mt-2 mb-0 text-sm text-[var(--color-muted)]">
+            Este turno es solo de consulta y no admite cambios.
+          </p>
+        </div>
+        <Link
+          className="inline-flex min-h-10 items-center justify-center rounded-xl border border-[var(--color-border)] bg-white px-3 text-xs font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-soft)]"
+          href={`/app/pacientes/${patientId}#historial-turno`}
+        >
+          Cerrar detalle
+        </Link>
+      </div>
+      <dl className="mt-5 grid gap-3 sm:grid-cols-3">
+        <div className="rounded-xl bg-[var(--color-brand-subtle)] p-4">
+          <dt className="text-xs font-bold text-[var(--color-muted)]">
+            Fecha y hora
+          </dt>
+          <dd className="mt-2 ml-0 text-sm font-semibold">
+            {formatAppointmentDate(startsAt)} ·{" "}
+            {appointmentTimeFormatter.format(startsAt)}
+          </dd>
+        </div>
+        <div className="rounded-xl bg-[var(--color-brand-subtle)] p-4">
+          <dt className="text-xs font-bold text-[var(--color-muted)]">
+            Área odontológica
+          </dt>
+          <dd className="mt-2 ml-0 text-sm font-semibold">
+            {getAppointmentSpecialtyLabel(appointment.specialty)}
+          </dd>
+        </div>
+        <div className="rounded-xl bg-[var(--color-brand-subtle)] p-4">
+          <dt className="text-xs font-bold text-[var(--color-muted)]">
+            Duración reservada
+          </dt>
+          <dd className="mt-2 ml-0 text-sm font-semibold">
+            {appointment.durationMinutes} min + {appointment.cleanupMinutes} min
+            {" de acondicionamiento"}
+          </dd>
+        </div>
+      </dl>
+    </section>
+  );
+}
+
 export default async function PatientDetailPage({
   params,
+  searchParams,
 }: PatientDetailPageProps) {
   const { patientId: patientIdValue } = await params;
   const patientId = validatePatientId(patientIdValue);
@@ -164,6 +232,7 @@ export default async function PatientDetailPage({
     redirect("/ingresar");
   }
 
+  const historyParams = searchParams ? await searchParams : {};
   const [patient, appointments] = await Promise.all([
     getPatient(patientId, userId),
     listPatientAppointments(patientId, userId),
@@ -191,6 +260,13 @@ export default async function PatientDetailPage({
   );
   const historicalAppointments = appointments.filter(
     (appointment) => !upcomingIds.has(appointment.id),
+  );
+  const historyAppointmentId =
+    typeof historyParams.historial === "string"
+      ? historyParams.historial
+      : undefined;
+  const selectedHistoricalAppointment = historicalAppointments.find(
+    (appointment) => appointment.id === historyAppointmentId,
   );
 
   return (
@@ -262,6 +338,13 @@ export default async function PatientDetailPage({
         </dl>
       </section>
 
+      {selectedHistoricalAppointment ? (
+        <HistoricalAppointmentDetail
+          appointment={selectedHistoricalAppointment}
+          patientId={patient.id}
+        />
+      ) : null}
+
       <div className="mt-5 grid items-start gap-5 lg:grid-cols-2">
         <section
           aria-labelledby="upcoming-appointments-title"
@@ -297,7 +380,7 @@ export default async function PatientDetailPage({
           <AppointmentList
             appointments={historicalAppointments}
             emptyMessage="Este paciente todavía no tiene historial"
-            readOnly
+            historyPatientId={patient.id}
           />
         </section>
       </div>

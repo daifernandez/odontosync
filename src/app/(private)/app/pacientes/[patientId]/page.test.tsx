@@ -104,7 +104,7 @@ describe("PatientDetailPage", () => {
     ]);
   });
 
-  it("renders the administrative record and links each appointment to its agenda day", async () => {
+  it("renders the administrative record with separate upcoming and history links", async () => {
     const page = await PatientDetailPage({
       params: Promise.resolve({ patientId }),
     });
@@ -124,10 +124,26 @@ describe("PatientDetailPage", () => {
     expect(markup).toContain("vista=dia");
     expect(markup).toContain("fecha=2099-09-01");
     expect(markup).toContain("turno=future-appointment");
-    expect(markup).toContain("fecha=2025-09-01");
-    expect(markup).toContain("turno=past-appointment&amp;consulta=1");
+    expect(markup).toContain(
+      `/app/pacientes/${patientId}?historial=past-appointment#historial-turno`,
+    );
+    expect(markup).toContain("Ver detalle histórico");
     expect(markup).toContain("Cancelado");
     expect(markup).toContain("Reprogramado");
+  });
+
+  it("renders a selected historical appointment in read-only detail", async () => {
+    const page = await PatientDetailPage({
+      params: Promise.resolve({ patientId }),
+      searchParams: Promise.resolve({ historial: "past-appointment" }),
+    });
+    const markup = renderToStaticMarkup(page);
+
+    expect(markup).toContain("Detalle histórico");
+    expect(markup).toContain("Atendido");
+    expect(markup).toContain("Este turno es solo de consulta y no admite cambios.");
+    expect(markup).toContain("Cerrar detalle");
+    expect(markup).not.toContain("consulta=1");
   });
 
   it("shows clear empty states when the patient has no appointments", async () => {
