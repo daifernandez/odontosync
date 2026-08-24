@@ -179,7 +179,7 @@ describe("WeeklyAgenda", () => {
     expect(markup).toContain("Ocupado");
   });
 
-  it("presents a started pending appointment as consultation instead of management", () => {
+  it("presents a finished pending appointment as awaiting its outcome", () => {
     const appointment = {
       id: "00000000-0000-4000-8000-000000000010",
       patientId: "00000000-0000-4000-8000-000000000001",
@@ -224,9 +224,10 @@ describe("WeeklyAgenda", () => {
       />,
     );
 
-    expect(markup).toContain("La fecha de este turno ya comenzó o pasó");
-    expect(markup).toContain("Ver turno");
+    expect(markup).toContain("Pendiente de cierre");
+    expect(markup).toContain("Registrar resultado");
     expect(markup).not.toContain("Gestionar turno");
+    expect(markup).not.toContain("consulta=1");
     expect(markup).not.toContain("Guardar cambios");
   });
 

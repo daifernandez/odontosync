@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   appointmentFormState,
+  isPendingAppointmentAwaitingOutcome,
   isPendingAppointmentManageable,
   validateAppointment,
 } from "./appointment";
@@ -117,6 +118,38 @@ describe("isPendingAppointmentManageable", () => {
       isPendingAppointmentManageable(
         { ...appointment, status: "confirmed" },
         new Date("2026-08-10T11:00:00.000Z"),
+      ),
+    ).toBe(false);
+  });
+});
+
+describe("isPendingAppointmentAwaitingOutcome", () => {
+  const appointment = {
+    startsAt: "2026-08-10T12:00:00.000Z",
+    occupiedUntil: "2026-08-10T12:35:00.000Z",
+    status: "pending_confirmation" as const,
+  };
+
+  it("waits until the complete reserved time has finished", () => {
+    expect(
+      isPendingAppointmentAwaitingOutcome(
+        appointment,
+        new Date("2026-08-10T12:34:59.000Z"),
+      ),
+    ).toBe(false);
+    expect(
+      isPendingAppointmentAwaitingOutcome(
+        appointment,
+        new Date("2026-08-10T12:35:00.000Z"),
+      ),
+    ).toBe(true);
+  });
+
+  it("rejects appointments that already have another status", () => {
+    expect(
+      isPendingAppointmentAwaitingOutcome(
+        { ...appointment, status: "confirmed" },
+        new Date("2026-08-10T13:00:00.000Z"),
       ),
     ).toBe(false);
   });

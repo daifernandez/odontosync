@@ -24,6 +24,7 @@ import {
   formatArgentinaDateInput,
   getArgentinaDateTimeParts,
   getAppointmentSpecialtyLabel,
+  isPendingAppointmentAwaitingOutcome,
   isPendingAppointmentManageable,
   type Appointment,
 } from "@/modules/appointments/domain/appointment";
@@ -65,8 +66,13 @@ export function AppointmentManagementPanel({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const router = useRouter();
   const now = new Date(currentTime);
-  const isPending =
+  const isPendingManageable =
     isPendingAppointmentManageable(appointment, now) && !readOnly;
+  const pendingAwaitsOutcome = isPendingAppointmentAwaitingOutcome(
+    appointment,
+    now,
+  );
+  const canRecordPendingOutcome = pendingAwaitsOutcome && !readOnly;
   const isConfirmed = appointment.status === "confirmed" && !readOnly;
   const initialDate = formatArgentinaDateInput(new Date(appointment.startsAt));
   const initialParts = getArgentinaDateTimeParts(new Date(appointment.startsAt));
@@ -122,12 +128,16 @@ export function AppointmentManagementPanel({
     isConfirmed &&
     new Date(appointment.startsAt).getTime() > now.getTime();
   const canClose =
-    isConfirmed &&
+    (isConfirmed || canRecordPendingOutcome) &&
     new Date(appointment.occupiedUntil).getTime() <= now.getTime();
   const canReschedule = canCancel;
   const statusTitle =
     appointment.status === "pending_confirmation"
-      ? "Turno pendiente"
+      ? pendingAwaitsOutcome
+        ? "Pendiente de cierre"
+        : isPendingManageable
+          ? "Turno pendiente"
+          : "Turno en curso"
       : appointment.status === "completed"
         ? "Turno atendido"
       : appointment.status === "no_show"
@@ -219,10 +229,14 @@ export function AppointmentManagementPanel({
               {appointment.patientLastName}, {appointment.patientFirstName}
             </h2>
             <p className="mt-2 mb-0 text-sm text-[var(--color-muted)]">
-              {isPending
+              {isPendingManageable
                 ? "Modificá, confirmá o cancelá el turno sin eliminar el registro."
+                : canRecordPendingOutcome
+                  ? "Registrá qué ocurrió para incorporar el turno al historial."
                 : appointment.status === "pending_confirmation"
-                  ? "Consultá este turno pendiente en modo de solo lectura."
+                  ? pendingAwaitsOutcome
+                    ? "Consultá este turno pendiente de cierre en modo de solo lectura."
+                    : "Consultá este turno en curso en modo de solo lectura."
                 : isConfirmed
                   ? canClose
                     ? "Consultá los datos y registrá el resultado del turno."
@@ -241,7 +255,7 @@ export function AppointmentManagementPanel({
         </header>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 md:px-7 md:py-6">
-          {!isPending ? (
+          {!isPendingManageable ? (
             <section aria-labelledby="appointment-status-title">
               <div
                 className={`flex items-center gap-3 rounded-xl border px-4 py-3 ${appointment.status === "no_show" ? "border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] text-[var(--color-warning-foreground)]" : "border-[var(--color-border)] bg-[var(--color-brand-soft)] text-[var(--color-brand-dark)]"}`}
@@ -281,19 +295,23 @@ export function AppointmentManagementPanel({
                 </div>
               </dl>
 
-              {isConfirmed ? (
+              {isConfirmed || canRecordPendingOutcome ? (
                 <>
                   {canClose ? (
                     <details className="mt-6 rounded-xl border border-[var(--color-border)] bg-white p-4">
                       <summary className="cursor-pointer text-sm font-bold text-[var(--color-brand-dark)]">
-                        Cerrar turno
+                        {canRecordPendingOutcome
+                          ? "Registrar resultado"
+                          : "Cerrar turno"}
                       </summary>
                       <div className="mt-4 border-t border-[var(--color-border)] pt-4">
                         <p className="m-0 text-sm leading-6 text-[var(--color-muted)]">
                           Esta decisión no se puede deshacer. Elegí el resultado
                           administrativo que corresponda.
                         </p>
-                        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                        <div
+                          className={`mt-3 grid gap-2 ${canRecordPendingOutcome ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}
+                        >
                           <form action={closeAppointmentAction}>
                             <input
                               name="appointmentId"
@@ -334,6 +352,28 @@ export function AppointmentManagementPanel({
                               Marcar como ausente
                             </SubmitButton>
                           </form>
+                          {canRecordPendingOutcome ? (
+                            <form action={closeAppointmentAction}>
+                              <input
+                                name="appointmentId"
+                                type="hidden"
+                                value={appointment.id}
+                              />
+                              <AgendaContextFields
+                                selectedDate={selectedDate ?? weekStartDate}
+                                view={view}
+                                weekStartDate={weekStartDate}
+                              />
+                              <input
+                                name="closureStatus"
+                                type="hidden"
+                                value="cancelled"
+                              />
+                              <SubmitButton pendingLabel="Registrando cancelación…">
+                                Registrar cancelación
+                              </SubmitButton>
+                            </form>
+                          ) : null}
                         </div>
                       </div>
                     </details>
@@ -483,7 +523,7 @@ export function AppointmentManagementPanel({
               ) : (
                 <p className="mt-5 mb-0 text-sm leading-6 text-[var(--color-muted)]">
                   {appointment.status === "pending_confirmation"
-                    ? "La fecha de este turno ya comenzó o pasó. El registro es solo de consulta y no admite cambios."
+                    ? "Podrás registrar el resultado cuando finalice todo el horario reservado, incluido el acondicionamiento."
                     : "Este estado forma parte del historial y no admite cambios."}
                 </p>
               )}

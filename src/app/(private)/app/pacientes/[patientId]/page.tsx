@@ -16,6 +16,7 @@ import { buildAgendaPath } from "@/modules/agenda/domain/weekly-schedule";
 import {
   formatArgentinaDateInput,
   getAppointmentSpecialtyLabel,
+  isPendingAppointmentAwaitingOutcome,
   type Appointment,
   type AppointmentStatus,
 } from "@/modules/appointments/domain/appointment";
@@ -81,10 +82,14 @@ function AppointmentList({
   appointments,
   emptyMessage,
   agendaLink = false,
+  agendaLinkLabel = "Ver en Agenda",
+  statusLabel,
 }: Readonly<{
   agendaLink?: boolean;
+  agendaLinkLabel?: string;
   appointments: Appointment[];
   emptyMessage: string;
+  statusLabel?: string;
 }>) {
   if (appointments.length === 0) {
     return (
@@ -122,7 +127,7 @@ function AppointmentList({
               <span
                 className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-[0.68rem] font-bold ${getAppointmentStatusClassName(appointment.status)}`}
               >
-                {getAppointmentStatusLabel(appointment.status)}
+                {statusLabel ?? getAppointmentStatusLabel(appointment.status)}
               </span>
             </div>
             {agendaLink ? (
@@ -135,7 +140,7 @@ function AppointmentList({
                   params: { turno: appointment.id },
                 })}
               >
-                Ver en Agenda
+                {agendaLinkLabel}
               </Link>
             ) : null}
           </article>
@@ -172,18 +177,21 @@ export default async function PatientDetailPage({
     notFound();
   }
 
-  const now = new Date().getTime();
+  const now = new Date();
   const upcomingAppointments = appointments
     .filter(
       (appointment) =>
         appointment.status === "pending_confirmation" &&
-        new Date(appointment.startsAt).getTime() >= now,
+        new Date(appointment.startsAt).getTime() >= now.getTime(),
     )
     .toSorted(
       (first, second) =>
         new Date(first.startsAt).getTime() -
         new Date(second.startsAt).getTime(),
     );
+  const pendingClosureAppointments = appointments.filter((appointment) =>
+    isPendingAppointmentAwaitingOutcome(appointment, now),
+  );
   const historicalAppointments = appointments.filter((appointment) =>
     ["completed", "no_show", "cancelled", "rescheduled"].includes(
       appointment.status,
@@ -258,6 +266,30 @@ export default async function PatientDetailPage({
           </div>
         </dl>
       </section>
+
+      {pendingClosureAppointments.length > 0 ? (
+        <section
+          aria-labelledby="pending-closure-appointments-title"
+          className="mt-5 rounded-[var(--radius-large)] border border-[var(--color-warning-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-card)] md:p-6"
+        >
+          <h2
+            className="m-0 text-xl"
+            id="pending-closure-appointments-title"
+          >
+            Turnos pendientes de cierre
+          </h2>
+          <p className="mt-2 mb-0 text-sm leading-6 text-[var(--color-muted)]">
+            Registrá qué ocurrió para incorporar estos turnos al historial.
+          </p>
+          <AppointmentList
+            agendaLink
+            agendaLinkLabel="Registrar resultado"
+            appointments={pendingClosureAppointments}
+            emptyMessage="No hay turnos pendientes de cierre"
+            statusLabel="Pendiente de cierre"
+          />
+        </section>
+      ) : null}
 
       <div className="mt-5 grid items-start gap-5 lg:grid-cols-2">
         <section

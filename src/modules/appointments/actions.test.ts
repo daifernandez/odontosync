@@ -333,6 +333,26 @@ describe("closeAppointmentAction", () => {
       "00000000-0000-4000-8000-000000000010",
       "completed",
     );
+    expect(mocks.revalidatePath).toHaveBeenCalledWith(
+      "/app/pacientes",
+      "layout",
+    );
+  });
+
+  it("accepts cancellation as the outcome of an unclosed appointment", async () => {
+    mocks.closeAppointment.mockResolvedValue("cancelled");
+    const formData = new FormData();
+    formData.set("appointmentId", "00000000-0000-4000-8000-000000000010");
+    formData.set("weekStartDate", "2026-08-10");
+    formData.set("closureStatus", "cancelled");
+
+    await expect(closeAppointmentAction(formData)).rejects.toThrow(
+      "redirect:/app/agenda?semana=2026-08-10&cierre=cancelled",
+    );
+    expect(mocks.closeAppointment).toHaveBeenCalledWith(
+      "00000000-0000-4000-8000-000000000010",
+      "cancelled",
+    );
   });
 
   it("rejects an invalid closure status before reaching the repository", async () => {

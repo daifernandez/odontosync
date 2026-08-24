@@ -566,5 +566,6 @@ export async function closeAppointmentAction(formData: FormData) {
   }
 
   revalidatePath("/app/agenda");
+  revalidatePath("/app/pacientes", "layout");
   redirect(buildActionAgendaPath(formData, { cierre: closureStatus }));
 }

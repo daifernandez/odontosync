@@ -182,7 +182,7 @@ describe("closeAppointment", () => {
     vi.clearAllMocks();
   });
 
-  it("requests a confirmed appointment closure and returns the historical status", async () => {
+  it("requests closure for an eligible pending or confirmed appointment", async () => {
     const query = createUpdateQuery({
       data: { id: "appointment-id" },
       error: null,
@@ -196,7 +196,10 @@ describe("closeAppointment", () => {
     );
     expect(query.update).toHaveBeenCalledWith({ status: "completed" });
     expect(query.eq).toHaveBeenNthCalledWith(1, "id", "appointment-id");
-    expect(query.eq).toHaveBeenNthCalledWith(2, "status", "confirmed");
+    expect(query.in).toHaveBeenCalledWith("status", [
+      "pending_confirmation",
+      "confirmed",
+    ]);
   });
 
   it("reports an appointment rejected by database policy as unavailable", async () => {

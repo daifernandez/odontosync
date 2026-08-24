@@ -21,6 +21,7 @@ import {
   formatArgentinaDateInput,
   getArgentinaDateTimeParts,
   getAppointmentSpecialtyLabel,
+  isPendingAppointmentAwaitingOutcome,
   isPendingAppointmentManageable,
   type Appointment,
   type AppointmentClosureStatus,
@@ -56,8 +57,12 @@ function formatTime(minutes: number) {
   return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
 }
 
-function getAppointmentStatusLabel(status: AppointmentStatus) {
-  switch (status) {
+function getAppointmentStatusLabel(appointment: Appointment, now: Date) {
+  if (isPendingAppointmentAwaitingOutcome(appointment, now)) {
+    return "Pendiente de cierre";
+  }
+
+  switch (appointment.status) {
     case "confirmed":
       return "Confirmado";
     case "completed":
@@ -290,7 +295,9 @@ export function WeeklyAgenda({
                   ? "El turno quedó registrado como atendido."
                   : closureStatus === "no_show"
                     ? "El turno quedó registrado como ausente."
-                    : "No pudimos gestionar ese turno. Actualizá la agenda e intentá nuevamente."}
+                    : closureStatus === "cancelled"
+                      ? "El turno quedó registrado como cancelado."
+                      : "No pudimos gestionar ese turno. Actualizá la agenda e intentá nuevamente."}
         </div>
       ) : null}
 
@@ -689,6 +696,11 @@ export function WeeklyAgenda({
                         occupiedMinutes * pixelsPerMinute;
                       const cleanupHeight =
                         appointment.cleanupMinutes * pixelsPerMinute;
+                      const appointmentAwaitsOutcome =
+                        isPendingAppointmentAwaitingOutcome(
+                          appointment,
+                          currentTime,
+                        );
                       const appointmentReadOnly =
                         readOnlyAppointment ||
                         isHistoricalAppointment(appointment.status) ||
@@ -696,11 +708,12 @@ export function WeeklyAgenda({
                           !isPendingAppointmentManageable(
                             appointment,
                             currentTime,
-                          ));
+                          ) &&
+                          !appointmentAwaitsOutcome);
 
                       return (
                         <Link
-                          aria-label={`${isHistoricalAppointment(appointment.status) ? "Ver historial de" : appointmentReadOnly || appointment.status === "confirmed" ? "Ver" : "Gestionar"} turno de ${appointment.patientLastName}, ${appointment.patientFirstName}`}
+                          aria-label={`${isHistoricalAppointment(appointment.status) ? "Ver historial de" : appointmentAwaitsOutcome ? "Registrar resultado de" : appointmentReadOnly || appointment.status === "confirmed" ? "Ver" : "Gestionar"} turno de ${appointment.patientLastName}, ${appointment.patientFirstName}`}
                           href={buildAgendaPath({
                             weekStartDate: week.startDate,
                             view,
@@ -764,7 +777,10 @@ export function WeeklyAgenda({
                                   )}
                                 </span>
                                 <span className="mt-0.5 block truncate text-[0.62rem] font-bold">
-                                  {getAppointmentStatusLabel(appointment.status)}
+                                  {getAppointmentStatusLabel(
+                                    appointment,
+                                    currentTime,
+                                  )}
                                 </span>
                               </div>
                             </foreignObject>
@@ -812,11 +828,20 @@ export function WeeklyAgenda({
           ) : (
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               {visibleAppointments.map((appointment) => {
+                const appointmentAwaitsOutcome =
+                  isPendingAppointmentAwaitingOutcome(
+                    appointment,
+                    currentTime,
+                  );
                 const appointmentReadOnly =
                   readOnlyAppointment ||
                   isHistoricalAppointment(appointment.status) ||
                   (appointment.status === "pending_confirmation" &&
-                    !isPendingAppointmentManageable(appointment, currentTime));
+                    !isPendingAppointmentManageable(
+                      appointment,
+                      currentTime,
+                    ) &&
+                    !appointmentAwaitsOutcome);
 
                 return (
                   <article
@@ -836,7 +861,7 @@ export function WeeklyAgenda({
                     {appointment.cleanupMinutes} min de acondicionamiento
                   </p>
                   <span className="mt-3 inline-flex rounded-full border border-[var(--color-border)] bg-white px-2.5 py-1 text-[0.68rem] font-bold text-[var(--color-brand-dark)]">
-                    {getAppointmentStatusLabel(appointment.status)}
+                    {getAppointmentStatusLabel(appointment, currentTime)}
                   </span>
                   <Link
                     className="mt-3 flex min-h-10 items-center justify-center rounded-xl border border-[var(--color-border)] bg-white px-3 text-xs font-bold text-[var(--color-brand-dark)] no-underline"
@@ -857,6 +882,8 @@ export function WeeklyAgenda({
                   >
                     {isHistoricalAppointment(appointment.status)
                       ? "Ver historial"
+                      : appointmentAwaitsOutcome
+                        ? "Registrar resultado"
                       : appointmentReadOnly || appointment.status === "confirmed"
                         ? "Ver turno"
                         : "Gestionar turno"}

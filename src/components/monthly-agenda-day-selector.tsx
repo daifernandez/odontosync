@@ -116,7 +116,8 @@ export function MonthlyAgendaDaySelector({
               className="m-0 px-1 text-right text-xs leading-5 text-[var(--color-muted)]"
               role="note"
             >
-              Nota: los días pasados son solo de consulta.
+              Nota: en los días pasados podés consultar turnos y registrar
+              resultados pendientes.
             </p>
           ) : null}
         </div>

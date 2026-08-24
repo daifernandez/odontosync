@@ -9,6 +9,8 @@ SELECT
     gen_random_uuid() AS completed_appointment_id,
     gen_random_uuid() AS no_show_appointment_id,
     gen_random_uuid() AS past_pending_appointment_id,
+    gen_random_uuid() AS past_pending_no_show_id,
+    gen_random_uuid() AS past_pending_cancelled_id,
     gen_random_uuid() AS ongoing_confirmed_appointment_id,
     gen_random_uuid() AS reschedule_original_id,
     gen_random_uuid() AS overlap_original_id,
@@ -175,6 +177,48 @@ SELECT
     5,
     'general',
     'confirmed'
+FROM appointments_rls_test_context;
+
+INSERT INTO public.appointments (
+    id,
+    user_id,
+    patient_id,
+    starts_at,
+    occupied_until,
+    duration_minutes,
+    cleanup_minutes,
+    specialty
+)
+SELECT
+    past_pending_no_show_id,
+    owner_id,
+    active_patient_id,
+    CURRENT_TIMESTAMP - INTERVAL '2 days',
+    CURRENT_TIMESTAMP - INTERVAL '2 days' + INTERVAL '35 minutes',
+    30,
+    5,
+    'general'
+FROM appointments_rls_test_context;
+
+INSERT INTO public.appointments (
+    id,
+    user_id,
+    patient_id,
+    starts_at,
+    occupied_until,
+    duration_minutes,
+    cleanup_minutes,
+    specialty
+)
+SELECT
+    past_pending_cancelled_id,
+    owner_id,
+    active_patient_id,
+    CURRENT_TIMESTAMP - INTERVAL '3 days',
+    CURRENT_TIMESTAMP - INTERVAL '3 days' + INTERVAL '35 minutes',
+    30,
+    5,
+    'general'
 FROM appointments_rls_test_context;
 
 INSERT INTO public.appointments (
@@ -484,28 +528,36 @@ BEGIN
         WHEN insufficient_privilege THEN NULL;
     END;
 
-    UPDATE public.appointments
-    SET status = 'confirmed'
-    WHERE id = (
-        SELECT past_pending_appointment_id
-        FROM appointments_rls_test_context
-    );
+    BEGIN
+        UPDATE public.appointments
+        SET status = 'confirmed'
+        WHERE id = (
+            SELECT past_pending_appointment_id
+            FROM appointments_rls_test_context
+        );
 
-    IF FOUND THEN
-        RAISE EXCEPTION 'A started pending appointment was confirmed';
-    END IF;
+        IF FOUND THEN
+            RAISE EXCEPTION 'A started pending appointment was confirmed';
+        END IF;
+    EXCEPTION
+        WHEN check_violation OR insufficient_privilege THEN NULL;
+    END;
 
-    UPDATE public.appointments
-    SET starts_at = CURRENT_TIMESTAMP + INTERVAL '1 day',
-        occupied_until = CURRENT_TIMESTAMP + INTERVAL '1 day 35 minutes'
-    WHERE id = (
-        SELECT past_pending_appointment_id
-        FROM appointments_rls_test_context
-    );
+    BEGIN
+        UPDATE public.appointments
+        SET starts_at = CURRENT_TIMESTAMP + INTERVAL '1 day',
+            occupied_until = CURRENT_TIMESTAMP + INTERVAL '1 day 35 minutes'
+        WHERE id = (
+            SELECT past_pending_appointment_id
+            FROM appointments_rls_test_context
+        );
 
-    IF FOUND THEN
-        RAISE EXCEPTION 'A started pending appointment was rescheduled';
-    END IF;
+        IF FOUND THEN
+            RAISE EXCEPTION 'A started pending appointment was rescheduled';
+        END IF;
+    EXCEPTION
+        WHEN check_violation OR insufficient_privilege THEN NULL;
+    END;
 
     BEGIN
         INSERT INTO public.appointments (
@@ -949,20 +1001,59 @@ BEGIN
         RAISE EXCEPTION 'An ongoing confirmed appointment was cancelled';
     END IF;
 
-    BEGIN
-        UPDATE public.appointments
-        SET status = 'completed'
+    UPDATE public.appointments
+    SET status = 'completed'
+    WHERE id = (
+        SELECT past_pending_appointment_id
+        FROM appointments_rls_test_context
+    );
+
+    IF NOT EXISTS (
+        SELECT 1 FROM public.appointments
         WHERE id = (
             SELECT past_pending_appointment_id
             FROM appointments_rls_test_context
-        );
+        )
+          AND status = 'completed'
+    ) THEN
+        RAISE EXCEPTION 'A finished pending appointment could not be completed';
+    END IF;
 
-        IF FOUND THEN
-            RAISE EXCEPTION 'A pending appointment skipped confirmation';
-        END IF;
-    EXCEPTION
-        WHEN check_violation OR insufficient_privilege THEN NULL;
-    END;
+    UPDATE public.appointments
+    SET status = 'no_show'
+    WHERE id = (
+        SELECT past_pending_no_show_id
+        FROM appointments_rls_test_context
+    );
+
+    IF NOT EXISTS (
+        SELECT 1 FROM public.appointments
+        WHERE id = (
+            SELECT past_pending_no_show_id
+            FROM appointments_rls_test_context
+        )
+          AND status = 'no_show'
+    ) THEN
+        RAISE EXCEPTION 'A finished pending appointment could not be marked absent';
+    END IF;
+
+    UPDATE public.appointments
+    SET status = 'cancelled'
+    WHERE id = (
+        SELECT past_pending_cancelled_id
+        FROM appointments_rls_test_context
+    );
+
+    IF NOT EXISTS (
+        SELECT 1 FROM public.appointments
+        WHERE id = (
+            SELECT past_pending_cancelled_id
+            FROM appointments_rls_test_context
+        )
+          AND status = 'cancelled'
+    ) THEN
+        RAISE EXCEPTION 'A finished pending appointment could not be cancelled';
+    END IF;
 
     BEGIN
         UPDATE public.appointments

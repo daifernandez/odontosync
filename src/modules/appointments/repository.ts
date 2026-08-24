@@ -371,7 +371,7 @@ export async function closeAppointment(
     .from("appointments")
     .update({ status })
     .eq("id", appointmentId)
-    .eq("status", "confirmed")
+    .in("status", ["pending_confirmation", "confirmed"])
     .select("id")
     .maybeSingle();
 
