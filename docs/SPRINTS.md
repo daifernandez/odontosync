@@ -1002,3 +1002,108 @@ la consulta de resultados pasados de la gestión de turnos próximos.
 - Retomar la demostración pública cuando la aplicación real esté finalizada.
 - Activar la protección contra contraseñas filtradas cuando resulte
   indispensable para el proyecto.
+
+## Sprint 015 — Cierre de turnos y Agenda del paciente
+
+- **Fecha:** 24 de agosto de 2026
+- **Estado:** publicado y mergeado
+- **Rama:** `codex/sprint-015-cierre-turnos-agenda`
+- **Publicación:** [PR #52](https://github.com/daifernandez/odontosync/pull/52),
+  merge commit `0e23932`
+
+### Objetivo
+
+Cerrar el comportamiento completo de los turnos y su representación en Agenda
+y en la ficha del paciente antes de avanzar a otros módulos.
+
+### Resultado
+
+- Se auditó la matriz de estados para turnos futuros, en curso, finalizados,
+  atendidos, ausentes, cancelados y reprogramados.
+- Los turnos pendientes futuros conservan sus acciones de edición,
+  confirmación y cancelación.
+- Un turno pendiente que ya comenzó queda temporalmente en modo de consulta y
+  no puede confirmarse, cancelarse ni reprogramarse durante su horario.
+- Al finalizar todo el tiempo reservado, el turno aparece como `Pendiente de
+  cierre` y permite registrar únicamente `Atendido`, `No asistió` o
+  `Cancelado`.
+- La ficha del paciente incorpora la sección “Turnos pendientes de cierre”,
+  separada de “Próximos turnos” e “Historial de turnos”. Al registrar el
+  resultado, la ficha se invalida para reflejar el cambio sin depender de una
+  recarga manual.
+- La Agenda semanal y diaria muestran “Registrar resultado” para los pendientes
+  finalizados, y la vista mensual aclara que en fechas pasadas se puede
+  consultar o registrar resultados pendientes, sin habilitar nuevas reservas.
+- El historial continúa mostrando solamente resultados terminales y no admite
+  modificaciones.
+- PostgreSQL impide crear pendientes en el pasado, protege los pendientes en
+  curso y permite cerrar un pendiente solamente después de finalizar su tiempo
+  reservado. RLS mantiene el aislamiento por propietario y el trigger vuelve a
+  validar cada transición.
+- Las migraciones `20260824023037_lock_started_pending_appointments` y
+  `20260824025706_resolve_finished_pending_appointments` se aplicaron al
+  Supabase enlazado.
+- Los turnos existentes no recibieron resultados automáticos ni fueron
+  modificados durante la implementación o el QA.
+
+### Incidencia resuelta antes del cierre
+
+La primera corrección dejó los turnos pendientes vencidos en modo de solo
+lectura. La revisión visual mostró que seguían contándose en Agenda, pero no
+podían incorporarse al historial porque todavía no tenían un resultado. Antes
+del merge se agregó el estado operativo `Pendiente de cierre`, sus tres
+resultados permitidos y la sección correspondiente en la ficha del paciente.
+
+### Criterios verificados
+
+- Un pendiente futuro puede gestionarse y uno en curso permanece protegido
+  hasta finalizar el acondicionamiento.
+- Un pendiente finalizado permite registrar atendido, ausente o cancelado, sin
+  habilitar edición, confirmación o reprogramación.
+- Un resultado registrado sale de pendientes de cierre y pasa al historial del
+  paciente con su estado terminal.
+- Los turnos históricos no pueden editarse, reabrirse ni intercambiar su
+  resultado.
+- Un usuario anónimo, otro propietario, un recurso inexistente o una transición
+  fuera de tiempo no puede modificar el turno.
+- Los días pasados no permiten crear turnos ni bloqueos nuevos.
+- Los turnos ficticios del 3 y 11 de agosto se verificaron visualmente como
+  pendientes de cierre, con las tres acciones correctas y sin ejecutar ninguna
+  de ellas.
+
+### Skills aplicadas
+
+- Next.js para Server Actions, renderizado de servidor, navegación e
+  invalidación de la ficha del paciente.
+- Supabase y `security-sprint-review` para políticas RLS, trigger de estados,
+  mínimo privilegio y casos negativos sobre la base enlazada.
+- `usability-review` para separar gestión, cierre e historial y mantener textos
+  y acciones consistentes entre vistas.
+- `react-best-practices` para derivar estados durante el renderizado y preservar
+  límites cliente-servidor simples.
+- Browser para verificar Agenda mensual y diaria, el panel de resultados y la
+  ficha del paciente con datos ficticios y sin escrituras.
+- `odontosync-release-check` para la batería final, las migraciones, el commit,
+  el PR y la comprobación de CI.
+
+### Verificaciones
+
+- Pruebas: 32 archivos y 205 casos aprobados.
+- RLS: cuatro suites aprobadas sobre Supabase enlazado.
+- Prisma: esquema válido y base al día con 18 migraciones.
+- TypeScript, ESLint y build de producción: aprobados.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- GitHub Actions: aprobado en el PR de publicación.
+- Asesor de Supabase: sin errores; permanece el aviso externo conocido de
+  protección contra contraseñas filtradas, postergado por decisión del
+  proyecto.
+
+### Fuera de alcance y próximos pasos
+
+- Incorporar una auditoría detallada de cambios de cada turno.
+- Resolver varios turnos pendientes de cierre mediante una operación masiva.
+- Realizar una comprobación visual manual del flujo completo en un viewport
+  móvil autenticado.
+- Retomar la demostración pública cuando la aplicación real esté finalizada.
+- Activar la protección contra contraseñas filtradas cuando resulte
+  indispensable para el proyecto.
