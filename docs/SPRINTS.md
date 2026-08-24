@@ -852,3 +852,79 @@ sin duplicar formularios ni mutaciones en el calendario mensual.
 - Retomar la demostración pública cuando la aplicación real esté finalizada.
 - Activar la protección contra contraseñas filtradas cuando resulte
   indispensable para el proyecto.
+
+## Sprint 013 — Navegación y contexto de acciones
+
+- **Fecha:** 23 de agosto de 2026
+- **Estado:** publicado y mergeado
+- **Rama:** `codex/sprint-013-navegacion-estados`
+- **Publicación:** [PR #47](https://github.com/daifernandez/odontosync/pull/47),
+  merge commit `f830339`
+
+### Objetivo
+
+Verificar y corregir los destinos de las acciones activas de la aplicación
+autenticada —Inicio, Agenda, Pacientes y Configuración— para que cada enlace
+conserve el contexto necesario y comunique correctamente sus estados.
+
+### Resultado
+
+- Los accesos a turnos desde Inicio reutilizan el generador canónico de rutas
+  de Agenda y conservan semana, vista diaria, fecha y turno seleccionado.
+- “Crear turno” desde una ficha de paciente conserva el identificador del
+  paciente en la URL y abre el formulario con ese paciente preseleccionado.
+- El formulario remonta su estado cuando cambia el contexto del paciente, sin
+  reutilizar accidentalmente la selección anterior.
+- La navegación principal mantiene destinos válidos y estados activos para
+  Inicio, Agenda, Pacientes y Configuración.
+- Los módulos todavía no disponibles permanecen deshabilitados y señalizados
+  como “Próximamente”.
+- No se modificaron el esquema, las migraciones, las políticas RLS, los
+  privilegios ni los datos persistentes.
+
+### Criterios verificados
+
+- Inicio → Agenda abre la ruta autenticada correcta y Agenda conserva sus
+  parámetros de vista y selección.
+- Agenda → Pacientes, Pacientes → ficha, ficha → Crear turno y Agenda →
+  Configuración llegan a sus destinos esperados.
+- El contexto del paciente se refleja en el selector y en el resumen del
+  formulario de nuevo turno.
+- Las anclas de Configuración (`#perfil` y `#agenda`) desplazan a sus
+  secciones correspondientes.
+- El menú móvil se abre correctamente y expone los enlaces activos sin errores
+  de consola.
+- La verificación se realizó con la cuenta ficticia de evaluación, sin enviar
+  formularios ni modificar turnos, bloqueos o pacientes.
+
+### Skills aplicadas
+
+- Next.js para el enrutamiento App Router, parámetros de búsqueda y límites
+  servidor/cliente.
+- `usability-review` para contexto de navegación, estados activos, accesibilidad
+  básica y feedback de acciones.
+- `react-best-practices` para el estado inicial del formulario y su remonte al
+  cambiar de contexto.
+- Browser para probar los recorridos autenticados, el menú móvil, las anclas y
+  la consola con datos ficticios.
+- `odontosync-release-check` para la batería final, el commit, el PR y la
+  comprobación de CI.
+
+### Verificaciones
+
+- Pruebas: 32 archivos y 192 casos aprobados.
+- TypeScript, ESLint y build de producción: aprobados.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- GitHub Actions: aprobado en el PR de publicación.
+- No aplicaron controles de Prisma, migraciones ni RLS porque el sprint no
+  modificó persistencia, autenticación ni autorización.
+- Permanece el aviso externo conocido de Supabase sobre protección contra
+  contraseñas filtradas, postergado por decisión del proyecto.
+
+### Fuera de alcance y próximos pasos
+
+- Implementar los módulos marcados como “Próximamente”.
+- Incorporar nuevas funcionalidades de negocio en Agenda o Pacientes.
+- Retomar la demostración pública cuando la aplicación real esté finalizada.
+- Activar la protección contra contraseñas filtradas cuando resulte
+  indispensable para el proyecto.
