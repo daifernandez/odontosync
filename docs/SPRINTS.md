@@ -774,3 +774,81 @@ semanales existentes.
 - Retomar la demostración pública cuando la aplicación real esté finalizada.
 - Activar la protección contra contraseñas filtradas cuando resulte
   indispensable para el proyecto.
+
+## Sprint 012 — Acciones desde la vista mensual de Agenda
+
+- **Fecha:** 23 de agosto de 2026
+- **Estado:** publicado y mergeado
+- **Rama:** `codex/sprint-012-acciones-vista-mensual`
+- **Publicación:** [PR #45](https://github.com/daifernandez/odontosync/pull/45),
+  merge commit `4d94d0e`
+
+### Objetivo
+
+Permitir que un usuario elija una fecha desde la vista mensual e inicie las
+acciones de la Agenda diaria —abrirla, crear un turno o bloquear un horario—
+sin duplicar formularios ni mutaciones en el calendario mensual.
+
+### Resultado
+
+- Se agregó una barra contextual que muestra el día seleccionado y sus
+  acciones disponibles.
+- Abrir Agenda diaria, Nuevo turno y Bloquear horario conservan la fecha exacta
+  elegida al construir sus URLs.
+- Nuevo turno abre el formulario diario con la fecha seleccionada y Bloquear
+  horario abre el panel correspondiente de la Agenda diaria.
+- Las fechas pasadas continúan disponibles para consulta y muestran una nota
+  informativa, sin ofrecer acciones de creación.
+- La grilla conserva los conteos mensuales, la navegación entre meses y el
+  estado de selección con nombres accesibles y soporte de teclado.
+- El estado interactivo quedó aislado en un componente cliente pequeño; las
+  lecturas mensuales y el cálculo de conteos permanecen en el servidor.
+- No se modificaron el esquema, las migraciones, las políticas RLS, los
+  privilegios ni los datos persistentes.
+
+### Criterios verificados
+
+- Seleccionar una fecha cambia la barra contextual y marca el día con
+  `aria-pressed`.
+- Las tres acciones mantienen semana, vista diaria y fecha exactas en sus
+  destinos.
+- La fecha elegida se conserva en el formulario de Nuevo turno y en la Agenda
+  diaria que contiene el panel de bloqueos.
+- Una fecha pasada no muestra acciones de creación y comunica que solo es de
+  consulta.
+- El flujo funciona con teclado y en un viewport de 390 × 844 px sin
+  desplazamiento horizontal.
+- La vista autenticada se verificó con el usuario ficticio de evaluación, sin
+  enviar formularios ni modificar turnos, bloqueos o pacientes.
+- La consola del navegador no registró errores ni advertencias nuevas.
+
+### Skills aplicadas
+
+- Next.js para mantener el renderizado de servidor, las URLs exactas y el
+  límite cliente-servidor.
+- `usability-review` para la jerarquía de acciones, la nota de fechas pasadas,
+  teclado, accesibilidad y responsive.
+- `react-best-practices` para aislar el estado de selección y minimizar los
+  datos serializados al componente cliente.
+- Browser para verificar selección, destinos, fecha preseleccionada, teclado,
+  móvil y consola con datos ficticios.
+- `odontosync-release-check` para la batería final, el commit y la publicación.
+
+### Verificaciones
+
+- Pruebas: 32 archivos y 190 casos aprobados.
+- TypeScript, ESLint y build de producción: aprobados.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- GitHub Actions: aprobado en el PR de publicación.
+- No aplicaron controles de Prisma, migraciones ni RLS porque el sprint no
+  modificó persistencia, autenticación ni autorización.
+- Permanece el aviso externo conocido de Supabase sobre protección contra
+  contraseñas filtradas, postergado por decisión del proyecto.
+
+### Fuera de alcance y próximos pasos
+
+- Incorporar formularios o mutaciones propias dentro de la vista mensual.
+- Gestionar turnos y bloqueos sin pasar por la Agenda diaria.
+- Retomar la demostración pública cuando la aplicación real esté finalizada.
+- Activar la protección contra contraseñas filtradas cuando resulte
+  indispensable para el proyecto.
