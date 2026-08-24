@@ -1203,3 +1203,75 @@ del buscador conservando solamente el control accesible de la aplicación.
 - Retomar la demostración pública cuando la aplicación real esté finalizada.
 - Activar la protección contra contraseñas filtradas cuando resulte
   indispensable para el proyecto.
+
+## Sprint 017 — Jerarquía del menú de cuenta
+
+- **Fecha:** 24 de agosto de 2026
+- **Estado:** publicado y mergeado
+- **Rama:** `codex/sprint-017-jerarquia-menu-cuenta`
+- **Publicación:** [PR #56](https://github.com/daifernandez/odontosync/pull/56),
+  merge commit `5e9786d`
+
+### Objetivo
+
+Corregir la jerarquía visual y semántica del bloque inferior del menú para
+asociar Configuración con la cuenta del usuario y separar el control propio de
+la interfaz.
+
+### Resultado
+
+- El bloque inferior presenta primero la identidad del usuario, seguida por
+  `Configuración` y `Cerrar sesión`.
+- `Contraer menú` permanece como última acción y se separa visualmente del
+  grupo de cuenta.
+- El mismo orden se conserva en los modos autenticado y demo.
+- El menú contraído mantiene títulos y nombres accesibles para Configuración,
+  Cerrar sesión y Expandir menú.
+- No se modificaron rutas, estados activos, contenido de Configuración,
+  autenticación, cierre de sesión ni datos persistentes.
+
+### Criterios verificados
+
+- La identidad aparece antes que Configuración en el orden del documento.
+- Cerrar sesión aparece después de Configuración.
+- Contraer menú es la última acción disponible del bloque inferior.
+- Configuración continúa enlazando a `/app/configuracion` y conserva su estado
+  activo.
+- El modo demo no expone Configuración como una ruta funcional.
+- El menú contraído conserva acciones reconocibles mediante sus nombres
+  accesibles.
+- La verificación visual autenticada confirmó la composición esperada sin
+  realizar escrituras.
+
+### Incidencia observada durante la verificación
+
+El primer acceso a localhost devolvió un error transitorio al leer la
+configuración inicial. Una recarga recuperó la aplicación sin cambios ni
+intervención sobre datos. El fallo no fue reproducible y no estuvo relacionado
+con el reordenamiento del componente.
+
+### Skills aplicadas
+
+- `usability-review` para separar identidad, acciones de cuenta y controles de
+  interfaz con un orden de teclado coherente.
+- Browser para verificar la vista autenticada, la jerarquía semántica y el menú
+  contraído con datos ficticios.
+- `odontosync-release-check` para la batería final, el commit, el PR y la
+  comprobación de CI.
+
+### Verificaciones
+
+- Pruebas: 34 archivos y 209 casos aprobados.
+- TypeScript, ESLint y build de producción: aprobados.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- GitHub Actions: aprobado en el PR funcional.
+- No aplicaron controles de Prisma, migraciones, Supabase ni RLS porque el
+  sprint no modificó persistencia, autenticación ni autorización.
+
+### Fuera de alcance y próximos pasos
+
+- Cambiar el contenido o la organización interna de Configuración.
+- Modificar la autenticación o el comportamiento de Cerrar sesión.
+- Retomar la demostración pública cuando la aplicación real esté finalizada.
+- Activar la protección contra contraseñas filtradas cuando resulte
+  indispensable para el proyecto.
