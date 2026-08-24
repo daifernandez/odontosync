@@ -928,3 +928,77 @@ conserve el contexto necesario y comunique correctamente sus estados.
 - Retomar la demostración pública cuando la aplicación real esté finalizada.
 - Activar la protección contra contraseñas filtradas cuando resulte
   indispensable para el proyecto.
+
+## Sprint 014 — Historial de turnos y separación de gestión
+
+- **Fecha:** 23 de agosto de 2026
+- **Estado:** publicado y mergeado
+- **Ramas:** `codex/sprint-014-historial-turnos` y
+  `codex/fix-historial-solo-lectura`
+- **Publicaciones:** [PR #49](https://github.com/daifernandez/odontosync/pull/49),
+  merge commit `65e5044`; [PR #50](https://github.com/daifernandez/odontosync/pull/50),
+  merge commit `eb037c5`
+
+### Objetivo
+
+Completar el historial de turnos de la ficha de paciente y separar con claridad
+la consulta de resultados pasados de la gestión de turnos próximos.
+
+### Resultado
+
+- El historial muestra únicamente turnos finalizados, con su resultado visible:
+  `Atendido`, `No asistió`, `Cancelado` o `Reprogramado`.
+- Los turnos pasados pendientes de confirmación ya no aparecen como historial.
+- Los turnos próximos pendientes de confirmación aparecen en la sección de
+  próximos y enlazan a Agenda para gestionarlos.
+- Los turnos próximos confirmados quedan disponibles desde Agenda y no se
+  duplican en la ficha del paciente.
+- Las tarjetas históricas son de solo consulta y no ofrecen acciones de edición
+  ni una segunda vista de detalle.
+- Se conservaron las protecciones de solo lectura para los accesos históricos
+  directos a Agenda.
+- No se modificaron esquema, migraciones, políticas RLS, autenticación ni datos
+  persistentes.
+
+### Criterios verificados
+
+- Un turno próximo pendiente se muestra como próximo y permite abrir Agenda.
+- Un turno próximo confirmado no aparece en el historial de la ficha.
+- Un turno pasado pendiente no aparece ni como próximo ni como histórico.
+- Los resultados terminales se muestran directamente en sus tarjetas históricas.
+- El historial no contiene botones de edición ni enlaces de gestión.
+- La verificación se realizó con la cuenta ficticia de evaluación, sin enviar
+  formularios ni modificar turnos, bloqueos o pacientes.
+- La consola del navegador no registró errores nuevos.
+
+### Skills aplicadas
+
+- Next.js para filtros de estado, parámetros de Agenda y límites
+  servidor/cliente.
+- `usability-review` para separar consulta y gestión, jerarquía de estados y
+  claridad de las acciones.
+- `react-best-practices` para mantener el renderizado condicional simple y sin
+  estado cliente innecesario.
+- Browser para verificar los recorridos autenticados con datos ficticios.
+- `odontosync-release-check` para la batería final, los dos PR y la comprobación
+  de CI.
+
+### Verificaciones
+
+- Pruebas: 32 archivos y 197 casos aprobados.
+- TypeScript, ESLint y build de producción: aprobados.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- GitHub Actions: aprobados en los PR de implementación y corrección.
+- No aplicaron controles de Prisma, migraciones ni RLS porque el sprint no
+  modificó persistencia, autenticación ni autorización.
+- Permanece el aviso externo conocido de Supabase sobre protección contra
+  contraseñas filtradas, postergado por decisión del proyecto.
+
+### Fuera de alcance y próximos pasos
+
+- Incorporar una auditoría detallada de cambios de cada turno.
+- Mostrar turnos próximos confirmados dentro de la ficha del paciente; su lugar
+  de gestión sigue siendo Agenda.
+- Retomar la demostración pública cuando la aplicación real esté finalizada.
+- Activar la protección contra contraseñas filtradas cuando resulte
+  indispensable para el proyecto.
