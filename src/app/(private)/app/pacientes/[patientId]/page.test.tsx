@@ -77,6 +77,30 @@ describe("PatientDetailPage", () => {
         specialty: "general",
         status: "completed",
       },
+      {
+        id: "cancelled-appointment",
+        patientId,
+        patientFirstName: "Lucía",
+        patientLastName: "Prueba",
+        startsAt: "2025-08-01T13:30:00.000Z",
+        occupiedUntil: "2025-08-01T14:05:00.000Z",
+        durationMinutes: 30,
+        cleanupMinutes: 5,
+        specialty: "general",
+        status: "cancelled",
+      },
+      {
+        id: "rescheduled-appointment",
+        patientId,
+        patientFirstName: "Lucía",
+        patientLastName: "Prueba",
+        startsAt: "2025-07-01T13:30:00.000Z",
+        occupiedUntil: "2025-07-01T14:05:00.000Z",
+        durationMinutes: 30,
+        cleanupMinutes: 5,
+        specialty: "general",
+        status: "rescheduled",
+      },
     ]);
   });
 
@@ -102,6 +126,8 @@ describe("PatientDetailPage", () => {
     expect(markup).toContain("turno=future-appointment");
     expect(markup).toContain("fecha=2025-09-01");
     expect(markup).toContain("turno=past-appointment");
+    expect(markup).toContain("Cancelado");
+    expect(markup).toContain("Reprogramado");
   });
 
   it("shows clear empty states when the patient has no appointments", async () => {

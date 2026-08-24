@@ -13,6 +13,8 @@ const statusLabels = {
   confirmed: "Confirmado",
   completed: "Atendido",
   no_show: "No asistió",
+  cancelled: "Cancelado",
+  rescheduled: "Reprogramado",
 } as const satisfies Record<AppointmentStatus, string>;
 
 const timeFormatter = new Intl.DateTimeFormat("es-AR", {

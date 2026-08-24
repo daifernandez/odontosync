@@ -131,6 +131,8 @@ describe("listPatientAppointments", () => {
       "confirmed",
       "completed",
       "no_show",
+      "cancelled",
+      "rescheduled",
     ]);
     expect(query.order).toHaveBeenCalledWith("starts_at", {
       ascending: false,
