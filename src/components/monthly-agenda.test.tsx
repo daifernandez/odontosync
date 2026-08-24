@@ -95,7 +95,7 @@ describe("MonthlyAgenda", () => {
     expect(markup).toContain("No hay turnos ni bloqueos en este mes");
   });
 
-  it("keeps past dates available only for consultation", () => {
+  it("limits past dates to consultation and pending outcomes", () => {
     const markup = renderToStaticMarkup(
       <MonthlyAgenda
         appointments={[]}
@@ -105,7 +105,9 @@ describe("MonthlyAgenda", () => {
       />,
     );
 
-    expect(markup).toContain("Nota: los días pasados son solo de consulta.");
+    expect(markup).toContain(
+      "Nota: en los días pasados podés consultar turnos y registrar resultados pendientes.",
+    );
     expect(markup).not.toContain("Nuevo turno");
     expect(markup).not.toContain("Bloquear horario");
     expect(markup).toContain(

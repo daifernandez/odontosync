@@ -139,6 +139,8 @@ describe("PatientDetailPage", () => {
     expect(markup).toContain("11 5555-0101");
     expect(markup).toContain("lucia@example.com");
     expect(markup).toContain("Próximos turnos");
+    expect(markup).toContain("Turnos pendientes de cierre");
+    expect(markup).toContain("Pendiente de cierre");
     expect(markup).toContain("Historial de turnos");
     expect(markup).toContain("Ortodoncia");
     expect(markup).toContain("Odontología general");
@@ -153,7 +155,8 @@ describe("PatientDetailPage", () => {
     expect(markup).not.toContain("Ver detalle histórico");
     expect(markup).toContain("Cancelado");
     expect(markup).toContain("Reprogramado");
-    expect(markup).not.toContain("turno=pending-past-appointment");
+    expect(markup).toContain("turno=pending-past-appointment");
+    expect(markup).toContain("Registrar resultado");
   });
 
   it("shows clear empty states when the patient has no appointments", async () => {

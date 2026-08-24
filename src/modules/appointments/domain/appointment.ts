@@ -23,13 +23,15 @@ export type AppointmentStatus =
 
 export type AppointmentClosureStatus = Extract<
   AppointmentStatus,
-  "completed" | "no_show"
+  "completed" | "no_show" | "cancelled"
 >;
 
 export function isAppointmentClosureStatus(
   value: unknown,
 ): value is AppointmentClosureStatus {
-  return value === "completed" || value === "no_show";
+  return (
+    value === "completed" || value === "no_show" || value === "cancelled"
+  );
 }
 
 export type Appointment = {
@@ -53,6 +55,26 @@ export type AppointmentInput = Pick<
   | "cleanupMinutes"
   | "specialty"
 >;
+
+export function isPendingAppointmentManageable(
+  appointment: Pick<Appointment, "startsAt" | "status">,
+  now = new Date(),
+) {
+  return (
+    appointment.status === "pending_confirmation" &&
+    new Date(appointment.startsAt).getTime() > now.getTime()
+  );
+}
+
+export function isPendingAppointmentAwaitingOutcome(
+  appointment: Pick<Appointment, "occupiedUntil" | "status">,
+  now = new Date(),
+) {
+  return (
+    appointment.status === "pending_confirmation" &&
+    new Date(appointment.occupiedUntil).getTime() <= now.getTime()
+  );
+}
 
 type AppointmentField = keyof AppointmentInput;
 

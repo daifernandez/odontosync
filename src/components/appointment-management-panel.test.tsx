@@ -130,6 +130,79 @@ describe("AppointmentManagementPanel", () => {
     expect(markup).not.toContain("Marcar como atendido");
   });
 
+  it("keeps an ongoing pending appointment read-only", () => {
+    const markup = renderToStaticMarkup(
+      <AppointmentManagementPanel
+        appointment={{
+          id: "00000000-0000-4000-8000-000000000010",
+          patientId: "00000000-0000-4000-8000-000000000001",
+          patientFirstName: "Lucía",
+          patientLastName: "Prueba",
+          startsAt: "2026-08-10T12:00:00.000Z",
+          occupiedUntil: "2026-08-10T13:00:00.000Z",
+          durationMinutes: 50,
+          cleanupMinutes: 10,
+          specialty: "implantology",
+          status: "pending_confirmation",
+        }}
+        appointmentOccupancy={[]}
+        availability={[
+          { dayOfWeek: 1, startTime: "09:00", endTime: "13:00" },
+        ]}
+        currentTime="2026-08-10T12:30:00.000Z"
+        exceptionalBlocks={[]}
+        gridIntervalMinutes={15}
+        minimumDate="2026-08-10"
+        weekStartDate="2026-08-10"
+      />,
+    );
+
+    expect(markup).toContain("Turno en curso");
+    expect(markup).toContain("Podrás registrar el resultado cuando finalice");
+    expect(markup).not.toContain("Guardar cambios");
+    expect(markup).not.toContain("Confirmar turno");
+    expect(markup).not.toContain("Quiero cancelar el turno");
+    expect(markup).not.toContain("Marcar como atendido");
+  });
+
+  it("offers only outcome actions for a finished pending appointment", () => {
+    const markup = renderToStaticMarkup(
+      <AppointmentManagementPanel
+        appointment={{
+          id: "00000000-0000-4000-8000-000000000010",
+          patientId: "00000000-0000-4000-8000-000000000001",
+          patientFirstName: "Lucía",
+          patientLastName: "Prueba",
+          startsAt: "2026-08-10T12:00:00.000Z",
+          occupiedUntil: "2026-08-10T13:00:00.000Z",
+          durationMinutes: 50,
+          cleanupMinutes: 10,
+          specialty: "implantology",
+          status: "pending_confirmation",
+        }}
+        appointmentOccupancy={[]}
+        availability={[
+          { dayOfWeek: 1, startTime: "09:00", endTime: "13:00" },
+        ]}
+        currentTime="2026-08-10T13:00:00.000Z"
+        exceptionalBlocks={[]}
+        gridIntervalMinutes={15}
+        minimumDate="2026-08-10"
+        weekStartDate="2026-08-10"
+      />,
+    );
+
+    expect(markup).toContain("Pendiente de cierre");
+    expect(markup).toContain("Registrar resultado");
+    expect(markup).toContain("Marcar como atendido");
+    expect(markup).toContain("Marcar como ausente");
+    expect(markup).toContain("Registrar cancelación");
+    expect(markup).not.toContain("Guardar cambios");
+    expect(markup).not.toContain("Confirmar turno");
+    expect(markup).not.toContain("Reprogramar turno");
+    expect(markup).not.toContain("Quiero cancelar el turno");
+  });
+
   it("offers irreversible closure actions for a finished confirmed appointment", () => {
     const markup = renderToStaticMarkup(
       <AppointmentManagementPanel
@@ -167,7 +240,7 @@ describe("AppointmentManagementPanel", () => {
   it.each([
     ["completed", "Turno atendido"],
     ["no_show", "Paciente ausente"],
-    ["pending_confirmation", "Turno pendiente"],
+    ["pending_confirmation", "Pendiente de cierre"],
     ["confirmed", "Turno confirmado"],
     ["cancelled", "Turno cancelado"],
     ["rescheduled", "Turno reprogramado"],
