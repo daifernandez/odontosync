@@ -2,7 +2,6 @@ import {
   ChevronRight,
   Mail,
   Phone,
-  Search,
   UserRoundPlus,
   UsersRound,
 } from "lucide-react";
@@ -10,9 +9,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { PatientDirectorySearch } from "@/components/patient-directory-search";
 import { PatientForm } from "@/components/patient-form";
 import { getInitialConfiguration } from "@/modules/initial-configuration/repository";
 import {
+  buildPatientDirectoryPath,
   normalizePatientSearch,
   normalizePatientStatus,
 } from "@/modules/patients/domain/patient";
@@ -105,7 +106,7 @@ export default async function PatientsPage({
           aria-labelledby="patient-list-title"
           className="rounded-[var(--radius-large)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)] md:p-6"
         >
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div>
               <p className="mb-2 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
                 Directorio
@@ -115,36 +116,11 @@ export default async function PatientsPage({
               </h2>
             </div>
 
-            <form className="flex w-full max-w-md gap-2" method="get" role="search">
-              {status === "inactive" ? (
-                <input name="estado" type="hidden" value="inactivos" />
-              ) : null}
-              <label className="sr-only" htmlFor="patient-search">
-                Buscar por nombre o apellido
-              </label>
-              <div className="relative min-w-0 flex-1">
-                <Search
-                  aria-hidden="true"
-                  className="absolute top-1/2 left-3 -translate-y-1/2 text-[var(--color-muted)]"
-                  size={17}
-                />
-                <input
-                  className="min-h-11 w-full rounded-xl border border-[var(--color-border)] bg-white pr-3 pl-10 text-sm outline-none focus:border-[var(--color-brand)] focus:ring-3 focus:ring-[rgb(20_125_115/12%)]"
-                  defaultValue={search}
-                  id="patient-search"
-                  maxLength={80}
-                  name="buscar"
-                  placeholder="Nombre o apellido"
-                  type="search"
-                />
-              </div>
-              <button
-                className="min-h-11 cursor-pointer rounded-xl border-0 bg-[var(--color-brand)] px-4 text-sm font-bold text-white hover:bg-[var(--color-brand-dark)]"
-                type="submit"
-              >
-                Buscar
-              </button>
-            </form>
+            <PatientDirectorySearch
+              initialSearch={search}
+              key={`${status}-${search}`}
+              status={status}
+            />
           </div>
 
           <nav aria-label="Estado de pacientes" className="mt-5 flex gap-2">
@@ -155,7 +131,10 @@ export default async function PatientsPage({
                   ? "border-[var(--color-brand)] bg-[var(--color-brand-soft)] text-[var(--color-brand-dark)]"
                   : "border-[var(--color-border)] bg-white text-[var(--color-muted)] hover:bg-[var(--color-brand-subtle)]"
               }`}
-              href="/app/pacientes"
+              href={buildPatientDirectoryPath({
+                search,
+                status: "active",
+              })}
             >
               Activos
             </Link>
@@ -166,7 +145,10 @@ export default async function PatientsPage({
                   ? "border-[var(--color-brand)] bg-[var(--color-brand-soft)] text-[var(--color-brand-dark)]"
                   : "border-[var(--color-border)] bg-white text-[var(--color-muted)] hover:bg-[var(--color-brand-subtle)]"
               }`}
-              href="/app/pacientes?estado=inactivos"
+              href={buildPatientDirectoryPath({
+                search,
+                status: "inactive",
+              })}
             >
               Inactivos
             </Link>
@@ -207,36 +189,54 @@ export default async function PatientsPage({
               ) : null}
             </div>
           ) : (
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              {patients.map((patient) => (
-                <article
-                  className="rounded-xl border border-[var(--color-border)] bg-[var(--color-brand-subtle)] p-4"
-                  key={patient.id}
-                >
-                  <h3 className="m-0 text-base">
-                    {patient.lastName}, {patient.firstName}
-                  </h3>
-                  <div className="mt-3 flex flex-col gap-2 text-xs text-[var(--color-muted)]">
-                    <span className="flex items-center gap-2">
-                      <Phone aria-hidden="true" size={14} />
-                      {patient.phone ?? "Sin teléfono"}
-                    </span>
-                    <span className="flex min-w-0 items-center gap-2">
-                      <Mail aria-hidden="true" className="shrink-0" size={14} />
-                      <span className="truncate">
-                        {patient.email ?? "Sin correo electrónico"}
-                      </span>
-                    </span>
-                  </div>
-                  <Link
-                    className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-xl border border-[var(--color-border)] bg-white px-3 text-xs font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-soft)]"
-                    href={`/app/pacientes/${patient.id}`}
-                  >
-                    Ver ficha
-                    <ChevronRight aria-hidden="true" size={14} />
-                  </Link>
-                </article>
-              ))}
+            <div className="mt-5">
+              <ul
+                aria-label={`Lista de pacientes ${status === "active" ? "activos" : "inactivos"}`}
+                className="m-0 list-none divide-y divide-[var(--color-border)] border-y border-[var(--color-border)] p-0"
+              >
+                {patients.map((patient) => (
+                  <li key={patient.id}>
+                    <article className="grid min-w-0 gap-4 px-2 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center md:px-4">
+                      <div className="min-w-0">
+                        <h3 className="m-0 text-sm font-semibold">
+                          {patient.lastName}, {patient.firstName}
+                        </h3>
+                        <div className="mt-2 flex min-w-0 flex-col gap-2 text-xs text-[var(--color-muted)] lg:flex-row lg:flex-wrap lg:gap-x-5">
+                          <span className="flex min-w-0 items-center gap-2">
+                            <Phone
+                              aria-hidden="true"
+                              className="shrink-0"
+                              size={14}
+                            />
+                            <span className="sr-only">Teléfono: </span>
+                            <span className="truncate">
+                              {patient.phone ?? "Sin teléfono"}
+                            </span>
+                          </span>
+                          <span className="flex min-w-0 items-center gap-2">
+                            <Mail
+                              aria-hidden="true"
+                              className="shrink-0"
+                              size={14}
+                            />
+                            <span className="sr-only">Correo electrónico: </span>
+                            <span className="truncate">
+                              {patient.email ?? "Sin correo electrónico"}
+                            </span>
+                          </span>
+                        </div>
+                      </div>
+                      <Link
+                        className="inline-flex min-h-10 w-fit shrink-0 items-center gap-2 rounded-xl border border-[var(--color-border)] bg-white px-3 text-xs font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-soft)]"
+                        href={`/app/pacientes/${patient.id}`}
+                      >
+                        Ver ficha
+                        <ChevronRight aria-hidden="true" size={14} />
+                      </Link>
+                    </article>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </section>

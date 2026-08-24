@@ -106,3 +106,26 @@ export function validatePatientId(value: unknown) {
 export function normalizePatientStatus(value: unknown): PatientStatus {
   return value === "inactivos" ? "inactive" : "active";
 }
+
+export function buildPatientDirectoryPath({
+  search,
+  status,
+}: {
+  search: string;
+  status: PatientStatus;
+}) {
+  const params = new URLSearchParams();
+  const normalizedSearch = search.trim();
+
+  if (status === "inactive") {
+    params.set("estado", "inactivos");
+  }
+
+  if (normalizedSearch) {
+    params.set("buscar", normalizedSearch);
+  }
+
+  const query = params.toString();
+
+  return query ? `/app/pacientes?${query}` : "/app/pacientes";
+}
