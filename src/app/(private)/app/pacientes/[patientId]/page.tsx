@@ -80,9 +80,11 @@ function formatAppointmentDate(date: Date) {
 function AppointmentList({
   appointments,
   emptyMessage,
+  readOnly = false,
 }: Readonly<{
   appointments: Appointment[];
   emptyMessage: string;
+  readOnly?: boolean;
 }>) {
   if (appointments.length === 0) {
     return (
@@ -129,7 +131,10 @@ function AppointmentList({
                 weekStartDate: date,
                 view: "day",
                 selectedDate: date,
-                params: { turno: appointment.id },
+                params: {
+                  turno: appointment.id,
+                  ...(readOnly ? { consulta: "1" } : {}),
+                },
               })}
             >
               Ver en Agenda
@@ -292,6 +297,7 @@ export default async function PatientDetailPage({
           <AppointmentList
             appointments={historicalAppointments}
             emptyMessage="Este paciente todavía no tiene historial"
+            readOnly
           />
         </section>
       </div>

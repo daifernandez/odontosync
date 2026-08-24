@@ -41,6 +41,7 @@ type AgendaPageProps = {
     cancelado?: string | string[];
     cierre?: string | string[];
     confirmado?: string | string[];
+    consulta?: string | string[];
     creado?: string | string[];
     errorGestion?: string | string[];
     fecha?: string | string[];
@@ -166,6 +167,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
         firstName,
         lastName,
       }))}
+      readOnlyAppointment={params.consulta === "1"}
       selectedAppointment={selectedAppointment}
       selectedDate={selectedDate}
       rescheduled={params.reprogramado === "1"}

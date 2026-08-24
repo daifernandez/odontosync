@@ -125,7 +125,7 @@ describe("PatientDetailPage", () => {
     expect(markup).toContain("fecha=2099-09-01");
     expect(markup).toContain("turno=future-appointment");
     expect(markup).toContain("fecha=2025-09-01");
-    expect(markup).toContain("turno=past-appointment");
+    expect(markup).toContain("turno=past-appointment&amp;consulta=1");
     expect(markup).toContain("Cancelado");
     expect(markup).toContain("Reprogramado");
   });

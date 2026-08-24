@@ -44,6 +44,7 @@ export function AppointmentManagementPanel({
   exceptionalBlocks,
   gridIntervalMinutes,
   minimumDate,
+  readOnly = false,
   selectedDate,
   view = "week",
   weekStartDate,
@@ -55,14 +56,15 @@ export function AppointmentManagementPanel({
   exceptionalBlocks: ExceptionalBlockOccupancy[];
   gridIntervalMinutes: number;
   minimumDate: string;
+  readOnly?: boolean;
   selectedDate?: string;
   view?: AgendaView;
   weekStartDate: string;
 }>) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const router = useRouter();
-  const isPending = appointment.status === "pending_confirmation";
-  const isConfirmed = appointment.status === "confirmed";
+  const isPending = appointment.status === "pending_confirmation" && !readOnly;
+  const isConfirmed = appointment.status === "confirmed" && !readOnly;
   const initialDate = formatArgentinaDateInput(new Date(appointment.startsAt));
   const initialParts = getArgentinaDateTimeParts(new Date(appointment.startsAt));
   const initialTime = `${String(initialParts.hour).padStart(2, "0")}:${String(initialParts.minute).padStart(2, "0")}`;
@@ -122,11 +124,17 @@ export function AppointmentManagementPanel({
       new Date(currentTime).getTime();
   const canReschedule = canCancel;
   const statusTitle =
-    appointment.status === "completed"
-      ? "Turno atendido"
+    appointment.status === "pending_confirmation"
+      ? "Turno pendiente"
+      : appointment.status === "completed"
+        ? "Turno atendido"
       : appointment.status === "no_show"
-        ? "Paciente ausente"
-        : "Turno confirmado";
+          ? "Paciente ausente"
+          : appointment.status === "cancelled"
+            ? "Turno cancelado"
+            : appointment.status === "rescheduled"
+              ? "Turno reprogramado"
+          : "Turno confirmado";
   const StatusIcon =
     appointment.status === "no_show" ? CalendarClock : CheckCircle2;
 
