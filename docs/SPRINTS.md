@@ -1107,3 +1107,99 @@ resultados permitidos y la sección correspondiente en la ficha del paciente.
 - Retomar la demostración pública cuando la aplicación real esté finalizada.
 - Activar la protección contra contraseñas filtradas cuando resulte
   indispensable para el proyecto.
+
+## Sprint 016 — Directorio de pacientes escalable
+
+- **Fecha:** 24 de agosto de 2026
+- **Estado:** publicado y mergeado
+- **Rama:** `codex/sprint-016-directorio-pacientes`
+- **Publicación:** [PR #54](https://github.com/daifernandez/odontosync/pull/54),
+  merge commit `3097a9b`
+
+### Objetivo
+
+Preparar el directorio de pacientes para un volumen creciente mediante una
+vista de lista compacta y una búsqueda instantánea, sin incorporar todavía
+paginación ni ordenamiento configurable.
+
+### Resultado
+
+- Las tarjetas del directorio se reemplazaron por una lista de filas compactas
+  con nombre, teléfono, correo electrónico y acceso a la ficha.
+- Cada fila adapta su distribución al espacio disponible y conserva el botón
+  `Ver ficha` dentro del panel, sin desbordes en anchos intermedios.
+- La búsqueda existente por nombre o apellido se actualiza automáticamente
+  300 ms después de dejar de escribir y mantiene la lectura de datos en el
+  servidor.
+- La búsqueda y el estado de pacientes activos o inactivos se conservan en la
+  URL al alternar entre ambas vistas.
+- El buscador permite limpiar el texto con un único control accesible. Se
+  ocultó el control nativo duplicado que algunos navegadores agregan a los
+  campos de tipo búsqueda.
+- Durante la navegación se anuncia que los resultados se están actualizando y
+  continúan disponibles los estados vacíos y la acción para limpiar una
+  búsqueda sin coincidencias.
+- El directorio conserva el orden fijo existente por apellido y nombre, de
+  forma ascendente.
+- No se modificaron esquema, migraciones, políticas RLS, autenticación ni datos
+  persistentes.
+
+### Incidencias resueltas antes del cierre
+
+La primera composición en columnas utilizaba anchos mínimos vinculados al
+viewport y no al ancho real del panel. En espacios intermedios, el botón
+`Ver ficha` se desplazaba fuera del contenedor y el correo se truncaba demasiado
+pronto. Las filas se simplificaron para agrupar la información del paciente y
+mantener la acción alineada dentro del panel. Luego se eliminó la doble cruz
+del buscador conservando solamente el control accesible de la aplicación.
+
+### Criterios verificados
+
+- El directorio presenta pacientes activos e inactivos como una lista y cada
+  fila enlaza a la ficha correcta.
+- Al escribir un nombre o apellido, la URL y los resultados se actualizan sin
+  exigir el botón `Buscar`.
+- Cambiar entre activos e inactivos conserva la búsqueda actual.
+- Limpiar la búsqueda conserva el filtro de estado y vuelve a mostrar el
+  conjunto correspondiente.
+- Las búsquedas con y sin coincidencias muestran feedback comprensible.
+- El botón `Ver ficha` permanece dentro del panel y teléfono y correo tienen
+  nombres accesibles.
+- El campo muestra una sola acción para limpiar la búsqueda.
+- La verificación se realizó con la cuenta ficticia de evaluación y no creó ni
+  modificó pacientes.
+- La consola del navegador no registró errores nuevos.
+
+### Skills aplicadas
+
+- Next.js para conservar la consulta en el Server Component y aislar el control
+  interactivo en un Client Component.
+- `react-best-practices` para mantener una transición no bloqueante, limitar el
+  estado cliente y evitar consultas innecesarias mientras se escribe.
+- `usability-review` para definir la jerarquía de la lista, los estados vacíos,
+  el feedback de actualización, la navegación por filtros y la accesibilidad
+  del control de limpieza.
+- Browser para verificar búsqueda, limpieza, cambio de estado, composición
+  visual y errores de consola con datos ficticios.
+- `odontosync-release-check` para la batería final, los commits, el PR y la
+  comprobación de CI.
+
+### Verificaciones
+
+- Pruebas: 34 archivos y 208 casos aprobados.
+- TypeScript, ESLint y build de producción: aprobados.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- GitHub Actions: aprobado después de la implementación y nuevamente después
+  de corregir el control duplicado del buscador.
+- No aplicaron controles de Prisma, migraciones, Supabase ni RLS porque el
+  sprint no modificó persistencia, autenticación ni autorización.
+
+### Fuera de alcance y próximos pasos
+
+- Incorporar paginación cuando el volumen real de pacientes lo requiera.
+- Ampliar la búsqueda a teléfono o correo solamente si aparece esa necesidad.
+- El ordenamiento configurable fue evaluado y descartado para este sprint; el
+  directorio mantiene un orden fijo por apellido y nombre.
+- Retomar la demostración pública cuando la aplicación real esté finalizada.
+- Activar la protección contra contraseñas filtradas cuando resulte
+  indispensable para el proyecto.
