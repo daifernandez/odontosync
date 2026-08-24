@@ -91,6 +91,7 @@ export function WeeklyAgenda({
   initialTime,
   managementError,
   patients,
+  readOnlyAppointment,
   rescheduled = false,
   selectedAppointment,
   selectedDate,
@@ -116,6 +117,7 @@ export function WeeklyAgenda({
   initialTime?: string;
   managementError: boolean;
   patients: AppointmentPatientOption[];
+  readOnlyAppointment?: boolean;
   rescheduled?: boolean;
   selectedAppointment?: Appointment;
   selectedDate?: string;
@@ -256,8 +258,9 @@ export function WeeklyAgenda({
           currentTime={currentTime.toISOString()}
           exceptionalBlocks={exceptionalBlocks}
           gridIntervalMinutes={configuration.gridIntervalMinutes}
-          key={selectedAppointment.id}
+          key={`${selectedAppointment.id}-${readOnlyAppointment ? "consulta" : "gestion"}`}
           minimumDate={formatArgentinaDateInput(currentTime)}
+          readOnly={readOnlyAppointment}
           selectedDate={day.date}
           view={view}
           weekStartDate={week.startDate}
@@ -688,12 +691,15 @@ export function WeeklyAgenda({
 
                       return (
                         <Link
-                          aria-label={`${isHistoricalAppointment(appointment.status) ? "Ver historial de" : appointment.status === "confirmed" ? "Ver" : "Gestionar"} turno de ${appointment.patientLastName}, ${appointment.patientFirstName}`}
+                          aria-label={`${readOnlyAppointment || isHistoricalAppointment(appointment.status) ? "Ver historial de" : appointment.status === "confirmed" ? "Ver" : "Gestionar"} turno de ${appointment.patientLastName}, ${appointment.patientFirstName}`}
                           href={buildAgendaPath({
                             weekStartDate: week.startDate,
                             view,
                             selectedDate: day.date,
-                            params: { turno: appointment.id },
+                            params: {
+                              turno: appointment.id,
+                              ...(readOnlyAppointment ? { consulta: "1" } : {}),
+                            },
                           })}
                           key={appointment.id}
                         >
@@ -825,10 +831,13 @@ export function WeeklyAgenda({
                           : formatArgentinaDateInput(
                               new Date(appointment.startsAt),
                             ),
-                      params: { turno: appointment.id },
+                      params: {
+                        turno: appointment.id,
+                        ...(readOnlyAppointment ? { consulta: "1" } : {}),
+                      },
                     })}
                   >
-                    {isHistoricalAppointment(appointment.status)
+                    {readOnlyAppointment || isHistoricalAppointment(appointment.status)
                       ? "Ver historial"
                       : appointment.status === "confirmed"
                         ? "Ver turno"

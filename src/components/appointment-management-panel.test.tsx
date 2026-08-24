@@ -167,6 +167,10 @@ describe("AppointmentManagementPanel", () => {
   it.each([
     ["completed", "Turno atendido"],
     ["no_show", "Paciente ausente"],
+    ["pending_confirmation", "Turno pendiente"],
+    ["confirmed", "Turno confirmado"],
+    ["cancelled", "Turno cancelado"],
+    ["rescheduled", "Turno reprogramado"],
   ] as const)("renders %s as read-only history", (status, label) => {
     const markup = renderToStaticMarkup(
       <AppointmentManagementPanel
@@ -190,6 +194,7 @@ describe("AppointmentManagementPanel", () => {
         exceptionalBlocks={[]}
         gridIntervalMinutes={15}
         minimumDate="2026-08-10"
+        readOnly={true}
         weekStartDate="2026-08-10"
       />,
     );
@@ -197,5 +202,8 @@ describe("AppointmentManagementPanel", () => {
     expect(markup).toContain(label);
     expect(markup).not.toContain("Cerrar turno");
     expect(markup).not.toContain("Guardar cambios");
+    expect(markup).not.toContain("Confirmar turno");
+    expect(markup).not.toContain("Reprogramar turno");
+    expect(markup).not.toContain("Quiero cancelar el turno");
   });
 });

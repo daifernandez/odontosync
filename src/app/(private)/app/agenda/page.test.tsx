@@ -152,6 +152,20 @@ describe("AgendaPage monthly view", () => {
     expect(result.props.initialPatientId).toBe("patient-id");
   });
 
+  it("passes historical consultation context to the appointment panel", async () => {
+    const result = await AgendaPage({
+      searchParams: Promise.resolve({
+        vista: "dia",
+        fecha: "2026-08-22",
+        turno: "appointment-id",
+        consulta: "1",
+      }),
+    });
+
+    expect(result.type).toBe(mocks.WeeklyAgenda);
+    expect(result.props.readOnlyAppointment).toBe(true);
+  });
+
   it("falls back to weekly agenda when the preference cannot be read", async () => {
     mocks.getLastAgendaView.mockRejectedValue(new Error("database unavailable"));
 

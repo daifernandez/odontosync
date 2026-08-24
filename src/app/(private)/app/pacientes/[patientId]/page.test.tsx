@@ -63,6 +63,18 @@ describe("PatientDetailPage", () => {
         durationMinutes: 30,
         cleanupMinutes: 5,
         specialty: "orthodontics",
+        status: "pending_confirmation",
+      },
+      {
+        id: "confirmed-future-appointment",
+        patientId,
+        patientFirstName: "Lucía",
+        patientLastName: "Prueba",
+        startsAt: "2099-10-01T13:30:00.000Z",
+        occupiedUntil: "2099-10-01T14:05:00.000Z",
+        durationMinutes: 30,
+        cleanupMinutes: 5,
+        specialty: "orthodontics",
         status: "confirmed",
       },
       {
@@ -101,10 +113,22 @@ describe("PatientDetailPage", () => {
         specialty: "general",
         status: "rescheduled",
       },
+      {
+        id: "pending-past-appointment",
+        patientId,
+        patientFirstName: "Lucía",
+        patientLastName: "Prueba",
+        startsAt: "2025-06-01T13:30:00.000Z",
+        occupiedUntil: "2025-06-01T14:05:00.000Z",
+        durationMinutes: 30,
+        cleanupMinutes: 5,
+        specialty: "general",
+        status: "pending_confirmation",
+      },
     ]);
   });
 
-  it("renders the administrative record and links each appointment to its agenda day", async () => {
+  it("renders upcoming links and only terminal outcomes in history", async () => {
     const page = await PatientDetailPage({
       params: Promise.resolve({ patientId }),
     });
@@ -124,10 +148,12 @@ describe("PatientDetailPage", () => {
     expect(markup).toContain("vista=dia");
     expect(markup).toContain("fecha=2099-09-01");
     expect(markup).toContain("turno=future-appointment");
-    expect(markup).toContain("fecha=2025-09-01");
-    expect(markup).toContain("turno=past-appointment");
+    expect(markup).toContain("Ver en Agenda");
+    expect(markup).not.toContain("confirmed-future-appointment");
+    expect(markup).not.toContain("Ver detalle histórico");
     expect(markup).toContain("Cancelado");
     expect(markup).toContain("Reprogramado");
+    expect(markup).not.toContain("turno=pending-past-appointment");
   });
 
   it("shows clear empty states when the patient has no appointments", async () => {

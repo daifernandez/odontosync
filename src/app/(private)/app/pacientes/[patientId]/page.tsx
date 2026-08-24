@@ -80,7 +80,9 @@ function formatAppointmentDate(date: Date) {
 function AppointmentList({
   appointments,
   emptyMessage,
+  agendaLink = false,
 }: Readonly<{
+  agendaLink?: boolean;
   appointments: Appointment[];
   emptyMessage: string;
 }>) {
@@ -123,17 +125,19 @@ function AppointmentList({
                 {getAppointmentStatusLabel(appointment.status)}
               </span>
             </div>
-            <Link
-              className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-xl border border-[var(--color-border)] bg-white px-3 text-xs font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-soft)]"
-              href={buildAgendaPath({
-                weekStartDate: date,
-                view: "day",
-                selectedDate: date,
-                params: { turno: appointment.id },
-              })}
-            >
-              Ver en Agenda
-            </Link>
+            {agendaLink ? (
+              <Link
+                className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-xl border border-[var(--color-border)] bg-white px-3 text-xs font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-soft)]"
+                href={buildAgendaPath({
+                  weekStartDate: date,
+                  view: "day",
+                  selectedDate: date,
+                  params: { turno: appointment.id },
+                })}
+              >
+                Ver en Agenda
+              </Link>
+            ) : null}
           </article>
         );
       })}
@@ -172,8 +176,7 @@ export default async function PatientDetailPage({
   const upcomingAppointments = appointments
     .filter(
       (appointment) =>
-        (appointment.status === "pending_confirmation" ||
-          appointment.status === "confirmed") &&
+        appointment.status === "pending_confirmation" &&
         new Date(appointment.startsAt).getTime() >= now,
     )
     .toSorted(
@@ -181,11 +184,10 @@ export default async function PatientDetailPage({
         new Date(first.startsAt).getTime() -
         new Date(second.startsAt).getTime(),
     );
-  const upcomingIds = new Set(
-    upcomingAppointments.map((appointment) => appointment.id),
-  );
-  const historicalAppointments = appointments.filter(
-    (appointment) => !upcomingIds.has(appointment.id),
+  const historicalAppointments = appointments.filter((appointment) =>
+    ["completed", "no_show", "cancelled", "rescheduled"].includes(
+      appointment.status,
+    ),
   );
 
   return (
@@ -277,6 +279,7 @@ export default async function PatientDetailPage({
             ) : null}
           </div>
           <AppointmentList
+            agendaLink
             appointments={upcomingAppointments}
             emptyMessage="No hay próximos turnos"
           />
