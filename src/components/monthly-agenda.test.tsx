@@ -46,7 +46,7 @@ const exceptionalBlocks = [
 ];
 
 describe("MonthlyAgenda", () => {
-  it("summarizes appointments and blocks and links every day to daily agenda", () => {
+  it("summarizes the month and offers daily actions for the selected date", () => {
     const markup = renderToStaticMarkup(
       <MonthlyAgenda
         appointments={appointments}
@@ -61,8 +61,19 @@ describe("MonthlyAgenda", () => {
     expect(markup).toContain("2 turnos");
     expect(markup).toContain("1 bloqueo");
     expect(markup).toContain(
-      "/app/agenda?semana=2026-08-10&amp;vista=dia&amp;fecha=2026-08-11",
+      "martes, 11 de agosto de 2026. 2 turnos. 0 bloqueos. Seleccionar día.",
     );
+    expect(markup).toContain("Día para gestionar");
+    expect(markup).toContain("sábado, 22 de agosto de 2026");
+    expect(markup).toContain(
+      "/app/agenda?semana=2026-08-17&amp;vista=dia&amp;fecha=2026-08-22&amp;nuevo=1#nuevo-turno",
+    );
+    expect(markup).toContain(
+      "/app/agenda?semana=2026-08-17&amp;vista=dia&amp;fecha=2026-08-22&amp;bloqueos=1",
+    );
+    expect(markup).toContain("Nuevo turno");
+    expect(markup).toContain("Bloquear horario");
+    expect(markup).toContain('aria-pressed="true"');
     expect(markup).toContain("Vista semanal");
     expect(markup).toContain("Vista diaria");
     expect(markup).toContain("Vista mensual");
@@ -82,5 +93,23 @@ describe("MonthlyAgenda", () => {
     );
 
     expect(markup).toContain("No hay turnos ni bloqueos en este mes");
+  });
+
+  it("keeps past dates available only for consultation", () => {
+    const markup = renderToStaticMarkup(
+      <MonthlyAgenda
+        appointments={[]}
+        exceptionalBlocks={[]}
+        month={buildAgendaMonth("2026-07-01")}
+        currentTime={new Date("2026-08-22T15:00:00.000Z")}
+      />,
+    );
+
+    expect(markup).toContain("Nota: los días pasados son solo de consulta.");
+    expect(markup).not.toContain("Nuevo turno");
+    expect(markup).not.toContain("Bloquear horario");
+    expect(markup).toContain(
+      "/app/agenda?semana=2026-06-29&amp;vista=dia&amp;fecha=2026-07-01",
+    );
   });
 });

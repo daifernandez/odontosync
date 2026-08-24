@@ -7,6 +7,7 @@ import {
 import Link from "next/link";
 
 import { AgendaViewPreferenceLink } from "@/components/agenda-view-preference-link";
+import { MonthlyAgendaDaySelector } from "@/components/monthly-agenda-day-selector";
 import {
   buildAgendaDay,
   buildAgendaPath,
@@ -25,30 +26,8 @@ const monthTitleFormatter = new Intl.DateTimeFormat("es-AR", {
   year: "numeric",
 });
 
-const fullDateFormatter = new Intl.DateTimeFormat("es-AR", {
-  timeZone: "America/Argentina/Buenos_Aires",
-  weekday: "long",
-  day: "numeric",
-  month: "long",
-  year: "numeric",
-});
-
-const weekDayLabels = [
-  ["Lun", "Lunes"],
-  ["Mar", "Martes"],
-  ["Mié", "Miércoles"],
-  ["Jue", "Jueves"],
-  ["Vie", "Viernes"],
-  ["Sáb", "Sábado"],
-  ["Dom", "Domingo"],
-] as const;
-
 function addCount(counts: Map<string, number>, date: string) {
   counts.set(date, (counts.get(date) ?? 0) + 1);
-}
-
-function countLabel(count: number, singular: string, plural: string) {
-  return `${count} ${count === 1 ? singular : plural}`;
 }
 
 function capitalizeFirst(value: string) {
@@ -105,7 +84,7 @@ export function MonthlyAgenda({
             Agenda mensual
           </h1>
           <p className="mt-3 mb-0 max-w-2xl text-sm leading-6 text-[var(--color-muted)]">
-            Consultá la actividad del mes y elegí un día para abrir su agenda.
+            Consultá la actividad del mes y elegí un día para gestionarlo.
           </p>
         </div>
         <Link
@@ -124,7 +103,7 @@ export function MonthlyAgenda({
           size={18}
         />
         <p className="m-0 text-[0.78rem] leading-6">
-          Vista de consulta: elegí un día para crear o gestionar turnos en la
+          Elegí un día del calendario y usá las acciones disponibles en su
           Agenda diaria.
         </p>
       </aside>
@@ -223,62 +202,12 @@ export function MonthlyAgenda({
           </p>
         ) : null}
 
-        <div className="grid grid-cols-7 border-b border-[var(--color-border)] bg-[var(--color-brand-subtle)]">
-          {weekDayLabels.map(([shortLabel, label]) => (
-            <div className="px-1 py-3 text-center text-xs font-bold" key={label}>
-              <span className="sm:hidden">{shortLabel}</span>
-              <span className="hidden sm:inline">{label}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-7 border-l border-[var(--color-border)]">
-          {month.days.map((day) => {
-            const appointmentCount = appointmentCounts.get(day.date) ?? 0;
-            const blockCount = blockCounts.get(day.date) ?? 0;
-            const appointmentText = countLabel(
-              appointmentCount,
-              "turno",
-              "turnos",
-            );
-            const blockText = countLabel(blockCount, "bloqueo", "bloqueos");
-            const date = new Date(`${day.date}T12:00:00-03:00`);
-
-            return (
-              <Link
-                aria-current={day.date === currentDay.date ? "date" : undefined}
-                aria-label={`${fullDateFormatter.format(date)}. ${appointmentText}. ${blockText}. Abrir Agenda diaria.`}
-                className={`min-h-24 border-r border-b border-[var(--color-border)] p-1.5 text-[var(--color-foreground)] no-underline hover:bg-[var(--color-brand-soft)] focus-visible:z-10 sm:min-h-32 sm:p-3 ${day.isCurrentMonth ? "bg-white" : "bg-[var(--color-brand-subtle)] text-[var(--color-muted)]"}`}
-                href={buildAgendaPath({
-                  weekStartDate: day.date,
-                  view: "day",
-                  selectedDate: day.date,
-                })}
-                key={day.date}
-              >
-                <span
-                  className={`grid size-7 place-items-center rounded-full text-xs font-bold sm:size-8 sm:text-sm ${day.date === currentDay.date ? "bg-[var(--color-brand)] text-white" : ""}`}
-                >
-                  {day.dayOfMonth}
-                </span>
-                {day.isCurrentMonth && (appointmentCount > 0 || blockCount > 0) ? (
-                  <span className="mt-1.5 flex flex-col gap-1 sm:mt-3">
-                    {appointmentCount > 0 ? (
-                      <span className="rounded-md bg-[var(--color-brand-soft)] px-1 py-1 text-center text-[0.58rem] leading-3 font-bold text-[var(--color-brand-dark)] sm:text-[0.68rem]">
-                        {appointmentText}
-                      </span>
-                    ) : null}
-                    {blockCount > 0 ? (
-                      <span className="rounded-md bg-[var(--color-neutral-soft)] px-1 py-1 text-center text-[0.58rem] leading-3 font-bold text-[var(--color-muted)] sm:text-[0.68rem]">
-                        {blockText}
-                      </span>
-                    ) : null}
-                  </span>
-                ) : null}
-              </Link>
-            );
-          })}
-        </div>
+        <MonthlyAgendaDaySelector
+          appointmentCounts={Object.fromEntries(appointmentCounts)}
+          blockCounts={Object.fromEntries(blockCounts)}
+          currentDate={currentDay.date}
+          month={month}
+        />
       </section>
     </main>
   );
