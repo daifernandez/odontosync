@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { buildAgendaPath } from "@/modules/agenda/domain/weekly-schedule";
 import type { DashboardData } from "@/modules/dashboard/domain/dashboard";
 
 const demoAppointments = [
@@ -202,7 +203,12 @@ export function DashboardHome({
             {displayedAppointments.map((appointment) => {
               const appointmentHref = demoMode
                 ? agendaHref
-                : `${agendaHref}?vista=day&fecha=${appointment.date}&turno=${appointment.id}`;
+                : buildAgendaPath({
+                    weekStartDate: appointment.date,
+                    view: "day",
+                    selectedDate: appointment.date,
+                    params: { turno: appointment.id },
+                  });
 
               return (
                 <article

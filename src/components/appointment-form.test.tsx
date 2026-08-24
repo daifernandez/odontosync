@@ -90,6 +90,35 @@ describe("AppointmentForm", () => {
     expect(markup).toContain("11/08/2026 a las 09:30");
   });
 
+  it("prefills the patient when opened from a patient record", () => {
+    const markup = renderToStaticMarkup(
+      <AppointmentForm
+        appointmentOccupancy={[]}
+        availability={[]}
+        created={false}
+        currentTime="2026-08-10T12:20:00.000Z"
+        defaultCleanupMinutes={5}
+        defaultDurationMinutes={30}
+        exceptionalBlocks={[]}
+        gridIntervalMinutes={15}
+        initialPatientId="00000000-0000-4000-8000-000000000001"
+        minimumDate="2026-08-10"
+        onClose={vi.fn()}
+        patients={[
+          {
+            id: "00000000-0000-4000-8000-000000000001",
+            firstName: "Lucía",
+            lastName: "Prueba",
+          },
+        ]}
+      />,
+    );
+
+    expect(markup).toMatch(
+      /<select[^>]*name="patientId"[^>]*>[\s\S]*<option[^>]*value="00000000-0000-4000-8000-000000000001"[^>]*selected=""/,
+    );
+  });
+
   it("does not offer times that intersect an exceptional block", () => {
     const markup = renderToStaticMarkup(
       <AppointmentForm
