@@ -121,7 +121,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
     await Promise.all([
       getInitialConfiguration(),
       listPatients("", "active", userId),
-      listAppointmentsForRange(from, to, userId),
+      listAppointmentsForRange(from, to, userId, { includeChanges: true }),
       listAppointmentOccupancy(undefined, userId),
       listExceptionalBlocks(undefined, userId),
     ]);

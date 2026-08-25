@@ -11,6 +11,7 @@ vi.mock("@/lib/supabase/server", () => ({
 import {
   cancelAppointment,
   closeAppointment,
+  listAppointmentOccupancy,
   listAppointmentsForRange,
   listPatientAppointments,
   listUpcomingAppointments,
@@ -103,6 +104,80 @@ describe("listAppointmentsForRange", () => {
       "starts_at",
       "2026-09-01T03:00:00.000Z",
     );
+    expect(query.in).toHaveBeenCalledWith("status", [
+      "pending_confirmation",
+      "confirmed",
+      "completed",
+      "no_show",
+    ]);
+  });
+
+  it("includes cancelled and rescheduled appointments when the timeline requests changes", async () => {
+    const query = {
+      select: vi.fn(),
+      eq: vi.fn(),
+      gte: vi.fn(),
+      lt: vi.fn(),
+      in: vi.fn(),
+      order: vi.fn().mockResolvedValue({ data: [], error: null }),
+    };
+
+    query.select.mockReturnValue(query);
+    query.eq.mockReturnValue(query);
+    query.gte.mockReturnValue(query);
+    query.lt.mockReturnValue(query);
+    query.in.mockReturnValue(query);
+    mocks.createClient.mockResolvedValue({
+      from: vi.fn().mockReturnValue(query),
+    });
+
+    await listAppointmentsForRange(
+      new Date("2026-08-01T03:00:00.000Z"),
+      new Date("2026-09-01T03:00:00.000Z"),
+      "owner-id",
+      { includeChanges: true },
+    );
+
+    expect(query.in).toHaveBeenCalledWith("status", [
+      "pending_confirmation",
+      "confirmed",
+      "completed",
+      "no_show",
+      "cancelled",
+      "rescheduled",
+    ]);
+  });
+});
+
+describe("listAppointmentOccupancy", () => {
+  it("keeps cancelled and rescheduled appointments out of calendar occupancy", async () => {
+    const query = {
+      select: vi.fn(),
+      eq: vi.fn(),
+      gt: vi.fn(),
+      in: vi.fn(),
+      order: vi.fn(),
+      limit: vi.fn().mockResolvedValue({ data: [], error: null }),
+    };
+
+    query.select.mockReturnValue(query);
+    query.eq.mockReturnValue(query);
+    query.gt.mockReturnValue(query);
+    query.in.mockReturnValue(query);
+    query.order.mockReturnValue(query);
+    mocks.createClient.mockResolvedValue({
+      from: vi.fn().mockReturnValue(query),
+    });
+
+    await listAppointmentOccupancy(
+      new Date("2026-08-01T03:00:00.000Z"),
+      "owner-id",
+    );
+
+    expect(query.in).toHaveBeenCalledWith("status", [
+      "pending_confirmation",
+      "confirmed",
+    ]);
   });
 });
 

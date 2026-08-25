@@ -116,6 +116,12 @@ describe("AgendaPage monthly view", () => {
     expect(mocks.getLastAgendaView).not.toHaveBeenCalled();
     expect(result.type).toBe(mocks.WeeklyAgenda);
     expect(result.props.view).toBe("day");
+    expect(mocks.listAppointmentsForRange).toHaveBeenCalledWith(
+      expect.any(Date),
+      expect.any(Date),
+      "owner-id",
+      { includeChanges: true },
+    );
   });
 
   it("keeps legacy weekly URLs on their requested week", async () => {
