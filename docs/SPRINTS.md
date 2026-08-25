@@ -1345,3 +1345,103 @@ guardar.
 - Las reglas de disponibilidad y los flujos de confirmar, reprogramar o
   cancelar turnos permanecen fuera de este sprint.
 - El turno ficticio utilizado para QA permanece en la cuenta de evaluación.
+
+## Sprint 019 — Seguimiento temporal filtrable de turnos
+
+- **Fecha:** 25 de agosto de 2026
+- **Estado:** publicado y mergeado
+- **Issue:** [#61](https://github.com/daifernandez/odontosync/issues/61)
+- **Rama:** `codex/agenda-status-timeline`
+- **Publicación:** [PR #62](https://github.com/daifernandez/odontosync/pull/62),
+  merge commit `537da3f`
+
+### Objetivo
+
+Convertir el listado semanal de turnos en un seguimiento temporal claro y
+operable, que permita consultar estados y días sin recurrir a paginación y
+mantenga visibles los turnos cancelados o reprogramados.
+
+### Resultado
+
+- La agenda presenta una línea temporal agrupada por día con hora, paciente,
+  especialidad, duración, estado y acción contextual de cada turno.
+- Los estados se comunican mediante texto y color para distinguir pendientes,
+  confirmados, atendidos, ausentes, cancelados y reprogramados sin depender
+  solamente de señales visuales.
+- Los filtros de estado agrupan los turnos en `Todos`, `En curso`,
+  `Finalizados` y `Cambios`; la vista semanal agrega un filtro horizontal por
+  día.
+- Los filtros omiten contadores dentro de cada opción y el total se anuncia de
+  forma accesible sin competir con la jerarquía visual del sector.
+- Cada día puede contraerse para reducir la extensión del listado y los
+  resultados se actualizan sin paginación.
+- Las acciones se adaptan al estado: gestionar, registrar resultado, ver el
+  turno, consultar el historial o ver el cambio.
+- Los turnos cancelados y reprogramados se conservan en el seguimiento, pero
+  no ocupan espacios en la grilla de disponibilidad.
+- La composición de cada turno se mantiene compacta en escritorio y pasa a una
+  disposición vertical en anchos intermedios y móviles para evitar columnas
+  comprimidas y textos fragmentados.
+- No se modificaron esquema, migraciones, políticas RLS, autenticación ni
+  permisos.
+
+### Criterios verificados
+
+- Los seis estados operativos muestran una etiqueta textual y un punto de
+  color consistente.
+- Los filtros de estado y día se combinan y exponen su selección mediante
+  `aria-pressed`.
+- La vista diaria no repite el filtro de día y conserva las mismas opciones de
+  estado.
+- Los días agrupados pueden expandirse y contraerse, y los estados vacíos
+  explican cuándo no existen turnos o no hay coincidencias con los filtros.
+- Los filtros no muestran cifras ambiguas ni se presenta un total visual
+  aislado sobre ellos.
+- Los turnos cancelados y reprogramados aparecen en `Cambios`, conservan su
+  historial y liberan el horario para nuevas reservas.
+- La verificación responsive cubrió móvil, ancho intermedio y escritorio sin
+  desbordes ni fragmentación de los datos del turno.
+- Las regresiones automatizadas cubren la agrupación de estados, la combinación
+  de filtros, la accesibilidad, el seguimiento histórico y la exclusión de
+  cancelados y reprogramados de la ocupación de la agenda.
+
+### Skills aplicadas
+
+- `project-sprint-workflow` para acordar el alcance, separar la publicación
+  funcional del cierre documental y mantener la trazabilidad con el issue.
+- `usability-review` para definir la jerarquía de la línea temporal, los
+  filtros, el uso redundante de color y texto, los estados vacíos y la
+  adaptación responsive.
+- Next.js y `react-best-practices` para integrar la vista interactiva sin mover
+  al cliente la consulta de turnos ni agregar estado innecesario.
+- Supabase y `security-sprint-review` para verificar que los cambios de
+  consulta respetaran el aislamiento existente y que las suites RLS
+  continuaran aprobadas.
+- Browser para recorrer filtros, estados, acciones y composiciones responsive
+  con datos ficticios.
+- `odontosync-release-check` para la batería final, el commit, el PR y la
+  comprobación de CI.
+
+### Verificaciones
+
+- Pruebas: 35 archivos y 217 casos aprobados.
+- RLS: cuatro suites aprobadas sobre Supabase enlazado; cada ejecución completó
+  su rollback.
+- TypeScript, ESLint y build de producción: aprobados.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- GitHub Actions: aprobado en el PR funcional.
+- Asesor de Supabase: sin errores; permanece el aviso externo conocido de
+  protección contra contraseñas filtradas, postergado por decisión del
+  proyecto.
+- No aplicaron controles de Prisma ni migraciones porque el sprint no modificó
+  el esquema persistente.
+
+### Riesgo residual y próximos pasos
+
+- La acción de reprogramar libera el horario y conserva el turno anterior como
+  cambio, pero el vínculo detallado entre el turno original y el nuevo, junto
+  con quién realizó el cambio, cuándo y por qué, queda para un próximo sprint.
+- La búsqueda de pacientes dentro del seguimiento y la paginación quedan fuera
+  de alcance hasta que el volumen real demuestre su necesidad.
+- Activar la protección contra contraseñas filtradas cuando resulte
+  indispensable para el proyecto.
