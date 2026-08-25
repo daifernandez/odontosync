@@ -1275,3 +1275,73 @@ con el reordenamiento del componente.
 - Retomar la demostración pública cuando la aplicación real esté finalizada.
 - Activar la protección contra contraseñas filtradas cuando resulte
   indispensable para el proyecto.
+
+## Sprint 018 — Alta de turnos desde espacios libres
+
+- **Fecha:** 25 de agosto de 2026
+- **Estado:** publicado y mergeado
+- **Rama:** `codex/agenda-new-appointment-flow`
+- **Publicación:** [PR #59](https://github.com/daifernandez/odontosync/pull/59),
+  merge commit `f596c40`
+
+### Objetivo
+
+Completar el alta de turnos desde la agenda para aprovechar la fecha y hora del
+espacio libre seleccionado y volver a la agenda inmediatamente después de
+guardar.
+
+### Resultado
+
+- Los espacios libres abren el panel de nuevo turno con fecha y hora ya
+  seleccionadas.
+- El usuario puede completar paciente, área odontológica y duración sin volver
+  a elegir el horario; el acondicionamiento conserva su valor habitual y sigue
+  siendo editable.
+- Después de guardar, el panel se cierra y la agenda muestra el turno creado
+  junto con el mensaje de éxito.
+- Cerrar el panel sin guardar elimina de la URL los parámetros transitorios del
+  alta.
+- No se modificaron persistencia, reglas de disponibilidad, estados de turnos,
+  migraciones, autenticación ni permisos.
+
+### Criterios verificados
+
+- Un espacio libre conserva su fecha y hora al abrir el formulario.
+- La selección inicial aparece tanto en los campos como en el resumen previo a
+  confirmar.
+- El redirect posterior al alta no vuelve a abrir el panel.
+- El mensaje de éxito se presenta en la agenda y no dentro del diálogo.
+- El turno creado queda visible en el bloque horario y en el listado semanal.
+- Las regresiones automatizadas cubren la precarga del espacio seleccionado y
+  el regreso a la agenda con el panel cerrado.
+- La verificación funcional creó, con autorización, un turno ficticio para
+  `Paciente, Lucía Prueba` el 26 de agosto de 2026 a las 11:15.
+
+### Skills aplicadas
+
+- Next.js para conservar el contexto de la agenda en la URL y respetar el
+  redirect de la Server Action.
+- `react-best-practices` para retirar estado y referencias que dejaron de ser
+  necesarios al mover el éxito fuera del formulario.
+- `usability-review` para verificar la precarga del horario, el cierre del
+  panel y el feedback posterior al guardado.
+- Browser para comprobar el recorrido autenticado con un paciente ficticio.
+- `odontosync-release-check` para la batería final, el commit, el PR y la
+  comprobación de CI.
+
+### Verificaciones
+
+- Pruebas: 34 archivos y 212 casos aprobados.
+- TypeScript, ESLint y build de producción: aprobados.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- GitHub Actions: aprobado en el PR funcional.
+- No aplicaron controles de Prisma, migraciones, Supabase ni RLS porque el
+  sprint no modificó persistencia, autenticación ni autorización.
+
+### Riesgo residual y próximos pasos
+
+- El cierre automático conserva el redirect existente de la Server Action; la
+  lógica de persistencia no cambió.
+- Las reglas de disponibilidad y los flujos de confirmar, reprogramar o
+  cancelar turnos permanecen fuera de este sprint.
+- El turno ficticio utilizado para QA permanece en la cuenta de evaluación.
