@@ -145,7 +145,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
     <WeeklyAgenda
       appointments={appointments}
       appointmentOccupancy={appointmentOccupancy}
-      autoOpenNewAppointment={params.nuevo === "1" || params.creado === "1"}
+      autoOpenNewAppointment={params.nuevo === "1"}
       cancelled={params.cancelado === "1"}
       closureStatus={
         isAppointmentClosureStatus(params.cierre) ? params.cierre : undefined

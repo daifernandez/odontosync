@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { AppointmentForm } from "./appointment-form";
 
@@ -15,14 +15,12 @@ describe("AppointmentForm", () => {
             endTime: "11:00",
           },
         ]}
-        created={false}
         currentTime="2026-08-10T12:20:00.000Z"
         defaultCleanupMinutes={10}
         defaultDurationMinutes={45}
         exceptionalBlocks={[]}
         gridIntervalMinutes={15}
         minimumDate="2026-08-10"
-        onClose={vi.fn()}
         patients={[
           {
             id: "00000000-0000-4000-8000-000000000001",
@@ -61,7 +59,6 @@ describe("AppointmentForm", () => {
             endTime: "11:00",
           },
         ]}
-        created={false}
         currentTime="2026-08-10T12:20:00.000Z"
         defaultCleanupMinutes={5}
         defaultDurationMinutes={30}
@@ -70,7 +67,6 @@ describe("AppointmentForm", () => {
         initialDate="2026-08-11"
         initialTime="09:30"
         minimumDate="2026-08-10"
-        onClose={vi.fn()}
         patients={[
           {
             id: "00000000-0000-4000-8000-000000000001",
@@ -95,7 +91,6 @@ describe("AppointmentForm", () => {
       <AppointmentForm
         appointmentOccupancy={[]}
         availability={[]}
-        created={false}
         currentTime="2026-08-10T12:20:00.000Z"
         defaultCleanupMinutes={5}
         defaultDurationMinutes={30}
@@ -103,7 +98,6 @@ describe("AppointmentForm", () => {
         gridIntervalMinutes={15}
         initialPatientId="00000000-0000-4000-8000-000000000001"
         minimumDate="2026-08-10"
-        onClose={vi.fn()}
         patients={[
           {
             id: "00000000-0000-4000-8000-000000000001",
@@ -126,7 +120,6 @@ describe("AppointmentForm", () => {
         availability={[
           { dayOfWeek: 2, startTime: "09:00", endTime: "11:00" },
         ]}
-        created={false}
         currentTime="2026-08-10T12:20:00.000Z"
         defaultCleanupMinutes={5}
         defaultDurationMinutes={30}
@@ -139,7 +132,6 @@ describe("AppointmentForm", () => {
         gridIntervalMinutes={15}
         initialDate="2026-08-11"
         minimumDate="2026-08-10"
-        onClose={vi.fn()}
         patients={[]}
       />,
     );

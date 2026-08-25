@@ -143,6 +143,32 @@ describe("AgendaPage monthly view", () => {
     expect(result.props.autoOpenNewAppointment).toBe(true);
   });
 
+  it("returns to the closed agenda after creating an appointment", async () => {
+    const result = await AgendaPage({
+      searchParams: Promise.resolve({ creado: "1" }),
+    });
+
+    expect(result.type).toBe(mocks.WeeklyAgenda);
+    expect(result.props.created).toBe(true);
+    expect(result.props.autoOpenNewAppointment).toBe(false);
+  });
+
+  it("passes the selected empty slot to the new appointment workflow", async () => {
+    const result = await AgendaPage({
+      searchParams: Promise.resolve({
+        nuevo: "1",
+        fecha: "2026-08-12",
+        hora: "10:15",
+        semana: "2026-08-10",
+      }),
+    });
+
+    expect(result.type).toBe(mocks.WeeklyAgenda);
+    expect(result.props.autoOpenNewAppointment).toBe(true);
+    expect(result.props.initialDate).toBe("2026-08-12");
+    expect(result.props.initialTime).toBe("10:15");
+  });
+
   it("passes the patient context to the new appointment workflow", async () => {
     const result = await AgendaPage({
       searchParams: Promise.resolve({ nuevo: "1", paciente: "patient-id" }),
