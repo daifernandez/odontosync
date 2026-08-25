@@ -9,6 +9,7 @@ import Link from "next/link";
 import { AgendaViewPreferenceLink } from "@/components/agenda-view-preference-link";
 import { AppointmentManagementPanel } from "@/components/appointment-management-panel";
 import { AppointmentPanel } from "@/components/appointment-panel";
+import { AppointmentTimeline } from "@/components/appointment-timeline";
 import { ExceptionalBlocksPanel } from "@/components/exceptional-blocks-panel";
 import {
   buildAgendaDay,
@@ -142,6 +143,11 @@ export function WeeklyAgenda({
             day.date,
         )
       : appointments;
+  const calendarAppointments = appointments.filter(
+    (appointment) =>
+      appointment.status !== "cancelled" &&
+      appointment.status !== "rescheduled",
+  );
   const calendarAvailability = configuration.availability.filter((block) =>
     visibleDays.some((visibleDay) => visibleDay.dayOfWeek === block.dayOfWeek),
   );
@@ -167,11 +173,6 @@ export function WeeklyAgenda({
   ).filter((minutes) => minutes <= calendarEnd);
   const currentWeekStart = buildAgendaWeek(undefined, currentTime).startDate;
   const currentDay = buildAgendaDay(undefined, currentTime);
-  const dateFormatter = new Intl.DateTimeFormat("es-AR", {
-    timeZone: "America/Argentina/Buenos_Aires",
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
   const shortDateFormatter = new Intl.DateTimeFormat("es-AR", {
     timeZone: "America/Argentina/Buenos_Aires",
     day: "2-digit",
@@ -520,7 +521,7 @@ export function WeeklyAgenda({
                 const dayAvailability = configuration.availability.filter(
                   (block) => block.dayOfWeek === day.dayOfWeek,
                 );
-                const dayAppointments = appointments.filter(
+                const dayAppointments = calendarAppointments.filter(
                   (appointment) =>
                     formatArgentinaDateInput(new Date(appointment.startsAt)) ===
                     day.date,
@@ -800,102 +801,15 @@ export function WeeklyAgenda({
       </section>
 
       <div className="mt-5">
-        <section
-          aria-labelledby="upcoming-appointments-title"
-          className="rounded-[var(--radius-large)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)] md:p-6"
-        >
-          <p className="mb-2 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
-            Turnos {view === "day" ? "del día" : "de la semana"}
-          </p>
-          <h2 className="m-0 text-xl" id="upcoming-appointments-title">
-            Agenda {view === "day" ? "del día" : "de la semana"}
-          </h2>
-
-          {visibleAppointments.length === 0 ? (
-            <div className="mt-5 rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-brand-subtle)] px-5 py-10 text-center">
-              <CalendarClock
-                aria-hidden="true"
-                className="mx-auto text-[var(--color-brand)]"
-                size={28}
-              />
-              <h3 className="mt-3 mb-0 text-base">
-                No hay turnos{" "}
-                {view === "day" ? "en este día" : "en esta semana"}
-              </h3>
-              <p className="mx-auto mt-2 mb-0 max-w-md text-sm leading-6 text-[var(--color-muted)]">
-                Elegí un espacio libre de la grilla o usá “Nuevo turno” para
-                cargar el primero.
-              </p>
-            </div>
-          ) : (
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              {visibleAppointments.map((appointment) => {
-                const appointmentAwaitsOutcome =
-                  isPendingAppointmentAwaitingOutcome(
-                    appointment,
-                    currentTime,
-                  );
-                const appointmentReadOnly =
-                  readOnlyAppointment ||
-                  isHistoricalAppointment(appointment.status) ||
-                  (appointment.status === "pending_confirmation" &&
-                    !isPendingAppointmentManageable(
-                      appointment,
-                      currentTime,
-                    ) &&
-                    !appointmentAwaitsOutcome);
-
-                return (
-                  <article
-                    className="rounded-xl border border-[var(--color-border)] bg-[var(--color-brand-subtle)] p-4"
-                    key={appointment.id}
-                  >
-                  <p className="m-0 text-xs font-bold text-[var(--color-brand-dark)]">
-                    {dateFormatter.format(new Date(appointment.startsAt))}
-                  </p>
-                  <h3 className="mt-2 mb-0 text-base">
-                    {appointment.patientLastName},{" "}
-                    {appointment.patientFirstName}
-                  </h3>
-                  <p className="mt-2 mb-0 text-xs leading-5 text-[var(--color-muted)]">
-                    {getAppointmentSpecialtyLabel(appointment.specialty)} ·{" "}
-                    {appointment.durationMinutes} min +{" "}
-                    {appointment.cleanupMinutes} min de acondicionamiento
-                  </p>
-                  <span className="mt-3 inline-flex rounded-full border border-[var(--color-border)] bg-white px-2.5 py-1 text-[0.68rem] font-bold text-[var(--color-brand-dark)]">
-                    {getAppointmentStatusLabel(appointment, currentTime)}
-                  </span>
-                  <Link
-                    className="mt-3 flex min-h-10 items-center justify-center rounded-xl border border-[var(--color-border)] bg-white px-3 text-xs font-bold text-[var(--color-brand-dark)] no-underline"
-                    href={buildAgendaPath({
-                      weekStartDate: week.startDate,
-                      view,
-                      selectedDate:
-                        view === "day"
-                          ? day.date
-                          : formatArgentinaDateInput(
-                              new Date(appointment.startsAt),
-                            ),
-                      params: {
-                        turno: appointment.id,
-                        ...(appointmentReadOnly ? { consulta: "1" } : {}),
-                      },
-                    })}
-                  >
-                    {isHistoricalAppointment(appointment.status)
-                      ? "Ver historial"
-                      : appointmentAwaitsOutcome
-                        ? "Registrar resultado"
-                      : appointmentReadOnly || appointment.status === "confirmed"
-                        ? "Ver turno"
-                        : "Gestionar turno"}
-                  </Link>
-                  </article>
-                );
-              })}
-            </div>
-          )}
-        </section>
+        <AppointmentTimeline
+          appointments={visibleAppointments}
+          currentTime={currentTime.toISOString()}
+          days={visibleDays.map(({ date, label }) => ({ date, label }))}
+          readOnlyAppointment={readOnlyAppointment}
+          selectedDate={day.date}
+          view={view}
+          weekStartDate={week.startDate}
+        />
       </div>
     </main>
   );

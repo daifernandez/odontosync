@@ -87,6 +87,7 @@ export async function listAppointmentsForRange(
   from: Date,
   to: Date,
   userId?: string,
+  options: { includeChanges?: boolean } = {},
 ): Promise<Appointment[]> {
   const supabase = await createClient();
   let query = supabase
@@ -105,6 +106,9 @@ export async function listAppointmentsForRange(
       "confirmed",
       "completed",
       "no_show",
+      ...(options.includeChanges
+        ? (["cancelled", "rescheduled"] as const)
+        : []),
     ])
     .order("starts_at");
 

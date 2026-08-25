@@ -57,6 +57,22 @@ describe("WeeklyAgenda", () => {
       occupiedUntil: "2026-08-10T13:35:00.000Z",
       status: "no_show" as const,
     };
+    const cancelledAppointment = {
+      ...completedAppointment,
+      id: "00000000-0000-4000-8000-000000000014",
+      patientLastName: "Cancelado",
+      startsAt: "2026-08-12T12:00:00.000Z",
+      occupiedUntil: "2026-08-12T12:35:00.000Z",
+      status: "cancelled" as const,
+    };
+    const rescheduledAppointment = {
+      ...completedAppointment,
+      id: "00000000-0000-4000-8000-000000000015",
+      patientLastName: "Reprogramado",
+      startsAt: "2026-08-13T12:00:00.000Z",
+      occupiedUntil: "2026-08-13T12:35:00.000Z",
+      status: "rescheduled" as const,
+    };
     const markup = renderToStaticMarkup(
       <WeeklyAgenda
         appointmentOccupancy={[appointment, confirmedAppointment]}
@@ -65,6 +81,8 @@ describe("WeeklyAgenda", () => {
           confirmedAppointment,
           completedAppointment,
           noShowAppointment,
+          cancelledAppointment,
+          rescheduledAppointment,
         ]}
         autoOpenNewAppointment={false}
         cancelled={false}
@@ -108,6 +126,16 @@ describe("WeeklyAgenda", () => {
     expect(markup).toContain("Confirmado");
     expect(markup).toContain("Atendido");
     expect(markup).toContain("Ausente");
+    expect(markup).toContain("Cancelado");
+    expect(markup).toContain("Reprogramado");
+    expect(markup).toContain("Seguimiento de turnos");
+    expect(markup).toContain('aria-label="Filtrar turnos por estado"');
+    expect(markup).toContain("En curso");
+    expect(markup).toContain("Finalizados");
+    expect(markup).toContain("Cambios");
+    expect(markup).toContain("Ver cambio");
+    expect(markup).not.toContain('aria-label="Cancelado, Lucía.');
+    expect(markup).not.toContain('aria-label="Reprogramado, Lucía.');
     expect(markup).toContain("Ver historial");
     expect(markup).toContain("Ver turno");
     expect(markup).toContain(
