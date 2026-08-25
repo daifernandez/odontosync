@@ -26,7 +26,6 @@ export function AppointmentPanel({
   autoOpen,
   appointmentOccupancy,
   availability,
-  created,
   currentTime,
   exceptionalBlocks,
   initialPatientId,
@@ -44,7 +43,6 @@ export function AppointmentPanel({
   autoOpen: boolean;
   appointmentOccupancy: AppointmentOccupancy[];
   availability: AvailabilityBlock[];
-  created: boolean;
   currentTime: string;
   exceptionalBlocks: ExceptionalBlockOccupancy[];
   initialPatientId?: string;
@@ -74,10 +72,6 @@ export function AppointmentPanel({
     dialogRef.current?.showModal();
   }
 
-  function closePanel() {
-    dialogRef.current?.close();
-  }
-
   function clearPanelQuery() {
     if (autoOpen) {
       router.replace(
@@ -85,6 +79,11 @@ export function AppointmentPanel({
         { scroll: false },
       );
     }
+  }
+
+  function closePanel() {
+    dialogRef.current?.close();
+    clearPanelQuery();
   }
 
   return (
@@ -107,7 +106,10 @@ export function AppointmentPanel({
             closePanel();
           }
         }}
-        onClose={clearPanelQuery}
+        onCancel={(event) => {
+          event.preventDefault();
+          closePanel();
+        }}
         ref={dialogRef}
       >
         <div className="flex h-full flex-col">
@@ -158,7 +160,6 @@ export function AppointmentPanel({
               <AppointmentForm
                 appointmentOccupancy={appointmentOccupancy}
                 availability={availability}
-                created={created}
                 currentTime={currentTime}
                 defaultCleanupMinutes={defaultCleanupMinutes}
                 defaultDurationMinutes={defaultDurationMinutes}
@@ -168,7 +169,6 @@ export function AppointmentPanel({
                 initialPatientId={initialPatientId}
                 initialTime={initialTime}
                 minimumDate={minimumDate}
-                onClose={closePanel}
                 patients={patients}
                 selectedDate={selectedDate ?? weekStartDate}
                 view={view}

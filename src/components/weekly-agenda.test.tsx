@@ -124,6 +124,46 @@ describe("WeeklyAgenda", () => {
     );
   });
 
+  it("shows appointment creation success in the agenda instead of the panel", () => {
+    const markup = renderToStaticMarkup(
+      <WeeklyAgenda
+        appointmentOccupancy={[]}
+        appointments={[]}
+        autoOpenNewAppointment={false}
+        cancelled={false}
+        confirmed={false}
+        configuration={{
+          fullName: "Profesional de prueba",
+          licenseNumber: null,
+          licenseJurisdiction: null,
+          gridIntervalMinutes: 15,
+          defaultAppointmentDurationMinutes: 30,
+          defaultCleanupMinutes: 5,
+          availability: [
+            { dayOfWeek: 2, startTime: "09:00", endTime: "12:00" },
+          ],
+        }}
+        created
+        exceptionalBlockCreated={false}
+        exceptionalBlockDeleted={false}
+        exceptionalBlockManagementError={false}
+        exceptionalBlockPanelOpen={false}
+        exceptionalBlocks={[]}
+        managementError={false}
+        patients={[]}
+        updated={false}
+        week={buildAgendaWeek("2026-08-10")}
+      />,
+    );
+
+    const successMessage = "El turno pendiente se guardó correctamente.";
+
+    expect(markup).toContain(successMessage);
+    expect(markup.indexOf(successMessage)).toBeGreaterThan(
+      markup.indexOf("</dialog>"),
+    );
+  });
+
   it("keeps a simultaneous appointment occupied when managing the selected one", () => {
     const selectedAppointment = {
       id: "00000000-0000-4000-8000-000000000010",

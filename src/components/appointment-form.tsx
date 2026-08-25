@@ -1,7 +1,7 @@
 "use client";
 
-import { CalendarCheck, Check, Clock3, UserRound } from "lucide-react";
-import { useActionState, useRef, useState } from "react";
+import { CalendarCheck, Clock3, UserRound } from "lucide-react";
+import { useActionState, useState } from "react";
 
 import { SubmitButton } from "@/components/auth/submit-button";
 import { AgendaContextFields } from "@/components/agenda-context-fields";
@@ -38,7 +38,6 @@ function FieldError({ id, message }: { id: string; message?: string }) {
 export function AppointmentForm({
   appointmentOccupancy,
   availability,
-  created,
   currentTime,
   exceptionalBlocks,
   initialPatientId = "",
@@ -49,14 +48,12 @@ export function AppointmentForm({
   initialDate = "",
   initialTime = "",
   minimumDate,
-  onClose,
   selectedDate,
   view = "week",
   weekStartDate,
 }: Readonly<{
   appointmentOccupancy: AppointmentOccupancy[];
   availability: AvailabilityBlock[];
-  created: boolean;
   currentTime: string;
   exceptionalBlocks: ExceptionalBlockOccupancy[];
   initialPatientId?: string;
@@ -67,7 +64,6 @@ export function AppointmentForm({
   initialDate?: string;
   initialTime?: string;
   minimumDate: string;
-  onClose: () => void;
   selectedDate?: string;
   view?: AgendaView;
   weekStartDate?: string;
@@ -76,7 +72,6 @@ export function AppointmentForm({
     createAppointmentAction,
     appointmentFormState,
   );
-  const patientSelectRef = useRef<HTMLSelectElement>(null);
   const [patientId, setPatientId] = useState(initialPatientId);
   const [date, setDate] = useState(initialDate);
   const [startsAt, setStartsAt] = useState(
@@ -126,34 +121,6 @@ export function AppointmentForm({
           weekStartDate={weekStartDate}
         />
       ) : null}
-      {created && state.status === "idle" ? (
-        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-brand-soft)] px-4 py-4 text-[var(--color-brand-dark)]">
-          <p
-            className="m-0 flex items-center gap-2 text-sm font-bold"
-            role="status"
-          >
-            <Check aria-hidden="true" size={18} />
-            El turno pendiente se guardó correctamente.
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button
-              className="min-h-10 cursor-pointer rounded-xl border border-[var(--color-border)] bg-white px-3 text-xs font-bold text-[var(--color-brand-dark)]"
-              onClick={onClose}
-              type="button"
-            >
-              Ver en la agenda
-            </button>
-            <button
-              className="min-h-10 cursor-pointer rounded-xl border-0 bg-transparent px-3 text-xs font-bold text-[var(--color-brand-dark)]"
-              onClick={() => patientSelectRef.current?.focus()}
-              type="button"
-            >
-              Cargar otro turno
-            </button>
-          </div>
-        </div>
-      ) : null}
-
       {state.message ? (
         <p
           className="m-0 rounded-xl border border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] px-4 py-3 text-sm leading-6 text-[var(--color-warning-foreground)]"
@@ -182,7 +149,6 @@ export function AppointmentForm({
             defaultValue={state.values?.patientId ?? initialPatientId}
             name="patientId"
             onChange={(event) => setPatientId(event.target.value)}
-            ref={patientSelectRef}
           >
             <option disabled value="">
               Elegí un paciente

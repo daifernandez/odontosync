@@ -216,7 +216,6 @@ export function WeeklyAgenda({
             autoOpen={autoOpenNewAppointment}
             appointmentOccupancy={appointmentOccupancy}
             availability={configuration.availability}
-            created={created}
             currentTime={currentTime.toISOString()}
             defaultCleanupMinutes={configuration.defaultCleanupMinutes}
             defaultDurationMinutes={
@@ -273,7 +272,8 @@ export function WeeklyAgenda({
         />
       ) : null}
 
-      {updated ||
+      {created ||
+      updated ||
       cancelled ||
       confirmed ||
       rescheduled ||
@@ -283,8 +283,10 @@ export function WeeklyAgenda({
           className={`mt-6 rounded-xl border px-4 py-3 text-sm font-semibold ${managementError ? "border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] text-[var(--color-warning-foreground)]" : "border-[var(--color-border)] bg-[var(--color-brand-soft)] text-[var(--color-brand-dark)]"}`}
           role={managementError ? "alert" : "status"}
         >
-          {updated
-            ? "El turno se actualizó correctamente."
+          {created
+            ? "El turno pendiente se guardó correctamente."
+            : updated
+              ? "El turno se actualizó correctamente."
             : rescheduled
               ? "El turno se reprogramó y el nuevo horario quedó pendiente de confirmación."
             : cancelled
