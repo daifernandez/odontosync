@@ -7,7 +7,6 @@ import { getAvailableAppointmentSlots } from "@/modules/appointments/domain/avai
 import {
   listAppointmentOccupancy,
   listAppointmentsForRange,
-  listUpcomingAppointments,
 } from "@/modules/appointments/repository";
 import {
   buildDashboardData,
@@ -38,13 +37,11 @@ export default async function HomePage() {
 
   const now = new Date();
   const { date, from, to } = getDashboardDayRange(now);
-  const [todayAppointments, upcomingAppointments, occupancy, exceptionalBlocks] =
-    await Promise.all([
-      listAppointmentsForRange(from, to, userId),
-      listUpcomingAppointments(now, userId, 3),
-      listAppointmentOccupancy(now, userId),
-      listExceptionalBlocks(now, userId),
-    ]);
+  const [todayAppointments, occupancy, exceptionalBlocks] = await Promise.all([
+    listAppointmentsForRange(from, to, userId),
+    listAppointmentOccupancy(now, userId),
+    listExceptionalBlocks(now, userId),
+  ]);
   const availableSlotsToday = getAvailableAppointmentSlots({
     date,
     availability: configuration.availability,
@@ -60,7 +57,6 @@ export default async function HomePage() {
     <DashboardHome
       data={buildDashboardData({
         todayAppointments,
-        upcomingAppointments,
         availableSlotsToday,
         now,
       })}

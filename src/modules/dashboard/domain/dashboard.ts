@@ -3,19 +3,14 @@ import {
   getAppointmentSpecialtyLabel,
   parseArgentinaDateTime,
   type Appointment,
-  type AppointmentStatus,
 } from "@/modules/appointments/domain/appointment";
 
 const argentinaTimeZone = "America/Argentina/Buenos_Aires";
 
-const statusLabels = {
-  pending_confirmation: "Pendiente",
+const upcomingStatusLabels = {
+  pending_confirmation: "Pendiente de confirmación",
   confirmed: "Confirmado",
-  completed: "Atendido",
-  no_show: "No asistió",
-  cancelled: "Cancelado",
-  rescheduled: "Reprogramado",
-} as const satisfies Record<AppointmentStatus, string>;
+} as const;
 
 const timeFormatter = new Intl.DateTimeFormat("es-AR", {
   timeZone: argentinaTimeZone,
@@ -24,24 +19,18 @@ const timeFormatter = new Intl.DateTimeFormat("es-AR", {
   hourCycle: "h23",
 });
 
-const dateFormatter = new Intl.DateTimeFormat("es-AR", {
-  timeZone: argentinaTimeZone,
-  weekday: "short",
-  day: "numeric",
-  month: "short",
-});
-
 export type DashboardAppointment = {
   id: string;
   date: string;
-  dateLabel: string;
+  durationMinutes: number;
   time: string;
   patient: string;
   specialty: string;
-  status: (typeof statusLabels)[AppointmentStatus];
+  status: (typeof upcomingStatusLabels)[keyof typeof upcomingStatusLabels];
 };
 
 export type DashboardData = {
+  date: string;
   todayAppointments: number;
   confirmedToday: number;
   availableSlotsToday: number;
@@ -50,7 +39,6 @@ export type DashboardData = {
 
 type DashboardDataInput = {
   todayAppointments: Appointment[];
-  upcomingAppointments: Appointment[];
   availableSlotsToday: number;
   now?: Date;
 };
@@ -75,25 +63,24 @@ export function getDashboardDayRange(now = new Date()) {
   return { date, from, to };
 }
 
-function formatDateLabel(startsAt: Date, today: string) {
-  if (formatArgentinaDateInput(startsAt) === today) {
-    return "Hoy";
-  }
-
-  const value = dateFormatter.format(startsAt).replaceAll(".", "");
-
-  return value.charAt(0).toUpperCase() + value.slice(1);
-}
-
 export function buildDashboardData({
   todayAppointments,
-  upcomingAppointments,
   availableSlotsToday,
   now = new Date(),
 }: DashboardDataInput): DashboardData {
   const today = formatArgentinaDateInput(now);
+  const upcomingAppointments = todayAppointments
+    .filter(
+      (appointment) =>
+        new Date(appointment.startsAt) >= now &&
+        (appointment.status === "pending_confirmation" ||
+          appointment.status === "confirmed"),
+    )
+    .toSorted((left, right) => left.startsAt.localeCompare(right.startsAt))
+    .slice(0, 3);
 
   return {
+    date: today,
     todayAppointments: todayAppointments.length,
     confirmedToday: todayAppointments.filter(
       (appointment) => appointment.status === "confirmed",
@@ -105,13 +92,16 @@ export function buildDashboardData({
       return {
         id: appointment.id,
         date: formatArgentinaDateInput(startsAt),
-        dateLabel: formatDateLabel(startsAt, today),
+        durationMinutes: appointment.durationMinutes,
         time: timeFormatter.format(startsAt),
         patient: `${appointment.patientLastName}, ${appointment.patientFirstName}`,
         specialty:
           getAppointmentSpecialtyLabel(appointment.specialty) ??
           "Sin especialidad",
-        status: statusLabels[appointment.status],
+        status:
+          appointment.status === "confirmed"
+            ? upcomingStatusLabels.confirmed
+            : upcomingStatusLabels.pending_confirmation,
       };
     }),
   };

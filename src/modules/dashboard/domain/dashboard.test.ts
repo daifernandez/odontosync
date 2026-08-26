@@ -38,25 +38,64 @@ describe("dashboard domain", () => {
       availableSlotsToday: 4,
       now,
       todayAppointments: [
+        appointment({
+          id: "past-id",
+          startsAt: "2026-08-22T12:00:00.000Z",
+        }),
         appointment(),
-        appointment({ id: "pending-id", status: "pending_confirmation" }),
+        appointment({
+          id: "fourth-active-id",
+          startsAt: "2026-08-22T17:30:00.000Z",
+        }),
+        appointment({
+          id: "pending-id",
+          startsAt: "2026-08-22T15:30:00.000Z",
+          status: "pending_confirmation",
+        }),
+        appointment({
+          id: "completed-id",
+          startsAt: "2026-08-22T16:00:00.000Z",
+          status: "completed",
+        }),
+        appointment({
+          id: "third-active-id",
+          startsAt: "2026-08-22T16:30:00.000Z",
+        }),
       ],
-      upcomingAppointments: [appointment()],
     });
 
     expect(data).toEqual({
       availableSlotsToday: 4,
-      confirmedToday: 1,
-      todayAppointments: 2,
+      confirmedToday: 4,
+      date: "2026-08-22",
+      todayAppointments: 6,
       upcomingAppointments: [
         {
           date: "2026-08-22",
-          dateLabel: "Hoy",
+          durationMinutes: 30,
           id: "appointment-id",
           patient: "Prueba, Lucía",
           specialty: "Ortodoncia",
           status: "Confirmado",
           time: "11:30",
+        },
+        {
+          date: "2026-08-22",
+          durationMinutes: 30,
+          id: "pending-id",
+          patient: "Prueba, Lucía",
+          specialty: "Ortodoncia",
+          status: "Pendiente de confirmación",
+          time: "12:30",
+        },
+        {
+          date: "2026-08-22",
+          durationMinutes: 30,
+          id: "third-active-id",
+          patient: "Prueba, Lucía",
+          specialty: "Ortodoncia",
+          status: "Confirmado",
+          time: "13:30",
         },
       ],
     });

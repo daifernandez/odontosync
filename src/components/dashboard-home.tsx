@@ -17,29 +17,29 @@ const demoAppointments = [
   {
     id: "demo-09-00",
     date: "",
-    dateLabel: "Hoy",
+    durationMinutes: 30,
     time: "09:00",
     patient: "Paciente de ejemplo",
     specialty: "Odontología general",
-    status: "Confirmado",
+    status: "Confirmado" as const,
   },
   {
     id: "demo-10-30",
     date: "",
-    dateLabel: "Hoy",
+    durationMinutes: 45,
     time: "10:30",
     patient: "Paciente de muestra",
     specialty: "Ortodoncia",
-    status: "Pendiente",
+    status: "Pendiente de confirmación" as const,
   },
   {
     id: "demo-12-00",
     date: "",
-    dateLabel: "Hoy",
+    durationMinutes: 30,
     time: "12:00",
-    patient: "Horario disponible",
-    specialty: "Sin asignar",
-    status: "Libre",
+    patient: "Paciente ficticio",
+    specialty: "Odontología general",
+    status: "Confirmado" as const,
   },
 ] as const;
 
@@ -49,20 +49,22 @@ const printables = [
   { name: "Indicaciones generales", detail: "Organizadas por especialidad" },
 ];
 
-const statusStyles = {
-  Confirmado: "bg-[var(--color-brand-soft)] text-[var(--color-brand-dark)]",
-  Pendiente:
-    "bg-[var(--color-warning-soft)] text-[var(--color-warning-foreground)]",
-  Atendido: "bg-[var(--color-brand-soft)] text-[var(--color-brand-dark)]",
-  "No asistió": "bg-[var(--color-neutral-soft)] text-[var(--color-muted)]",
-  Cancelado:
-    "bg-[var(--color-warning-soft)] text-[var(--color-warning-foreground)]",
-  Reprogramado:
-    "bg-[var(--color-warning-soft)] text-[var(--color-warning-foreground)]",
-  Libre: "bg-[var(--color-neutral-soft)] text-[var(--color-muted)]",
+const statusStyles: Record<
+  DashboardData["upcomingAppointments"][number]["status"],
+  { badge: string; dot: string }
+> = {
+  Confirmado: {
+    badge: "border-emerald-200 bg-emerald-50 text-emerald-800",
+    dot: "bg-emerald-600",
+  },
+  "Pendiente de confirmación": {
+    badge: "border-sky-200 bg-sky-50 text-sky-800",
+    dot: "bg-sky-500",
+  },
 };
 
 const emptyDashboardData: DashboardData = {
+  date: "",
   todayAppointments: 0,
   confirmedToday: 0,
   availableSlotsToday: 0,
@@ -73,7 +75,15 @@ export function DashboardHome({
   demoMode = false,
   data = emptyDashboardData,
 }: Readonly<{ demoMode?: boolean; data?: DashboardData }>) {
-  const agendaHref = demoMode ? "/demo/agenda" : "/app/agenda";
+  const agendaHref = demoMode
+    ? "/demo/agenda"
+    : data.date
+      ? buildAgendaPath({
+          weekStartDate: data.date,
+          view: "day",
+          selectedDate: data.date,
+        })
+      : "/app/agenda";
   const newAppointmentHref = demoMode
     ? "/demo/agenda?nuevo=1#nuevo-turno"
     : "/app/agenda?nuevo=1#nuevo-turno";
@@ -81,8 +91,12 @@ export function DashboardHome({
     ? demoAppointments
     : data.upcomingAppointments;
   const nextAppointment = displayedAppointments[0];
-  const todayAppointments = demoMode ? 2 : data.todayAppointments;
-  const confirmedToday = demoMode ? 1 : data.confirmedToday;
+  const todayAppointments = demoMode
+    ? demoAppointments.length
+    : data.todayAppointments;
+  const confirmedToday = demoMode
+    ? demoAppointments.filter(({ status }) => status === "Confirmado").length
+    : data.confirmedToday;
   const availableSlotsToday = demoMode ? 1 : data.availableSlotsToday;
 
   return (
@@ -150,12 +164,12 @@ export function DashboardHome({
               Próximo turno
             </p>
             <strong className="text-xl tracking-[-0.035em]">
-              {nextAppointment?.time ?? "Sin turnos"}
+              {nextAppointment?.time ?? "Sin turnos hoy"}
             </strong>
           </div>
           <span className="self-end text-[0.7rem] whitespace-nowrap text-[var(--color-muted)]">
             {nextAppointment
-              ? `${nextAppointment.dateLabel} · ${nextAppointment.specialty}`
+              ? `Hoy · ${nextAppointment.specialty}`
               : "Agenda libre"}
           </span>
         </article>
@@ -182,10 +196,10 @@ export function DashboardHome({
           className="rounded-[var(--radius-large)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-card)]"
           aria-labelledby="agenda-title"
         >
-          <div className="flex min-h-11 items-center justify-between gap-4">
+          <div className="flex min-h-11 flex-col items-start gap-3 min-[421px]:flex-row min-[421px]:items-center min-[421px]:justify-between min-[421px]:gap-4">
             <div>
               <p className="mb-2 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
-                Agenda
+                Agenda de hoy
               </p>
               <h2
                 className="m-0 text-lg font-semibold tracking-[-0.025em]"
@@ -198,13 +212,14 @@ export function DashboardHome({
               className="flex items-center gap-1.5 text-[0.76rem] font-bold text-[var(--color-brand)] no-underline"
               href={agendaHref}
             >
-              Ver agenda
+              Ver agenda de hoy
               <ArrowRight aria-hidden="true" size={16} />
             </Link>
           </div>
 
           <div className="mt-4 flex flex-col">
             {displayedAppointments.map((appointment) => {
+              const styles = statusStyles[appointment.status];
               const appointmentHref = demoMode
                 ? agendaHref
                 : buildAgendaPath({
@@ -215,15 +230,17 @@ export function DashboardHome({
                   });
 
               return (
-                <article
-                  className="grid min-h-17.5 grid-cols-[3rem_minmax(0,1fr)] items-center gap-3.5 border-t border-[var(--color-border)] min-[421px]:grid-cols-[3.3rem_1px_minmax(0,1fr)_auto] md:grid-cols-[3.3rem_1px_minmax(0,1fr)_auto_auto]"
+                <Link
+                  aria-label={`${appointment.time}, ${appointment.patient}, ${appointment.status}. Abrir turno en la agenda`}
+                  className="grid min-h-20 grid-cols-[3rem_0.625rem_minmax(0,1fr)] items-center gap-x-3 gap-y-2 border-t border-[var(--color-border)] py-3 text-[var(--color-foreground)] no-underline hover:bg-[var(--color-brand-subtle)] md:grid-cols-[3.3rem_0.625rem_minmax(0,1fr)_auto_auto] md:gap-x-3.5"
+                  href={appointmentHref}
                   key={appointment.id}
                 >
-                  <time className="text-[0.82rem] font-bold">
+                  <time className="self-start pt-0.5 text-[0.82rem] font-bold md:self-center md:pt-0">
                     {appointment.time}
                   </time>
                   <span
-                    className="hidden h-8 w-px bg-[var(--color-border)] min-[421px]:block"
+                    className={`size-2.5 rounded-full ${styles.dot}`}
                     aria-hidden="true"
                   />
                   <div className="flex min-w-0 flex-col gap-1">
@@ -231,29 +248,25 @@ export function DashboardHome({
                       {appointment.patient}
                     </strong>
                     <span className="text-[0.7rem] text-[var(--color-muted)]">
-                      {appointment.dateLabel} · {appointment.specialty}
+                      {appointment.specialty} · {appointment.durationMinutes} min
                     </span>
                   </div>
                   <span
-                    className={`hidden rounded-full px-2.5 py-1.5 text-[0.65rem] font-bold min-[421px]:inline md:inline ${statusStyles[appointment.status]}`}
+                    className={`col-start-3 justify-self-start rounded-full border px-2.5 py-1.5 text-[0.65rem] font-bold md:col-start-auto ${styles.badge}`}
                   >
                     {appointment.status}
                   </span>
-                  <Link
-                    aria-label={`Ver turno de las ${appointment.time} en la agenda`}
-                    className="hidden size-8 place-items-center rounded-full text-[var(--color-muted)] no-underline hover:bg-[var(--color-brand-subtle)] hover:text-[var(--color-brand)] md:grid"
-                    href={appointmentHref}
-                  >
+                  <span className="hidden text-[var(--color-muted)] md:block">
                     <ChevronRight aria-hidden="true" size={18} />
-                  </Link>
-                </article>
+                  </span>
+                </Link>
               );
             })}
             {!demoMode && displayedAppointments.length === 0 ? (
               <div className="flex min-h-40 flex-col items-center justify-center border-t border-[var(--color-border)] px-4 py-8 text-center">
-                <strong className="text-sm">No hay próximos turnos</strong>
+                <strong className="text-sm">No quedan turnos para hoy</strong>
                 <p className="mt-2 mb-4 max-w-sm text-[0.76rem] leading-5 text-[var(--color-muted)]">
-                  La agenda no tiene turnos pendientes ni confirmados a partir de ahora.
+                  No hay turnos pendientes ni confirmados a partir de ahora.
                 </p>
                 <Link
                   className="text-[0.76rem] font-bold text-[var(--color-brand)] no-underline"
