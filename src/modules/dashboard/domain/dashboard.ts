@@ -19,9 +19,17 @@ const timeFormatter = new Intl.DateTimeFormat("es-AR", {
   hourCycle: "h23",
 });
 
+const shortDateFormatter = new Intl.DateTimeFormat("es-AR", {
+  timeZone: argentinaTimeZone,
+  weekday: "short",
+  day: "numeric",
+  month: "short",
+});
+
 export type DashboardAppointment = {
   id: string;
   date: string;
+  dateLabel: string;
   durationMinutes: number;
   time: string;
   patient: string;
@@ -33,15 +41,18 @@ export type DashboardData = {
   date: string;
   todayAppointments: number;
   confirmedToday: number;
-  availableSlotsToday: number;
+  pendingConfirmationsToday: number;
   upcomingAppointments: DashboardAppointment[];
 };
 
 type DashboardDataInput = {
   todayAppointments: Appointment[];
-  availableSlotsToday: number;
   now?: Date;
 };
+
+function capitalizeFirst(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
 
 function getNextDate(date: string) {
   const [year, month, day] = date.split("-").map(Number);
@@ -65,7 +76,6 @@ export function getDashboardDayRange(now = new Date()) {
 
 export function buildDashboardData({
   todayAppointments,
-  availableSlotsToday,
   now = new Date(),
 }: DashboardDataInput): DashboardData {
   const today = formatArgentinaDateInput(now);
@@ -85,13 +95,16 @@ export function buildDashboardData({
     confirmedToday: todayAppointments.filter(
       (appointment) => appointment.status === "confirmed",
     ).length,
-    availableSlotsToday,
+    pendingConfirmationsToday: todayAppointments.filter(
+      (appointment) => appointment.status === "pending_confirmation",
+    ).length,
     upcomingAppointments: upcomingAppointments.map((appointment) => {
       const startsAt = new Date(appointment.startsAt);
 
       return {
         id: appointment.id,
         date: formatArgentinaDateInput(startsAt),
+        dateLabel: capitalizeFirst(shortDateFormatter.format(startsAt)),
         durationMinutes: appointment.durationMinutes,
         time: timeFormatter.format(startsAt),
         patient: `${appointment.patientLastName}, ${appointment.patientFirstName}`,
