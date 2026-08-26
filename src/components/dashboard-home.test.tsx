@@ -106,7 +106,7 @@ describe("DashboardHome", () => {
 
     expect(markup).toContain("No quedan turnos para hoy");
     expect(markup).toContain("Sin turnos hoy");
-    expect(markup).toContain("Agenda libre");
+    expect(markup).not.toContain("Agenda libre");
     expect(markup).toContain("Ver agenda de hoy");
     expect(markup).toContain("Crear turno");
     expect(markup).not.toContain("Paciente de ejemplo");

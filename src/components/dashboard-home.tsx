@@ -128,16 +128,16 @@ export function DashboardHome({
       <strong className="col-start-2 row-start-2 text-xl tracking-[-0.035em]">
         {nextAppointment?.time ?? "Sin turnos hoy"}
       </strong>
-      <div className="col-start-3 row-start-2 flex min-w-0 flex-col items-start gap-0.5 text-left">
-        <strong className="min-w-0 max-w-full text-[0.82rem] leading-4 tracking-[-0.02em] break-words min-[520px]:text-[0.9rem] min-[520px]:leading-5">
-          {nextAppointment?.patient ?? "Agenda libre"}
-        </strong>
-        {nextAppointment ? (
+      {nextAppointment ? (
+        <div className="col-start-3 row-start-2 flex min-w-0 flex-col items-start gap-0.5 text-left">
+          <strong className="min-w-0 max-w-full text-[0.82rem] leading-4 tracking-[-0.02em] break-words min-[520px]:text-[0.9rem] min-[520px]:leading-5">
+            {nextAppointment.patient}
+          </strong>
           <span className="min-w-0 max-w-full text-[0.62rem] leading-4 break-words text-[var(--color-muted)] min-[520px]:text-[0.7rem] min-[520px]:leading-5">
             {nextAppointment.dateLabel} · {nextAppointment.specialty}
           </span>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
     </>
   );
 
