@@ -1445,3 +1445,97 @@ mantenga visibles los turnos cancelados o reprogramados.
   de alcance hasta que el volumen real demuestre su necesidad.
 - Activar la protección contra contraseñas filtradas cuando resulte
   indispensable para el proyecto.
+
+## Sprint 020 — Próximos turnos activos de hoy
+
+- **Fecha:** 25 de agosto de 2026
+- **Estado:** publicado y mergeado
+- **Issue:** [#64](https://github.com/daifernandez/odontosync/issues/64)
+- **Rama:** `codex/dashboard-todays-upcoming`
+- **Publicación:** [PR #65](https://github.com/daifernandez/odontosync/pull/65),
+  merge commit `5c962e5`
+
+### Objetivo
+
+Transformar el bloque de próximos turnos del inicio en un resumen operativo de
+los turnos activos que todavía quedan durante el día actual.
+
+### Resultado
+
+- El inicio muestra como máximo los próximos tres turnos pendientes de
+  confirmación o confirmados del día, ordenados por horario.
+- Cada fila presenta hora, paciente, especialidad, duración y estado mediante
+  texto y color, sin repetir la fecha ni depender solamente de señales
+  visuales.
+- Toda la fila abre el turno correspondiente en la vista diaria de la agenda.
+- `Ver agenda de hoy` abre directamente el día actual, incluso cuando no quedan
+  turnos en el resumen.
+- El estado vacío explica que no quedan turnos pendientes ni confirmados y
+  conserva las acciones para ver la agenda o crear un turno.
+- La composición mantiene visibles los estados en mobile y se adapta a anchos
+  intermedios y escritorio sin desbordes.
+- El modo demo conserva la misma estructura con tres turnos ficticios y
+  cantidades consistentes.
+- El resumen se deriva de la lectura diaria existente y elimina una consulta
+  duplicada a Supabase.
+- No se crearon ni modificaron turnos durante QA y no hubo cambios de esquema,
+  migraciones, políticas RLS, autenticación ni permisos.
+
+### Criterios verificados
+
+- Los turnos cuya hora ya pasó y los estados finalizados o modificados no
+  aparecen en el resumen.
+- Los turnos activos se ordenan cronológicamente y el resultado se limita a
+  tres elementos.
+- La fecha y la zona horaria de Argentina delimitan el día mostrado.
+- Los estados pendiente de confirmación y confirmado usan texto y puntos de
+  color consistentes con la agenda.
+- Cada fila es un enlace accesible al día y turno correctos.
+- El acceso general abre la vista diaria aun cuando el resumen está vacío.
+- La presentación fue verificada en 390 px, 950 px y escritorio sin scroll
+  horizontal.
+- Las regresiones automatizadas cubren filtrado, orden, límite, contenido,
+  navegación, estado vacío y modo demo.
+
+### Skills aplicadas
+
+- `project-sprint-workflow` para definir, aprobar, implementar y publicar el
+  cambio como un sprint independiente.
+- `usability-review` para mantener la jerarquía operativa, el uso redundante de
+  color y texto, el estado vacío, los objetivos táctiles y la adaptación
+  responsive.
+- Next.js y `react-best-practices` para conservar la lectura en el Server
+  Component, evitar estado cliente y eliminar una consulta paralela
+  innecesaria.
+- Supabase y `security-sprint-review` para verificar el aislamiento existente y
+  ejecutar las suites RLS enlazadas.
+- Browser para revisar los estados normal y vacío, la navegación, los anchos
+  responsive y la consola sin modificar datos.
+- `odontosync-release-check` para la batería final, el commit, el PR y la
+  comprobación de CI.
+
+### Verificaciones
+
+- Pruebas: 35 archivos y 216 casos aprobados.
+- RLS: cuatro suites aprobadas sobre Supabase enlazado; cada ejecución completó
+  su rollback.
+- TypeScript, ESLint y build de producción: aprobados.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- GitHub Actions: aprobado en el PR funcional.
+- Asesor de Supabase: sin errores; permanece el aviso externo conocido de
+  protección contra contraseñas filtradas, postergado por decisión del
+  proyecto.
+- No aplicaron controles de Prisma ni migraciones porque el sprint no modificó
+  el esquema persistente.
+
+### Riesgo residual y próximos pasos
+
+- Después del último turno activo, el bloque queda vacío aunque existan turnos
+  finalizados durante el día; esta consecuencia fue aceptada para mantener el
+  inicio enfocado en las próximas acciones.
+- Los turnos atendidos, ausentes, cancelados y reprogramados continúan
+  disponibles en la agenda y no se duplican en este resumen.
+- Incorporar más elementos, filtros o paginación solamente si el volumen real
+  demuestra su necesidad.
+- Activar la protección contra contraseñas filtradas cuando resulte
+  indispensable para el proyecto.
