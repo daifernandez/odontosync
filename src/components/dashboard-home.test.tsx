@@ -8,12 +8,13 @@ describe("DashboardHome", () => {
     todayAppointments: 1,
     confirmedToday: 1,
     availableSlotsToday: 3,
+    date: "2026-08-22",
     upcomingAppointments: [
       {
         id: "appointment-id",
         date: "2026-08-22",
+        durationMinutes: 30,
         time: "14:30",
-        dateLabel: "Hoy",
         patient: "Prueba, Lucía",
         specialty: "Ortodoncia",
         status: "Confirmado" as const,
@@ -35,8 +36,10 @@ describe("DashboardHome", () => {
       <DashboardHome data={authenticatedData} />,
     );
 
-    expect(markup).toContain('href="/app/agenda"');
-    expect(markup).toContain('href="/app/agenda"');
+    expect(markup).toContain("Ver agenda de hoy");
+    expect(markup).toContain(
+      'href="/app/agenda?semana=2026-08-17&amp;vista=dia&amp;fecha=2026-08-22"',
+    );
     expect(markup).toContain(
       'href="/app/agenda?semana=2026-08-17&amp;vista=dia&amp;fecha=2026-08-22&amp;turno=appointment-id"',
     );
@@ -49,6 +52,11 @@ describe("DashboardHome", () => {
 
     expect(markup).toContain("Prueba, Lucía");
     expect(markup).toContain("14:30");
+    expect(markup).toContain("Ortodoncia · 30 min");
+    expect(markup).toContain("bg-emerald-600");
+    expect(markup).toContain(
+      'aria-label="14:30, Prueba, Lucía, Confirmado. Abrir turno en la agenda"',
+    );
     expect(markup).toContain("3");
     expect(markup).not.toContain("Paciente de ejemplo");
     expect(markup).not.toContain("datos de demostración");
@@ -61,7 +69,8 @@ describe("DashboardHome", () => {
       />,
     );
 
-    expect(markup).toContain("No hay próximos turnos");
+    expect(markup).toContain("No quedan turnos para hoy");
+    expect(markup).toContain("Ver agenda de hoy");
     expect(markup).toContain("Crear turno");
     expect(markup).not.toContain("Paciente de ejemplo");
   });
@@ -71,6 +80,7 @@ describe("DashboardHome", () => {
 
     expect(markup).not.toContain('href="/app');
     expect(markup).toContain('href="/demo/agenda"');
+    expect(markup).toContain("2 confirmados");
     expect(markup).toContain(
       'href="/demo/agenda?nuevo=1#nuevo-turno"',
     );

@@ -56,33 +56,6 @@ function mapAppointment(row: AppointmentRow): Appointment {
   };
 }
 
-export async function listUpcomingAppointments(
-  from = new Date(),
-  userId?: string,
-  limit = 50,
-): Promise<Appointment[]> {
-  const supabase = await createClient();
-  let query = supabase
-    .from("appointments")
-    .select(appointmentColumns);
-
-  if (userId) {
-    query = query.eq("user_id", userId);
-  }
-
-  const { data, error } = await query
-    .gte("starts_at", from.toISOString())
-    .in("status", ["pending_confirmation", "confirmed"])
-    .order("starts_at")
-    .limit(limit);
-
-  if (error) {
-    throw new Error("Could not read appointments");
-  }
-
-  return (data as unknown as AppointmentRow[]).map(mapAppointment);
-}
-
 export async function listAppointmentsForRange(
   from: Date,
   to: Date,
