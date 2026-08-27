@@ -35,7 +35,6 @@ describe("dashboard domain", () => {
 
   it("summarizes real appointments without inventing free rows", () => {
     const data = buildDashboardData({
-      availableSlotsToday: 4,
       now,
       todayAppointments: [
         appointment({
@@ -65,13 +64,14 @@ describe("dashboard domain", () => {
     });
 
     expect(data).toEqual({
-      availableSlotsToday: 4,
       confirmedToday: 4,
       date: "2026-08-22",
+      pendingConfirmationsToday: 1,
       todayAppointments: 6,
       upcomingAppointments: [
         {
           date: "2026-08-22",
+          dateLabel: "Sáb, 22 ago",
           durationMinutes: 30,
           id: "appointment-id",
           patient: "Prueba, Lucía",
@@ -81,6 +81,7 @@ describe("dashboard domain", () => {
         },
         {
           date: "2026-08-22",
+          dateLabel: "Sáb, 22 ago",
           durationMinutes: 30,
           id: "pending-id",
           patient: "Prueba, Lucía",
@@ -90,6 +91,7 @@ describe("dashboard domain", () => {
         },
         {
           date: "2026-08-22",
+          dateLabel: "Sáb, 22 ago",
           durationMinutes: 30,
           id: "third-active-id",
           patient: "Prueba, Lucía",

@@ -17,6 +17,7 @@ const demoAppointments = [
   {
     id: "demo-09-00",
     date: "",
+    dateLabel: "Hoy",
     durationMinutes: 30,
     time: "09:00",
     patient: "Paciente de ejemplo",
@@ -26,6 +27,7 @@ const demoAppointments = [
   {
     id: "demo-10-30",
     date: "",
+    dateLabel: "Hoy",
     durationMinutes: 45,
     time: "10:30",
     patient: "Paciente de muestra",
@@ -35,6 +37,7 @@ const demoAppointments = [
   {
     id: "demo-12-00",
     date: "",
+    dateLabel: "Hoy",
     durationMinutes: 30,
     time: "12:00",
     patient: "Paciente ficticio",
@@ -67,7 +70,7 @@ const emptyDashboardData: DashboardData = {
   date: "",
   todayAppointments: 0,
   confirmedToday: 0,
-  availableSlotsToday: 0,
+  pendingConfirmationsToday: 0,
   upcomingAppointments: [],
 };
 
@@ -97,7 +100,46 @@ export function DashboardHome({
   const confirmedToday = demoMode
     ? demoAppointments.filter(({ status }) => status === "Confirmado").length
     : data.confirmedToday;
-  const availableSlotsToday = demoMode ? 1 : data.availableSlotsToday;
+  const pendingConfirmationsToday = demoMode
+    ? demoAppointments.filter(
+        ({ status }) => status === "Pendiente de confirmación",
+      ).length
+    : data.pendingConfirmationsToday;
+  const nextAppointmentHref = nextAppointment
+    ? demoMode
+      ? agendaHref
+      : buildAgendaPath({
+          weekStartDate: nextAppointment.date,
+          view: "day",
+          selectedDate: nextAppointment.date,
+          params: { turno: nextAppointment.id },
+        })
+    : null;
+  const nextAppointmentCardClassName =
+    "grid grid-cols-[auto_auto_minmax(0,1fr)] items-baseline gap-x-3.5 gap-y-0.5 rounded-[var(--radius-medium)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)]";
+  const nextAppointmentSummary = (
+    <>
+      <span className="row-span-2 grid size-11 self-center place-items-center rounded-xl bg-[var(--color-brand-soft)] text-[var(--color-brand)]">
+        <Clock3 aria-hidden="true" size={21} />
+      </span>
+      <p className="col-start-2 row-start-1 m-0 text-[0.72rem] whitespace-nowrap text-[var(--color-muted)]">
+        Próximo turno
+      </p>
+      <strong className="col-start-2 row-start-2 text-xl tracking-[-0.035em]">
+        {nextAppointment?.time ?? "Sin turnos hoy"}
+      </strong>
+      {nextAppointment ? (
+        <div className="col-start-3 row-start-2 flex min-w-0 flex-col items-start gap-0.5 text-left">
+          <strong className="min-w-0 max-w-full text-[0.82rem] leading-4 tracking-[-0.02em] break-words min-[520px]:text-[0.9rem] min-[520px]:leading-5">
+            {nextAppointment.patient}
+          </strong>
+          <span className="min-w-0 max-w-full text-[0.62rem] leading-4 break-words text-[var(--color-muted)] min-[520px]:text-[0.7rem] min-[520px]:leading-5">
+            {nextAppointment.dateLabel} · {nextAppointment.specialty}
+          </span>
+        </div>
+      ) : null}
+    </>
+  );
 
   return (
     <main className="mx-auto w-full max-w-[90rem] px-4 py-7 md:px-[clamp(1.5rem,3.5vw,4rem)] md:py-12">
@@ -135,7 +177,7 @@ export function DashboardHome({
       </aside>
 
       <section
-        className="mt-5 grid grid-cols-1 gap-4 xl:grid-cols-3"
+        className="mt-5 grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.35fr)_minmax(0,0.9fr)]"
         aria-label="Resumen de la agenda"
       >
         <article className="grid grid-cols-[auto_1fr_auto] items-center gap-3.5 rounded-[var(--radius-medium)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)]">
@@ -155,39 +197,37 @@ export function DashboardHome({
             {confirmedToday === 1 ? "confirmado" : "confirmados"}
           </span>
         </article>
-        <article className="grid grid-cols-[auto_1fr_auto] items-center gap-3.5 rounded-[var(--radius-medium)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)]">
-          <span className="grid size-11 place-items-center rounded-xl bg-[var(--color-brand-soft)] text-[var(--color-brand)]">
-            <Clock3 aria-hidden="true" size={21} />
-          </span>
-          <div>
-            <p className="m-0 mb-0.5 text-[0.72rem] text-[var(--color-muted)]">
-              Próximo turno
-            </p>
-            <strong className="text-xl tracking-[-0.035em]">
-              {nextAppointment?.time ?? "Sin turnos hoy"}
-            </strong>
-          </div>
-          <span className="self-end text-[0.7rem] whitespace-nowrap text-[var(--color-muted)]">
-            {nextAppointment
-              ? `Hoy · ${nextAppointment.specialty}`
-              : "Agenda libre"}
-          </span>
-        </article>
-        <article className="grid grid-cols-[auto_1fr_auto] items-center gap-3.5 rounded-[var(--radius-medium)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)]">
+        {nextAppointmentHref ? (
+          <Link
+            aria-label={`Abrir próximo turno: ${nextAppointment.time}, ${nextAppointment.patient}`}
+            className={`${nextAppointmentCardClassName} relative pr-8 text-[var(--color-foreground)] no-underline transition-colors hover:bg-[var(--color-brand-subtle)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand)] active:bg-[var(--color-brand-soft)]`}
+            href={nextAppointmentHref}
+          >
+            {nextAppointmentSummary}
+            <span
+              className="absolute top-1/2 right-2.5 -translate-y-1/2 text-[var(--color-muted)]"
+              aria-hidden="true"
+            >
+              <ChevronRight size={18} />
+            </span>
+          </Link>
+        ) : (
+          <article className={nextAppointmentCardClassName}>
+            {nextAppointmentSummary}
+          </article>
+        )}
+        <article className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3.5 rounded-[var(--radius-medium)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)]">
           <span className="grid size-11 place-items-center rounded-xl bg-[var(--color-neutral-soft)] text-[var(--color-muted)]">
             <UserRound aria-hidden="true" size={21} />
           </span>
           <div>
-            <p className="m-0 mb-0.5 text-[0.72rem] text-[var(--color-muted)]">
-              Espacios libres
+            <p className="m-0 mb-0.5 text-[0.72rem] whitespace-nowrap text-[var(--color-muted)]">
+              Confirmaciones pendientes
             </p>
             <strong className="text-2xl tracking-[-0.035em]">
-              {availableSlotsToday}
+              {pendingConfirmationsToday}
             </strong>
           </div>
-          <span className="self-end text-[0.7rem] whitespace-nowrap text-[var(--color-muted)]">
-            Hoy
-          </span>
         </article>
       </section>
 

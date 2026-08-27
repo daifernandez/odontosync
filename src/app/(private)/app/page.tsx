@@ -3,16 +3,11 @@ import { redirect } from "next/navigation";
 
 import { DashboardHome } from "@/components/dashboard-home";
 import { createClient } from "@/lib/supabase/server";
-import { getAvailableAppointmentSlots } from "@/modules/appointments/domain/availability";
-import {
-  listAppointmentOccupancy,
-  listAppointmentsForRange,
-} from "@/modules/appointments/repository";
+import { listAppointmentsForRange } from "@/modules/appointments/repository";
 import {
   buildDashboardData,
   getDashboardDayRange,
 } from "@/modules/dashboard/domain/dashboard";
-import { listExceptionalBlocks } from "@/modules/exceptional-blocks/repository";
 import { getInitialConfiguration } from "@/modules/initial-configuration/repository";
 
 export const metadata: Metadata = {
@@ -36,28 +31,13 @@ export default async function HomePage() {
   }
 
   const now = new Date();
-  const { date, from, to } = getDashboardDayRange(now);
-  const [todayAppointments, occupancy, exceptionalBlocks] = await Promise.all([
-    listAppointmentsForRange(from, to, userId),
-    listAppointmentOccupancy(now, userId),
-    listExceptionalBlocks(now, userId),
-  ]);
-  const availableSlotsToday = getAvailableAppointmentSlots({
-    date,
-    availability: configuration.availability,
-    appointments: occupancy,
-    exceptionalBlocks,
-    durationMinutes: configuration.defaultAppointmentDurationMinutes,
-    cleanupMinutes: configuration.defaultCleanupMinutes,
-    gridIntervalMinutes: configuration.gridIntervalMinutes,
-    now,
-  }).length;
+  const { from, to } = getDashboardDayRange(now);
+  const todayAppointments = await listAppointmentsForRange(from, to, userId);
 
   return (
     <DashboardHome
       data={buildDashboardData({
         todayAppointments,
-        availableSlotsToday,
         now,
       })}
     />
