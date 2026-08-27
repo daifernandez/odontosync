@@ -1539,3 +1539,89 @@ los turnos activos que todavía quedan durante el día actual.
   demuestra su necesidad.
 - Activar la protección contra contraseñas filtradas cuando resulte
   indispensable para el proyecto.
+
+## Sprint 021 — Resumen operativo de hoy
+
+- **Fecha:** 26 de agosto de 2026
+- **Estado:** publicado y mergeado
+- **Issue:** [#67](https://github.com/daifernandez/odontosync/issues/67)
+- **Rama:** `codex/sprint-021-dashboard-summary`
+- **Publicación:** [PR #68](https://github.com/daifernandez/odontosync/pull/68),
+  merge commit `d0d7b0b`
+
+### Objetivo
+
+Convertir las tarjetas superiores del inicio en un resumen operativo claro de
+la jornada, priorizando el próximo turno y las confirmaciones pendientes sin
+alterar las reglas de la agenda.
+
+### Resultado
+
+- `Turnos de hoy` conserva el total diario y la cantidad confirmada.
+- `Próximo turno` muestra hora, paciente, fecha y especialidad completas, y
+  abre directamente su panel de gestión en la vista diaria.
+- Cuando no existe un próximo turno activo, la tarjeta muestra únicamente un
+  estado vacío claro y no se comporta como enlace.
+- `Espacios libres` fue reemplazado por `Confirmaciones pendientes`, calculado
+  a partir de los turnos pendientes del día.
+- El inicio dejó de consultar ocupación y bloqueos excepcionales para calcular
+  una disponibilidad que ya no se presenta.
+- Las tarjetas se apilan en mobile y tablet; desde escritorio se distribuyen en
+  columnas y reservan más ancho para el próximo turno.
+- La composición conserva los textos completos, permite crecer en altura y
+  mantiene estados visibles de hover, foco y pulsación.
+- No se modificaron esquema, migraciones, políticas RLS, autenticación,
+  permisos ni persistencia.
+
+### Criterios verificados
+
+- El próximo turno activo de hoy presenta hora, paciente, fecha y especialidad
+  sin truncado ni desbordamiento horizontal.
+- La tarjeta abre mediante mouse, teclado o interacción táctil el turno y día
+  correctos de la agenda.
+- El estado vacío no presenta datos residuales, flecha ni navegación.
+- Las confirmaciones pendientes excluyen otros estados y el modo demo conserva
+  cantidades consistentes.
+- La alineación entre horario y paciente, y la separación entre paciente y
+  detalle, se mantienen en anchos representativos desde 320 px.
+- Las regresiones automatizadas cubren contenido, navegación, responsive y
+  estado vacío.
+- El turno ficticio temporal utilizado para revisar la tarjeta fue eliminado;
+  los tres turnos de prueba anteriores permanecieron intactos.
+
+### Skills aplicadas
+
+- `project-sprint-workflow` para definir, publicar y separar el cambio
+  funcional de su cierre documental.
+- `usability-review` para revisar jerarquía, alineación, contenido completo,
+  interacción, estado vacío y adaptación responsive.
+- Supabase y `security-sprint-review` para verificar que el cambio de lectura
+  conservara el aislamiento existente y que las suites RLS siguieran
+  aprobadas.
+- Browser para revisar navegación, composición real, estado vacío y ausencia
+  de desbordes desde 320 px.
+- `odontosync-release-check` para la batería final, publicación y comprobación
+  de CI.
+
+### Verificaciones
+
+- Pruebas: 35 archivos y 218 casos aprobados.
+- RLS: cuatro suites aprobadas sobre Supabase enlazado; cada ejecución completó
+  su rollback.
+- TypeScript, ESLint y build de producción: aprobados.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- GitHub Actions: aprobado en el PR funcional.
+- Asesor de Supabase: sin errores; permanece el aviso externo conocido de
+  protección contra contraseñas filtradas desactivada.
+- No aplicaron controles de Prisma ni migraciones porque el sprint no modificó
+  el esquema persistente.
+
+### Riesgo residual y próximos pasos
+
+- Los nombres de paciente y especialidades extensos aumentan la altura de la
+  tarjeta en lugar de truncarse; esta decisión prioriza la información
+  completa.
+- El historial detallado del vínculo entre turnos reprogramados continúa fuera
+  de este sprint.
+- Activar la protección contra contraseñas filtradas cuando resulte
+  indispensable para el proyecto.
