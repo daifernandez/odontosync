@@ -8,6 +8,41 @@ vi.mock("next/navigation", () => ({
 import { AppointmentManagementPanel } from "./appointment-management-panel";
 
 describe("AppointmentManagementPanel", () => {
+  it("preserves general only while editing an existing legacy appointment", () => {
+    const markup = renderToStaticMarkup(
+      <AppointmentManagementPanel
+        appointment={{
+          id: "00000000-0000-4000-8000-000000000010",
+          patientId: "00000000-0000-4000-8000-000000000001",
+          patientFirstName: "Lucía",
+          patientLastName: "Prueba",
+          startsAt: "2026-08-11T12:00:00.000Z",
+          occupiedUntil: "2026-08-11T13:00:00.000Z",
+          durationMinutes: 50,
+          cleanupMinutes: 10,
+          specialty: "general",
+          status: "pending_confirmation",
+        }}
+        appointmentOccupancy={[]}
+        availability={[
+          { dayOfWeek: 2, startTime: "09:00", endTime: "13:00" },
+        ]}
+        currentTime="2026-08-10T12:00:00.000Z"
+        exceptionalBlocks={[]}
+        gridIntervalMinutes={15}
+        minimumDate="2026-08-10"
+        weekStartDate="2026-08-10"
+      />,
+    );
+
+    expect(markup).toContain("Odontología general (turno existente)");
+    expect(markup).toContain('value="general" selected=""');
+    expect(markup).toContain('value="restorative"');
+    expect(markup).toContain('value="control"');
+    expect(markup).toContain("Estética");
+    expect(markup).toContain("Blanqueamiento");
+  });
+
   it("keeps the patient fixed and provides safe rescheduling and cancellation", () => {
     const markup = renderToStaticMarkup(
       <AppointmentManagementPanel

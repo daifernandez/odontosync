@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   appointmentFormState,
+  appointmentSpecialties,
   isPendingAppointmentAwaitingOutcome,
   isPendingAppointmentManageable,
   validateAppointment,
@@ -13,7 +14,7 @@ const validInput = {
   startsAt: "2026-08-03T09:30",
   durationMinutes: "30",
   cleanupMinutes: "5",
-  specialty: "general",
+  specialty: "restorative",
 };
 
 describe("validateAppointment", () => {
@@ -32,7 +33,7 @@ describe("validateAppointment", () => {
         startsAt: "2026-08-03T12:30:00.000Z",
         durationMinutes: 30,
         cleanupMinutes: 5,
-        specialty: "general",
+        specialty: "restorative",
       },
     });
   });
@@ -49,6 +50,48 @@ describe("validateAppointment", () => {
         patientId: expect.any(String),
         specialty: expect.any(String),
       },
+    });
+  });
+
+  it("offers the approved catalog and preserves general only for legacy appointments", () => {
+    expect(appointmentSpecialties).toEqual([
+      { value: "restorative", label: "Operatoria / restauradora" },
+      { value: "pediatric_dentistry", label: "Odontopediatría" },
+      { value: "orthodontics", label: "Ortodoncia" },
+      { value: "surgery", label: "Cirugía" },
+      { value: "implantology", label: "Implantología" },
+      { value: "endodontics", label: "Endodoncia" },
+      { value: "periodontics", label: "Periodoncia" },
+      { value: "prosthodontics", label: "Prótesis / rehabilitación" },
+      { value: "control", label: "Control" },
+      { value: "aesthetic", label: "Estética" },
+      { value: "whitening", label: "Blanqueamiento" },
+    ]);
+
+    for (const specialty of ["control", "aesthetic", "whitening"]) {
+      expect(
+        validateAppointment({ ...validInput, specialty }, now),
+      ).toMatchObject({
+        success: true,
+        data: { specialty },
+      });
+    }
+
+    expect(
+      validateAppointment({ ...validInput, specialty: "general" }, now),
+    ).toMatchObject({
+      success: false,
+      fieldErrors: { specialty: expect.any(String) },
+    });
+    expect(
+      validateAppointment(
+        { ...validInput, specialty: "general" },
+        now,
+        { allowLegacyGeneral: true },
+      ),
+    ).toMatchObject({
+      success: true,
+      data: { specialty: "general" },
     });
   });
 

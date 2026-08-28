@@ -223,7 +223,9 @@ export async function updateAppointmentAction(
       cleanupMinutes: readText(formData, "cleanupMinutes"),
       specialty: readText(formData, "specialty"),
     };
-    const validation = validateAppointment(values);
+    const validation = validateAppointment(values, undefined, {
+      allowLegacyGeneral: currentAppointment.specialty === "general",
+    });
 
     if (!validation.success) {
       return {
@@ -357,13 +359,17 @@ export async function rescheduleAppointmentAction(
       };
     }
 
-    const validation = validateAppointment({
-      patientId: currentAppointment.patientId,
-      startsAt: values.startsAt,
-      durationMinutes: currentAppointment.durationMinutes,
-      cleanupMinutes: currentAppointment.cleanupMinutes,
-      specialty: currentAppointment.specialty,
-    });
+    const validation = validateAppointment(
+      {
+        patientId: currentAppointment.patientId,
+        startsAt: values.startsAt,
+        durationMinutes: currentAppointment.durationMinutes,
+        cleanupMinutes: currentAppointment.cleanupMinutes,
+        specialty: currentAppointment.specialty,
+      },
+      undefined,
+      { allowLegacyGeneral: currentAppointment.specialty === "general" },
+    );
 
     if (!validation.success) {
       return {

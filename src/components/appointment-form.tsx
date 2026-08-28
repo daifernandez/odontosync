@@ -83,7 +83,7 @@ export function AppointmentForm({
   const [cleanupMinutes, setCleanupMinutes] = useState(
     String(defaultCleanupMinutes),
   );
-  const [specialty, setSpecialty] = useState("general");
+  const [specialty, setSpecialty] = useState("restorative");
   const selectedPatient = patients.find((patient) => patient.id === patientId);
   const selectedSpecialty = appointmentSpecialties.find(
     (option) => option.value === specialty,
@@ -188,7 +188,7 @@ export function AppointmentForm({
             }
             aria-invalid={Boolean(state.fieldErrors.specialty)}
             className={inputClassName}
-            defaultValue={state.values?.specialty ?? "general"}
+            defaultValue={state.values?.specialty ?? "restorative"}
             name="specialty"
             onChange={(event) => setSpecialty(event.target.value)}
           >

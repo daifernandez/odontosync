@@ -116,7 +116,7 @@ describe("createAppointmentAction", () => {
     formData.set("startsAt", "2099-01-01T09:00");
     formData.set("durationMinutes", "30");
     formData.set("cleanupMinutes", "5");
-    formData.set("specialty", "general");
+    formData.set("specialty", "restorative");
 
     const result = await createAppointmentAction(
       appointmentFormState,
@@ -202,7 +202,7 @@ describe("createAppointmentAction", () => {
     formData.set("startsAt", "2099-08-11T09:00");
     formData.set("durationMinutes", "30");
     formData.set("cleanupMinutes", "5");
-    formData.set("specialty", "general");
+    formData.set("specialty", "restorative");
 
     const result = await createAppointmentAction(
       appointmentFormState,
