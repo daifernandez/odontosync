@@ -46,6 +46,11 @@ describe("AppointmentForm", () => {
     expect(markup).toContain('value="45"');
     expect(markup).toContain('name="cleanupMinutes"');
     expect(markup).toContain('value="10"');
+    expect(markup).toContain('value="restorative" selected=""');
+    expect(markup).not.toContain('value="general"');
+    expect(markup).toContain('value="control"');
+    expect(markup).toContain("Estética");
+    expect(markup).toContain("Blanqueamiento");
   });
 
   it("prefills a date and time selected from the weekly calendar", () => {

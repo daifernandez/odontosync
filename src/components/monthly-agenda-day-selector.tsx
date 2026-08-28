@@ -8,6 +8,7 @@ import {
   buildAgendaPath,
   type AgendaMonth,
 } from "@/modules/agenda/domain/weekly-schedule";
+import type { AppointmentSpecialty } from "@/modules/appointments/domain/appointment";
 
 const fullDateFormatter = new Intl.DateTimeFormat("es-AR", {
   timeZone: "America/Argentina/Buenos_Aires",
@@ -27,6 +28,112 @@ const weekDayLabels = [
   ["Dom", "Domingo"],
 ] as const;
 
+const monthlySpecialties = [
+  {
+    value: "restorative",
+    label: "Operatoria / restauradora",
+    shortLabel: "Operatoria",
+    mobileLabel: "Oper.",
+    className: "bg-[#ddf3ef] text-[#0f675e]",
+  },
+  {
+    value: "pediatric_dentistry",
+    label: "Odontopediatría",
+    shortLabel: "Odontoped.",
+    mobileLabel: "Odont.",
+    className: "bg-[#fbf0dc] text-[#805000]",
+  },
+  {
+    value: "orthodontics",
+    label: "Ortodoncia",
+    shortLabel: "Ortod.",
+    mobileLabel: "Ortod.",
+    className: "bg-[#e7eefb] text-[#355da0]",
+  },
+  {
+    value: "surgery",
+    label: "Cirugía",
+    shortLabel: "Cirugía",
+    mobileLabel: "Cir.",
+    className: "bg-[#fbe8df] text-[#914327]",
+  },
+  {
+    value: "implantology",
+    label: "Implantología",
+    shortLabel: "Impl.",
+    mobileLabel: "Impl.",
+    className: "bg-[#e8edf0] text-[#425a63]",
+  },
+  {
+    value: "endodontics",
+    label: "Endodoncia",
+    shortLabel: "Endo.",
+    mobileLabel: "Endo.",
+    className: "bg-[#f1e8f7] text-[#6c4682]",
+  },
+  {
+    value: "periodontics",
+    label: "Periodoncia",
+    shortLabel: "Perio.",
+    mobileLabel: "Perio.",
+    className: "bg-[#eaf3e2] text-[#4f6f34]",
+  },
+  {
+    value: "prosthodontics",
+    label: "Prótesis / rehabilitación",
+    shortLabel: "Prótesis",
+    mobileLabel: "Prót.",
+    className: "bg-[#e2f2f5] text-[#286878]",
+  },
+  {
+    value: "control",
+    label: "Control",
+    shortLabel: "Control",
+    mobileLabel: "Ctrl.",
+    className: "bg-[#edf2f1] text-[#455f5c]",
+  },
+  {
+    value: "aesthetic",
+    label: "Estética",
+    shortLabel: "Estética",
+    mobileLabel: "Est.",
+    className: "bg-[#f8e6ef] text-[#8c4168]",
+  },
+  {
+    value: "whitening",
+    label: "Blanqueamiento",
+    shortLabel: "Blanq.",
+    mobileLabel: "Blanq.",
+    className: "bg-[#fff5c9] text-[#765e00]",
+  },
+] as const;
+
+type MonthlySpecialty = (typeof monthlySpecialties)[number];
+
+function getSpecialtySummaries(
+  counts: Partial<Record<AppointmentSpecialty, number>>,
+) {
+  return monthlySpecialties
+    .map((specialty, order) => ({
+      ...specialty,
+      count:
+        (counts[specialty.value] ?? 0) +
+        (specialty.value === "restorative" ? (counts.general ?? 0) : 0),
+      order,
+    }))
+    .filter((specialty) => specialty.count > 0)
+    .sort(
+      (first, second) =>
+        second.count - first.count || first.order - second.order,
+    );
+}
+
+function specialtyCountLabel(
+  specialty: Pick<MonthlySpecialty, "label"> & { count: number },
+) {
+  return `${specialty.count} ${specialty.count === 1 ? "turno" : "turnos"} de ${specialty.label}`;
+}
+
 function countLabel(count: number, singular: string, plural: string) {
   return `${count} ${count === 1 ? singular : plural}`;
 }
@@ -36,12 +143,15 @@ function capitalizeFirst(value: string) {
 }
 
 export function MonthlyAgendaDaySelector({
-  appointmentCounts,
+  appointmentSpecialtyCounts,
   blockCounts,
   currentDate,
   month,
 }: Readonly<{
-  appointmentCounts: Record<string, number>;
+  appointmentSpecialtyCounts: Record<
+    string,
+    Partial<Record<AppointmentSpecialty, number>>
+  >;
   blockCounts: Record<string, number>;
   currentDate: string;
   month: AgendaMonth;
@@ -134,7 +244,13 @@ export function MonthlyAgendaDaySelector({
 
       <div className="grid grid-cols-7 border-l border-[var(--color-border)]">
         {month.days.map((day) => {
-          const appointmentCount = appointmentCounts[day.date] ?? 0;
+          const specialtySummaries = getSpecialtySummaries(
+            appointmentSpecialtyCounts[day.date] ?? {},
+          );
+          const appointmentCount = specialtySummaries.reduce(
+            (total, specialty) => total + specialty.count,
+            0,
+          );
           const blockCount = blockCounts[day.date] ?? 0;
           const appointmentText = countLabel(
             appointmentCount,
@@ -142,14 +258,21 @@ export function MonthlyAgendaDaySelector({
             "turnos",
           );
           const blockText = countLabel(blockCount, "bloqueo", "bloqueos");
+          const accessibleAppointmentText =
+            specialtySummaries.length > 0
+              ? `${specialtySummaries.map(specialtyCountLabel).join(". ")}.`
+              : `${appointmentText}.`;
+          const visibleSpecialties = specialtySummaries.slice(0, 3);
+          const hiddenSpecialtyCount =
+            specialtySummaries.length - visibleSpecialties.length;
           const date = new Date(`${day.date}T12:00:00-03:00`);
 
           return (
             <button
               aria-current={day.date === currentDate ? "date" : undefined}
-              aria-label={`${fullDateFormatter.format(date)}. ${day.isCurrentMonth ? `${appointmentText}. ${blockText}. ` : ""}Seleccionar día.`}
+              aria-label={`${fullDateFormatter.format(date)}. ${day.isCurrentMonth ? `${accessibleAppointmentText} ${blockText}. ` : ""}Seleccionar día.`}
               aria-pressed={day.date === selectedDate}
-              className={`min-h-24 cursor-pointer border-t-0 border-r border-b border-l-0 border-[var(--color-border)] p-1.5 text-left text-[var(--color-foreground)] hover:bg-[var(--color-brand-soft)] focus-visible:z-10 sm:min-h-32 sm:p-3 ${day.date === selectedDate ? "bg-[var(--color-brand-soft)] ring-2 ring-inset ring-[var(--color-brand)]" : day.isCurrentMonth ? "bg-white" : "bg-[var(--color-brand-subtle)] text-[var(--color-muted)]"}`}
+              className={`min-h-24 cursor-pointer border-t-0 border-r border-b border-l-0 border-[var(--color-border)] p-0.5 text-left text-[var(--color-foreground)] hover:bg-[var(--color-brand-soft)] focus-visible:z-10 sm:min-h-32 sm:p-3 ${day.date === selectedDate ? "bg-[var(--color-brand-soft)] ring-2 ring-inset ring-[var(--color-brand)]" : day.isCurrentMonth ? "bg-white" : "bg-[var(--color-brand-subtle)] text-[var(--color-muted)]"}`}
               key={day.date}
               onClick={() => setSelectedDate(day.date)}
               type="button"
@@ -163,9 +286,32 @@ export function MonthlyAgendaDaySelector({
               (appointmentCount > 0 || blockCount > 0) ? (
                 <span className="mt-1.5 flex flex-col gap-1 sm:mt-3">
                   {appointmentCount > 0 ? (
-                    <span className="rounded-md bg-[var(--color-brand-soft)] px-1 py-1 text-center text-[0.58rem] leading-3 font-bold text-[var(--color-brand-dark)] sm:text-[0.68rem]">
-                      {appointmentText}
-                    </span>
+                    <>
+                      {visibleSpecialties.map((specialty) => (
+                        <span
+                          className={`rounded-md px-1 py-1 text-center text-[0.55rem] leading-3 font-bold sm:text-[0.68rem] ${specialty.className}`}
+                          data-label={`${specialty.shortLabel} · ${specialty.count}`}
+                          data-specialty={specialty.value}
+                          key={specialty.value}
+                        >
+                          <span className="sm:hidden">
+                            <span className="block">{specialty.mobileLabel}</span>
+                            <span className="block">{specialty.count}</span>
+                          </span>
+                          <span className="hidden sm:inline">
+                            {specialty.shortLabel} · {specialty.count}
+                          </span>
+                        </span>
+                      ))}
+                      {hiddenSpecialtyCount > 0 ? (
+                        <span className="rounded-md bg-[var(--color-neutral-soft)] px-1 py-1 text-center text-[0.55rem] leading-3 font-bold text-[var(--color-muted)] sm:text-[0.68rem]">
+                          +{hiddenSpecialtyCount}{" "}
+                          {hiddenSpecialtyCount === 1
+                            ? "especialidad"
+                            : "especialidades"}
+                        </span>
+                      ) : null}
+                    </>
                   ) : null}
                   {blockCount > 0 ? (
                     <span className="rounded-md bg-[var(--color-neutral-soft)] px-1 py-1 text-center text-[0.58rem] leading-3 font-bold text-[var(--color-muted)] sm:text-[0.68rem]">

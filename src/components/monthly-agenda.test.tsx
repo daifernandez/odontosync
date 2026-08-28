@@ -45,6 +45,30 @@ const exceptionalBlocks = [
   },
 ];
 
+const specialtyAppointments = [
+  ...appointments,
+  {
+    ...appointments[0],
+    id: "appointment-3",
+    specialty: "restorative" as const,
+  },
+  {
+    ...appointments[0],
+    id: "appointment-4",
+    specialty: "control" as const,
+  },
+  {
+    ...appointments[0],
+    id: "appointment-5",
+    specialty: "aesthetic" as const,
+  },
+  {
+    ...appointments[0],
+    id: "appointment-6",
+    specialty: "whitening" as const,
+  },
+];
+
 describe("MonthlyAgenda", () => {
   it("summarizes the month and offers daily actions for the selected date", () => {
     const markup = renderToStaticMarkup(
@@ -58,10 +82,11 @@ describe("MonthlyAgenda", () => {
 
     expect(markup).toContain("Agenda mensual");
     expect(markup).toContain("agosto de 2026");
-    expect(markup).toContain("2 turnos");
+    expect(markup).toContain("Operatoria · 1");
+    expect(markup).toContain("Ortod. · 1");
     expect(markup).toContain("1 bloqueo");
     expect(markup).toContain(
-      "martes, 11 de agosto de 2026. 2 turnos. 0 bloqueos. Seleccionar día.",
+      "martes, 11 de agosto de 2026. 1 turno de Operatoria / restauradora. 1 turno de Ortodoncia. 0 bloqueos. Seleccionar día.",
     );
     expect(markup).toContain("Día para gestionar");
     expect(markup).toContain("sábado, 22 de agosto de 2026");
@@ -93,6 +118,27 @@ describe("MonthlyAgenda", () => {
     );
 
     expect(markup).toContain("No hay turnos ni bloqueos en este mes");
+  });
+
+  it("groups appointments by specialty with stable labels and accessible overflow", () => {
+    const markup = renderToStaticMarkup(
+      <MonthlyAgenda
+        appointments={specialtyAppointments}
+        exceptionalBlocks={[]}
+        month={buildAgendaMonth("2026-08-22")}
+        currentTime={new Date("2026-08-22T15:00:00.000Z")}
+      />,
+    );
+
+    expect(markup).toContain("Operatoria · 2");
+    expect(markup).toContain("Ortod. · 1");
+    expect(markup).toContain("Control · 1");
+    expect(markup).toContain("+2 especialidades");
+    expect(markup).not.toContain("Estética · 1</span>");
+    expect(markup).not.toContain("Blanq. · 1</span>");
+    expect(markup).toContain(
+      "2 turnos de Operatoria / restauradora. 1 turno de Ortodoncia. 1 turno de Control. 1 turno de Estética. 1 turno de Blanqueamiento.",
+    );
   });
 
   it("limits past dates to consultation and pending outcomes", () => {

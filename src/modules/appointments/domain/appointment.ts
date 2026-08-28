@@ -1,17 +1,20 @@
 export const appointmentSpecialties = [
-  { value: "general", label: "Odontología general" },
+  { value: "restorative", label: "Operatoria / restauradora" },
   { value: "pediatric_dentistry", label: "Odontopediatría" },
   { value: "orthodontics", label: "Ortodoncia" },
   { value: "surgery", label: "Cirugía" },
   { value: "implantology", label: "Implantología" },
   { value: "endodontics", label: "Endodoncia" },
   { value: "periodontics", label: "Periodoncia" },
-  { value: "restorative", label: "Operatoria / restauradora" },
   { value: "prosthodontics", label: "Prótesis / rehabilitación" },
+  { value: "control", label: "Control" },
+  { value: "aesthetic", label: "Estética" },
+  { value: "whitening", label: "Blanqueamiento" },
 ] as const;
 
 export type AppointmentSpecialty =
-  (typeof appointmentSpecialties)[number]["value"];
+  | "general"
+  | (typeof appointmentSpecialties)[number]["value"];
 
 export type AppointmentStatus =
   | "pending_confirmation"
@@ -229,6 +232,7 @@ export function formatArgentinaDateInput(date: Date) {
 export function validateAppointment(
   input: AppointmentFormInput,
   now = new Date(),
+  options: { allowLegacyGeneral?: boolean } = {},
 ): ValidationResult {
   const patientId =
     typeof input.patientId === "string" && uuidPattern.test(input.patientId)
@@ -239,7 +243,10 @@ export function validateAppointment(
   const cleanupMinutes = parseInteger(input.cleanupMinutes);
   const specialty = appointmentSpecialties.find(
     (option) => option.value === input.specialty,
-  )?.value;
+  )?.value ??
+    (options.allowLegacyGeneral && input.specialty === "general"
+      ? "general"
+      : undefined);
   const fieldErrors: AppointmentFieldErrors = {};
 
   if (!patientId) {
@@ -291,6 +298,10 @@ export function validateAppointment(
 export function getAppointmentSpecialtyLabel(
   specialty: AppointmentSpecialty,
 ) {
+  if (specialty === "general") {
+    return "Odontología general";
+  }
+
   return appointmentSpecialties.find((option) => option.value === specialty)
     ?.label;
 }

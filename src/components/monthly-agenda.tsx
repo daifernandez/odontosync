@@ -16,6 +16,7 @@ import {
 import {
   formatArgentinaDateInput,
   type Appointment,
+  type AppointmentSpecialty,
 } from "@/modules/appointments/domain/appointment";
 import { getExceptionalBlockSegmentForDate } from "@/modules/appointments/domain/availability";
 import type { ExceptionalBlock } from "@/modules/exceptional-blocks/domain/exceptional-block";
@@ -45,14 +46,18 @@ export function MonthlyAgenda({
   exceptionalBlocks: ExceptionalBlock[];
   month: AgendaMonth;
 }>) {
-  const appointmentCounts = new Map<string, number>();
+  const appointmentSpecialtyCounts: Record<
+    string,
+    Partial<Record<AppointmentSpecialty, number>>
+  > = {};
   const blockCounts = new Map<string, number>();
 
   for (const appointment of appointments) {
-    addCount(
-      appointmentCounts,
-      formatArgentinaDateInput(new Date(appointment.startsAt)),
-    );
+    const date = formatArgentinaDateInput(new Date(appointment.startsAt));
+    const counts = appointmentSpecialtyCounts[date] ?? {};
+    counts[appointment.specialty] =
+      (counts[appointment.specialty] ?? 0) + 1;
+    appointmentSpecialtyCounts[date] = counts;
   }
 
   for (const day of month.days) {
@@ -203,7 +208,7 @@ export function MonthlyAgenda({
         ) : null}
 
         <MonthlyAgendaDaySelector
-          appointmentCounts={Object.fromEntries(appointmentCounts)}
+          appointmentSpecialtyCounts={appointmentSpecialtyCounts}
           blockCounts={Object.fromEntries(blockCounts)}
           currentDate={currentDay.date}
           month={month}

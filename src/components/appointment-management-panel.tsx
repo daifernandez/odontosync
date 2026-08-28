@@ -96,6 +96,16 @@ export function AppointmentManagementPanel({
     String(appointment.cleanupMinutes),
   );
   const [confirmCancellation, setConfirmCancellation] = useState(false);
+  const specialtyOptions =
+    appointment.specialty === "general"
+      ? [
+          {
+            value: "general" as const,
+            label: "Odontología general (turno existente)",
+          },
+          ...appointmentSpecialties,
+        ]
+      : appointmentSpecialties;
   const availableSlots = getAvailableAppointmentSlots({
     date,
     availability,
@@ -554,7 +564,7 @@ export function AppointmentManagementPanel({
                 defaultValue={appointment.specialty}
                 name="specialty"
               >
-                {appointmentSpecialties.map((option) => (
+                {specialtyOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>

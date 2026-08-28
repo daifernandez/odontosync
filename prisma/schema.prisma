@@ -45,6 +45,9 @@ enum AppointmentSpecialty {
   PERIODONTICS           @map("periodontics")
   RESTORATIVE            @map("restorative")
   PROSTHODONTICS         @map("prosthodontics")
+  CONTROL                @map("control")
+  AESTHETIC              @map("aesthetic")
+  WHITENING              @map("whitening")
 
   @@map("appointment_specialty")
 }
