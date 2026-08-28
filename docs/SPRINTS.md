@@ -1625,3 +1625,92 @@ alterar las reglas de la agenda.
   de este sprint.
 - Activar la protección contra contraseñas filtradas cuando resulte
   indispensable para el proyecto.
+
+## Sprint 022 — Especialidades en agenda mensual
+
+- **Fecha:** 28 de agosto de 2026
+- **Estado:** publicado y mergeado
+- **Issue:** [#70](https://github.com/daifernandez/odontosync/issues/70)
+- **Rama:** `codex/sprint-022-monthly-specialties`
+- **Publicación:** [PR #71](https://github.com/daifernandez/odontosync/pull/71),
+  merge commit `81862f5`
+
+### Objetivo
+
+Actualizar el catálogo odontológico y reemplazar el total genérico de cada día
+de la agenda mensual por un resumen coloreado de turnos por especialidad.
+
+### Resultado
+
+- Cada día de la agenda mensual muestra hasta tres etiquetas de especialidad,
+  ordenadas por cantidad, y resume el excedente como `+N especialidades`.
+- Cada etiqueta comunica especialidad y cantidad mediante texto además del
+  color; la descripción accesible conserva el desglose completo aunque exista
+  un resumen visual.
+- Se incorporaron Control, Estética y Blanqueamiento como especialidades
+  persistentes mediante la migración
+  `20260827030000_add_control_aesthetic_whitening`.
+- Operatoria / restauradora reemplazó a Odontología general en turnos nuevos.
+  Los turnos históricos de General se conservan, pueden mantener su valor al
+  editarse y se agrupan visualmente dentro de Operatoria en el mes.
+- Las abreviaturas y colores permanecen estables; Ortodoncia se presenta como
+  `Ortod.`.
+- Los bloqueos, la selección del día, las acciones diarias y los estados
+  incluidos en el mes conservaron su comportamiento.
+
+### Criterios verificados
+
+- Los formularios de alta y edición aceptan las tres especialidades nuevas y
+  no ofrecen General para nuevos turnos.
+- Un turno histórico de General puede conservarse o cambiar a otra
+  especialidad durante la edición.
+- General y Operatoria se suman bajo una sola etiqueta de Operatoria en la
+  agenda mensual.
+- Cada día limita el resumen a tres especialidades y aplica correctamente el
+  singular o plural del excedente.
+- El lector de pantalla recibe el desglose completo de especialidades y
+  cantidades.
+- La grilla mensual fue revisada en escritorio y a 320 px sin desbordamiento
+  horizontal ni regresiones en la selección del día.
+- Las regresiones automatizadas cubren el catálogo, la compatibilidad
+  histórica, la agrupación, el orden, el límite visual y la accesibilidad.
+
+### Skills aplicadas
+
+- `project-sprint-workflow` para acordar el alcance, publicar el cambio
+  funcional y separar su cierre documental.
+- `usability-review` para definir jerarquía, etiquetas, abreviaturas, uso
+  redundante de color y texto y adaptación responsive.
+- Next.js y `react-best-practices` para integrar el resumen sin mover la
+  consulta al cliente ni agregar estado innecesario.
+- Supabase, `supabase-postgres-best-practices` y `security-sprint-review` para
+  ampliar el enum de forma aditiva y verificar el aislamiento existente.
+- Browser para revisar escritorio, mobile, contenido accesible y el catálogo
+  disponible en el formulario.
+- `odontosync-release-check` para la batería final, publicación y comprobación
+  de CI.
+
+### Verificaciones
+
+- Pruebas: 35 archivos y 221 casos aprobados.
+- TypeScript, ESLint y build de producción: aprobados.
+- Prisma: esquema válido y migración aditiva incluida; no se aplicó
+  manualmente a la base enlazada durante el sprint.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- GitHub Actions: aprobado en el PR funcional.
+- RLS: las cuatro suites enlazadas aprobaron en la verificación inicial. En la
+  repetición previa a publicar, el fixture de turnos colisionó con un turno
+  real por usar `CURRENT_TIMESTAMP`; las otras suites aprobaron y la rama no
+  modificó esa prueba ni la base enlazada.
+- Asesor de Supabase: sin errores; permanece el aviso externo conocido de
+  protección contra contraseñas filtradas desactivada.
+
+### Riesgo residual y próximos pasos
+
+- La migración debe aplicarse en el entorno correspondiente antes de persistir
+  Control, Estética o Blanqueamiento allí.
+- La prueba RLS de turnos depende de horarios relativos del primer usuario real
+  y puede colisionar con datos existentes; conviene aislar su fixture en un
+  sprint posterior.
+- Los filtros por especialidad, los colores por estado y cualquier cambio en
+  las vistas diaria o semanal permanecen fuera de alcance.
