@@ -74,6 +74,10 @@ const timeFormatter = new Intl.DateTimeFormat("es-AR", {
   minute: "2-digit",
 });
 
+export function formatTimelineTime(date: Date) {
+  return timeFormatter.format(date).replace(/\s/g, " ");
+}
+
 const dayFormatter = new Intl.DateTimeFormat("es-AR", {
   timeZone: "America/Argentina/Buenos_Aires",
   weekday: "long",
@@ -333,11 +337,9 @@ export function AppointmentTimeline({
                         aria-hidden="true"
                         className={`absolute top-5 left-0.5 size-3.5 rounded-full border-2 border-white shadow-sm ${styles.dot}`}
                       />
-                      <article className="grid gap-3 rounded-xl border border-[var(--color-border)] bg-white p-4 xl:grid-cols-[5.25rem_minmax(0,1fr)_auto] xl:items-center">
+                      <article className="grid gap-3 rounded-xl border border-[var(--color-border)] bg-white p-4 @4xl/daily-agenda:grid-cols-[5.25rem_minmax(0,1fr)_auto] @4xl/daily-agenda:items-center">
                         <p className="m-0 text-sm font-bold text-[var(--color-brand-dark)]">
-                          {timeFormatter.format(
-                            new Date(appointment.startsAt),
-                          )}
+                          {formatTimelineTime(new Date(appointment.startsAt))}
                         </p>
                         <div className="min-w-0">
                           <h3 className="m-0 truncate text-sm">
@@ -352,7 +354,7 @@ export function AppointmentTimeline({
                             {appointment.cleanupMinutes} min de acondicionamiento
                           </p>
                         </div>
-                        <div className="flex flex-wrap items-center gap-2 xl:justify-end">
+                        <div className="flex flex-wrap items-center gap-2 @4xl/daily-agenda:justify-end">
                           <span
                             className={`inline-flex rounded-full border px-2.5 py-1 text-[0.68rem] font-bold ${styles.badge}`}
                           >

@@ -198,8 +198,8 @@ export function WeeklyAgenda({
     : -1;
 
   return (
-    <main className="mx-auto w-full max-w-[90rem] px-4 py-7 md:px-[clamp(1.5rem,3.5vw,4rem)] md:py-12">
-      <header className="flex flex-col items-start gap-5 md:flex-row md:items-end md:justify-between md:gap-8">
+    <main className="@container/daily-agenda mx-auto w-full max-w-[90rem] px-4 py-7 md:px-[clamp(1.5rem,3.5vw,4rem)] md:py-12">
+      <header className="flex flex-col items-start gap-5 @4xl/daily-agenda:flex-row @4xl/daily-agenda:items-end @4xl/daily-agenda:justify-between @4xl/daily-agenda:gap-8">
         <div>
           <p className="mb-2 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
             Agenda
@@ -212,7 +212,7 @@ export function WeeklyAgenda({
             turno.
           </p>
         </div>
-        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+        <div className="grid w-full grid-cols-2 gap-2 [&>a]:w-full [&>button]:w-full [&>button:first-of-type]:col-span-2 @2xl/daily-agenda:flex @2xl/daily-agenda:w-auto @2xl/daily-agenda:[&>a]:w-auto @2xl/daily-agenda:[&>button]:w-auto @2xl/daily-agenda:[&>button:first-of-type]:col-span-1">
           <AppointmentPanel
             autoOpen={autoOpenNewAppointment}
             appointmentOccupancy={appointmentOccupancy}
@@ -304,8 +304,8 @@ export function WeeklyAgenda({
         </div>
       ) : null}
 
-      <aside className="mt-8 flex items-start gap-3 rounded-[var(--radius-medium)] border border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] px-4 py-3 text-[var(--color-warning-foreground)] md:items-center">
-        <CalendarClock aria-hidden="true" className="mt-1 shrink-0 md:mt-0" size={18} />
+      <aside className="mt-8 flex items-start gap-3 rounded-[var(--radius-medium)] border border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] px-4 py-3 text-[var(--color-warning-foreground)] @sm/daily-agenda:items-center">
+        <CalendarClock aria-hidden="true" className="mt-1 shrink-0 @sm/daily-agenda:mt-0" size={18} />
         <p className="m-0 text-[0.78rem] leading-6">
           Prototipo académico: asociá únicamente pacientes ficticios y no
           ingreses información clínica en la agenda.
@@ -314,7 +314,7 @@ export function WeeklyAgenda({
 
       <section
         aria-label="Preferencias de la agenda"
-        className="mt-5 grid gap-4 sm:grid-cols-3"
+        className="mt-5 grid gap-4 @sm/daily-agenda:grid-cols-3"
       >
         <article className={summaryCardClassName}>
           <p className="m-0 text-xs font-semibold text-[var(--color-muted)]">
@@ -346,7 +346,7 @@ export function WeeklyAgenda({
         aria-labelledby="agenda-calendar-title"
         className="mt-5 overflow-hidden rounded-[var(--radius-large)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-card)]"
       >
-        <div className="flex flex-col gap-4 border-b border-[var(--color-border)] p-4 md:flex-row md:items-center md:justify-between md:p-6">
+        <div className="flex flex-col gap-4 border-b border-[var(--color-border)] p-4 @sm/daily-agenda:p-6 @4xl/daily-agenda:flex-row @4xl/daily-agenda:items-center @4xl/daily-agenda:justify-between">
           <div>
             <p className="mb-2 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
               {view === "day" ? "Día seleccionado" : "Semana seleccionada"}
@@ -357,14 +357,14 @@ export function WeeklyAgenda({
                 : `${weekTitleFormatter.format(firstDay)} — ${weekTitleFormatter.format(lastDay)}`}
             </h2>
           </div>
-          <div className="flex flex-col gap-3 sm:items-end">
+          <div className="flex w-full flex-col gap-3 @xl/daily-agenda:w-auto @xl/daily-agenda:items-end">
             <nav
               aria-label="Cambiar vista de agenda"
-              className="flex rounded-xl border border-[var(--color-border)] bg-[var(--color-brand-subtle)] p-1"
+              className="flex w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-brand-subtle)] p-1 @xl/daily-agenda:w-auto"
             >
               <AgendaViewPreferenceLink
                 ariaCurrent={view === "week" ? "page" : undefined}
-                className={`flex min-h-10 flex-1 items-center justify-center rounded-lg px-3 text-xs font-bold no-underline sm:flex-none ${view === "week" ? "bg-white text-[var(--color-brand-dark)] shadow-sm" : "text-[var(--color-muted)] hover:text-[var(--color-brand-dark)]"}`}
+                className={`flex min-h-10 flex-1 items-center justify-center rounded-lg px-2 text-xs font-bold no-underline @xl/daily-agenda:flex-none @xl/daily-agenda:px-3 ${view === "week" ? "bg-white text-[var(--color-brand-dark)] shadow-sm" : "text-[var(--color-muted)] hover:text-[var(--color-brand-dark)]"}`}
                 href={buildAgendaPath({
                   weekStartDate: week.startDate,
                   view: "week",
@@ -376,7 +376,7 @@ export function WeeklyAgenda({
               </AgendaViewPreferenceLink>
               <AgendaViewPreferenceLink
                 ariaCurrent={view === "day" ? "page" : undefined}
-                className={`flex min-h-10 flex-1 items-center justify-center rounded-lg px-3 text-xs font-bold no-underline sm:flex-none ${view === "day" ? "bg-white text-[var(--color-brand-dark)] shadow-sm" : "text-[var(--color-muted)] hover:text-[var(--color-brand-dark)]"}`}
+                className={`flex min-h-10 flex-1 items-center justify-center rounded-lg px-2 text-xs font-bold no-underline @xl/daily-agenda:flex-none @xl/daily-agenda:px-3 ${view === "day" ? "bg-white text-[var(--color-brand-dark)] shadow-sm" : "text-[var(--color-muted)] hover:text-[var(--color-brand-dark)]"}`}
                 href={buildAgendaPath({
                   weekStartDate: week.startDate,
                   view: "day",
@@ -387,7 +387,7 @@ export function WeeklyAgenda({
                 Vista diaria
               </AgendaViewPreferenceLink>
               <AgendaViewPreferenceLink
-                className="flex min-h-10 flex-1 items-center justify-center rounded-lg px-3 text-xs font-bold text-[var(--color-muted)] no-underline hover:text-[var(--color-brand-dark)] sm:flex-none"
+                className="flex min-h-10 flex-1 items-center justify-center rounded-lg px-2 text-xs font-bold text-[var(--color-muted)] no-underline hover:text-[var(--color-brand-dark)] @xl/daily-agenda:flex-none @xl/daily-agenda:px-3"
                 href={buildAgendaPath({
                   view: "month",
                   selectedDate: day.date,
@@ -399,7 +399,7 @@ export function WeeklyAgenda({
             </nav>
             <nav
               aria-label={view === "day" ? "Navegar días" : "Navegar semanas"}
-              className="flex flex-wrap gap-2"
+              className="flex flex-wrap justify-end gap-2"
             >
               <Link
                 aria-label={

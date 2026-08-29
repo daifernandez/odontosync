@@ -6,6 +6,7 @@ import type { Appointment } from "@/modules/appointments/domain/appointment";
 import {
   AppointmentTimeline,
   filterTimelineAppointments,
+  formatTimelineTime,
 } from "./appointment-timeline";
 
 const baseAppointment: Appointment = {
@@ -53,6 +54,15 @@ const appointments: Appointment[] = [
 ];
 
 describe("AppointmentTimeline", () => {
+  it("normalizes localized time spacing for identical server and client text", () => {
+    const formatted = formatTimelineTime(
+      new Date("2026-08-10T12:00:00.000Z"),
+    );
+
+    expect(formatted).toBe("09:00 a. m.");
+    expect(formatted).not.toMatch(/[\u00a0\u202f]/);
+  });
+
   it("groups each operational status into its filter", () => {
     expect(
       filterTimelineAppointments(appointments, {
@@ -112,10 +122,10 @@ describe("AppointmentTimeline", () => {
     expect(markup).toContain("<details");
     expect(markup).toContain("open=\"\"");
     expect(markup).toContain(
-      "xl:grid-cols-[5.25rem_minmax(0,1fr)_auto]",
+      "@4xl/daily-agenda:grid-cols-[5.25rem_minmax(0,1fr)_auto]",
     );
     expect(markup).not.toContain(
-      "md:grid-cols-[5.25rem_minmax(0,1fr)_auto]",
+      "xl:grid-cols-[5.25rem_minmax(0,1fr)_auto]",
     );
     expect(markup).not.toContain("Paginación");
   });
