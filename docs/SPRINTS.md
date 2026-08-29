@@ -1714,3 +1714,81 @@ de la agenda mensual por un resumen coloreado de turnos por especialidad.
   sprint posterior.
 - Los filtros por especialidad, los colores por estado y cualquier cambio en
   las vistas diaria o semanal permanecen fuera de alcance.
+
+## Sprint 023 — Agenda mensual adaptable
+
+- **Fecha:** 29 de agosto de 2026
+- **Estado:** publicado y mergeado
+- **Issue:** [#73](https://github.com/daifernandez/odontosync/issues/73)
+- **Rama:** `codex/sprint-023-monthly-responsive`
+- **Publicación:** [PR #74](https://github.com/daifernandez/odontosync/pull/74),
+  merge commit `77a83a9`
+
+### Objetivo
+
+Adaptar la agenda mensual al ancho real disponible junto a la navegación de la
+aplicación, manteniendo la grilla de siete columnas y el resumen coloreado por
+especialidad sin cortes ni compresión.
+
+### Resultado
+
+- La agenda mensual usa consultas de contenedor y deja de decidir su
+  composición solamente por el ancho total de la ventana.
+- El encabezado, el selector de vistas, la navegación mensual y las acciones
+  del día se apilan cuando el ancho disponible no permite una fila legible.
+- En espacios reducidos, `Abrir agenda diaria` ocupa una fila y `Nuevo turno`
+  y `Bloquear horario` comparten la siguiente; en anchos amplios las tres
+  acciones recuperan una sola fila.
+- Los días y especialidades alternan entre nombres completos y abreviaturas
+  según el ancho del calendario, conservando color, texto y cantidad.
+- Cada celda reserva una franja superior estable para el número del día, de
+  modo que las etiquetas nunca lo desplacen.
+- No se modificaron fechas, datos, especialidades, vistas diaria o semanal,
+  autenticación, permisos, dependencias ni persistencia.
+
+### Criterios verificados
+
+- La grilla conserva los siete días de la semana sin desbordamiento horizontal
+  ni controles recortados en ancho reducido.
+- El menú lateral abierto o cerrado ya no activa prematuramente la composición
+  amplia dentro de un área angosta.
+- Las etiquetas compactas y completas mantienen especialidad y cantidad sin
+  depender solamente del color.
+- Seleccionar un día, abrir su agenda, crear un turno y bloquear un horario
+  conservan sus destinos y comportamiento.
+- El foco visible, los nombres accesibles y el estado seleccionado del día se
+  mantienen sin cambios.
+- Las regresiones automatizadas comprueban el contrato de consultas de
+  contenedor, los puntos de recomposición, las etiquetas y la franja reservada
+  para la fecha.
+
+### Skills aplicadas
+
+- `project-sprint-workflow` para acordar el alcance, separar el cambio
+  funcional del cierre documental y conservar la vista diaria fuera del PR.
+- `usability-review` para priorizar legibilidad, objetivos táctiles, adaptación
+  al ancho real, teclado y ausencia de desbordamiento.
+- `odontosync-release-check` para revisar el diff, ejecutar la batería completa,
+  publicar la rama y comprobar GitHub Actions.
+
+### Verificaciones
+
+- Pruebas: 35 archivos y 222 casos aprobados.
+- TypeScript, ESLint y build de producción: aprobados.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- GitHub Actions: aprobado en 53 segundos en el PR funcional.
+- La revisión visual en ancho reducido y con navegación lateral fue aprobada
+  por Dai mediante capturas de la aplicación local.
+- No aplicaron controles de Prisma, Supabase ni RLS porque el sprint no cambió
+  esquema, persistencia, consultas, permisos o autenticación.
+
+### Riesgo residual y próximos pasos
+
+- La vista diaria conserva breakpoints basados en la ventana y puede comprimir
+  acciones y el selector de vistas cuando la navegación lateral reduce el ancho
+  real; se acordó tratarla en un sprint independiente.
+- Durante el cierre se observó una advertencia de hidratación en la línea
+  temporal diaria: servidor y navegador producen espacios distintos en
+  `a. m.`. Debe reproducirse y corregirse junto con la revisión diaria, sin
+  mezclarlo con este sprint ya publicado.
+- No se identificó por ahora un problema funcional con las fechas.
