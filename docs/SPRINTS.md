@@ -1792,3 +1792,78 @@ especialidad sin cortes ni compresión.
   `a. m.`. Debe reproducirse y corregirse junto con la revisión diaria, sin
   mezclarlo con este sprint ya publicado.
 - No se identificó por ahora un problema funcional con las fechas.
+
+## Sprint 024 — Agenda diaria adaptable
+
+- **Fecha:** 29 de agosto de 2026
+- **Estado:** publicado y mergeado
+- **Issue:** [#76](https://github.com/daifernandez/odontosync/issues/76)
+- **Rama:** `codex/sprint-024-daily-responsive`
+- **Publicación:** [PR #77](https://github.com/daifernandez/odontosync/pull/77),
+  merge commit `93bcb1c`
+
+### Objetivo
+
+Adaptar la agenda diaria al ancho real disponible junto a la navegación de la
+aplicación, evitando recortes sin alterar la grilla clínica ni el
+comportamiento de los turnos.
+
+### Resultado
+
+- La agenda diaria usa consultas de contenedor y deja de recomponer el
+  encabezado, las métricas y los controles según el ancho total de la ventana.
+- En ancho reducido, `Nuevo turno` ocupa una fila y `Bloquear horario` y
+  `Ajustar horarios` comparten la siguiente; en espacios amplios las acciones
+  recuperan una sola fila.
+- La fecha seleccionada, el selector de vistas y la navegación diaria se
+  separan cuando no entran de forma legible, manteniendo completas las tres
+  etiquetas de vista.
+- Las métricas conservan tres columnas cuando el contenedor lo permite y se
+  apilan únicamente en mobile angosto.
+- Las tarjetas de seguimiento cambian a su composición amplia según el espacio
+  real disponible y evitan comprimir especialidad, estado y acción.
+- El horario localizado normaliza sus espacios para producir el mismo texto en
+  servidor y cliente y evitar la advertencia de hidratación observada.
+- No se modificaron fechas, datos, reglas, estados, autenticación, permisos,
+  dependencias ni persistencia.
+
+### Criterios verificados
+
+- Las acciones, el selector de vistas y la navegación permanecen completos y
+  sin desplazamiento horizontal accidental en ancho reducido.
+- La grilla horaria y los bloques de turnos conservan sus proporciones y
+  destinos de navegación.
+- Los controles mantienen texto, nombre accesible, foco visible y objetivos
+  táctiles equivalentes a los existentes.
+- La composición semanal compartida conserva su contenido y comportamiento.
+- Las regresiones automatizadas comprueban los puntos de recomposición por
+  contenedor y la normalización del texto horario.
+
+### Skills aplicadas
+
+- `project-sprint-workflow` para acordar el alcance, separar la implementación
+  del cierre documental y conservar el issue abierto hasta este PR.
+- `usability-review` para priorizar claridad, ausencia de recortes, jerarquía
+  de acciones y adaptación al ancho real.
+- Browser para preparar la revisión local; la automatización de `localhost`
+  fue bloqueada y la validación visual final fue realizada por Dai.
+- `odontosync-release-check` para revisar el diff, ejecutar la batería completa,
+  publicar la rama y comprobar GitHub Actions.
+
+### Verificaciones
+
+- Pruebas: 35 archivos y 223 casos aprobados.
+- TypeScript, ESLint y build de producción: aprobados.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- GitHub Actions: aprobado en 1 minuto y 1 segundo en el PR funcional.
+- La revisión visual local en ancho reducido fue aprobada por Dai.
+- No aplicaron controles de Prisma, Supabase ni RLS porque el sprint no cambió
+  esquema, persistencia, consultas, permisos o autenticación.
+
+### Riesgo residual y próximos pasos
+
+- La política del navegador impidió automatizar la comprobación visual de
+  `localhost`; la cobertura disponible combina pruebas de regresión, build de
+  producción y aprobación visual manual.
+- No se identificaron cambios pendientes en fechas ni reglas de turnos dentro
+  de este sprint.
