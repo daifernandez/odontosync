@@ -107,6 +107,24 @@ describe("MonthlyAgenda", () => {
     expect(markup).toContain("Mes siguiente");
   });
 
+  it("adapts the monthly layout to its available content width", () => {
+    const markup = renderToStaticMarkup(
+      <MonthlyAgenda
+        appointments={appointments}
+        exceptionalBlocks={exceptionalBlocks}
+        month={buildAgendaMonth("2026-08-22")}
+        currentTime={new Date("2026-08-22T15:00:00.000Z")}
+      />,
+    );
+
+    expect(markup).toContain("@container/monthly-agenda");
+    expect(markup).toContain("@4xl/monthly-agenda:flex-row");
+    expect(markup).toContain("@4xl/monthly-agenda:grid-cols-3");
+    expect(markup).toContain("@lg/monthly-agenda:hidden");
+    expect(markup).toContain("hidden @lg/monthly-agenda:inline");
+    expect(markup).toContain("min-h-7 w-full shrink-0 items-start");
+  });
+
   it("explains when the selected month has no appointments or blocks", () => {
     const markup = renderToStaticMarkup(
       <MonthlyAgenda
