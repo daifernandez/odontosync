@@ -174,7 +174,7 @@ export function MonthlyAgendaDaySelector({
 
   return (
     <>
-      <div className="flex flex-col gap-4 border-b border-[var(--color-border)] bg-[var(--color-brand-subtle)] p-4 md:flex-row md:items-center md:justify-between md:px-6">
+      <div className="flex flex-col gap-4 border-b border-[var(--color-border)] bg-[var(--color-brand-subtle)] p-4 @4xl/monthly-agenda:flex-row @4xl/monthly-agenda:items-center @4xl/monthly-agenda:justify-between @4xl/monthly-agenda:px-6">
         <div>
           <p className="m-0 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
             Día para gestionar
@@ -183,10 +183,10 @@ export function MonthlyAgendaDaySelector({
             {capitalizeFirst(selectedDateLabel)}
           </p>
         </div>
-        <div className="flex flex-col items-stretch gap-2 sm:items-end">
-          <div className="flex flex-col gap-2 sm:flex-row">
+        <div className="flex flex-col items-stretch gap-2 @4xl/monthly-agenda:items-end">
+          <div className="grid grid-cols-2 gap-2 @4xl/monthly-agenda:grid-cols-3">
             <Link
-              className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] bg-white px-4 text-sm font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-soft)]"
+              className="col-span-2 flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] bg-white px-4 text-center text-sm leading-5 font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-soft)] @4xl/monthly-agenda:col-span-1"
               href={selectedDayPath}
             >
               <CalendarDays aria-hidden="true" size={17} />
@@ -195,7 +195,7 @@ export function MonthlyAgendaDaySelector({
             {canCreateForSelectedDate ? (
               <>
                 <Link
-                  className="flex min-h-11 items-center justify-center gap-2 rounded-xl border-0 bg-[var(--color-brand)] px-4 text-sm font-bold text-white no-underline shadow-[0_0.45rem_1.2rem_rgb(20_125_115/18%)] hover:bg-[var(--color-brand-dark)]"
+                  className="flex min-h-11 items-center justify-center gap-2 rounded-xl border-0 bg-[var(--color-brand)] px-3 text-center text-sm leading-5 font-bold text-white no-underline shadow-[0_0.45rem_1.2rem_rgb(20_125_115/18%)] hover:bg-[var(--color-brand-dark)] @xl/monthly-agenda:px-4"
                   href={`${buildAgendaPath({
                     weekStartDate: selectedDate,
                     view: "day",
@@ -207,7 +207,7 @@ export function MonthlyAgendaDaySelector({
                   Nuevo turno
                 </Link>
                 <Link
-                  className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] bg-white px-4 text-sm font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-soft)]"
+                  className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] bg-white px-3 text-center text-sm leading-5 font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-soft)] @xl/monthly-agenda:px-4"
                   href={buildAgendaPath({
                     weekStartDate: selectedDate,
                     view: "day",
@@ -223,7 +223,7 @@ export function MonthlyAgendaDaySelector({
           </div>
           {!canCreateForSelectedDate ? (
             <p
-              className="m-0 px-1 text-right text-xs leading-5 text-[var(--color-muted)]"
+              className="m-0 px-1 text-left text-xs leading-5 text-[var(--color-muted)] @4xl/monthly-agenda:text-right"
               role="note"
             >
               Nota: en los días pasados podés consultar turnos y registrar
@@ -236,8 +236,8 @@ export function MonthlyAgendaDaySelector({
       <div className="grid grid-cols-7 border-b border-[var(--color-border)] bg-[var(--color-brand-subtle)]">
         {weekDayLabels.map(([shortLabel, label]) => (
           <div className="px-1 py-3 text-center text-xs font-bold" key={label}>
-            <span className="sm:hidden">{shortLabel}</span>
-            <span className="hidden sm:inline">{label}</span>
+            <span className="@lg/monthly-agenda:hidden">{shortLabel}</span>
+            <span className="hidden @lg/monthly-agenda:inline">{label}</span>
           </div>
         ))}
       </div>
@@ -272,39 +272,41 @@ export function MonthlyAgendaDaySelector({
               aria-current={day.date === currentDate ? "date" : undefined}
               aria-label={`${fullDateFormatter.format(date)}. ${day.isCurrentMonth ? `${accessibleAppointmentText} ${blockText}. ` : ""}Seleccionar día.`}
               aria-pressed={day.date === selectedDate}
-              className={`min-h-24 cursor-pointer border-t-0 border-r border-b border-l-0 border-[var(--color-border)] p-0.5 text-left text-[var(--color-foreground)] hover:bg-[var(--color-brand-soft)] focus-visible:z-10 sm:min-h-32 sm:p-3 ${day.date === selectedDate ? "bg-[var(--color-brand-soft)] ring-2 ring-inset ring-[var(--color-brand)]" : day.isCurrentMonth ? "bg-white" : "bg-[var(--color-brand-subtle)] text-[var(--color-muted)]"}`}
+              className={`flex min-h-24 cursor-pointer flex-col border-t-0 border-r border-b border-l-0 border-[var(--color-border)] p-1 text-left text-[var(--color-foreground)] hover:bg-[var(--color-brand-soft)] focus-visible:z-10 @lg/monthly-agenda:min-h-32 @lg/monthly-agenda:p-3 ${day.date === selectedDate ? "bg-[var(--color-brand-soft)] ring-2 ring-inset ring-[var(--color-brand)]" : day.isCurrentMonth ? "bg-white" : "bg-[var(--color-brand-subtle)] text-[var(--color-muted)]"}`}
               key={day.date}
               onClick={() => setSelectedDate(day.date)}
               type="button"
             >
-              <span
-                className={`grid size-7 place-items-center rounded-full text-xs font-bold sm:size-8 sm:text-sm ${day.date === currentDate ? "bg-[var(--color-brand)] text-white" : ""}`}
-              >
-                {day.dayOfMonth}
+              <span className="flex min-h-7 w-full shrink-0 items-start @lg/monthly-agenda:min-h-8">
+                <span
+                  className={`grid size-7 place-items-center rounded-full text-xs font-bold @lg/monthly-agenda:size-8 @lg/monthly-agenda:text-sm ${day.date === currentDate ? "bg-[var(--color-brand)] text-white" : ""}`}
+                >
+                  {day.dayOfMonth}
+                </span>
               </span>
               {day.isCurrentMonth &&
               (appointmentCount > 0 || blockCount > 0) ? (
-                <span className="mt-1.5 flex flex-col gap-1 sm:mt-3">
+                <span className="mt-1.5 flex w-full min-w-0 flex-col gap-1 @lg/monthly-agenda:mt-3">
                   {appointmentCount > 0 ? (
                     <>
                       {visibleSpecialties.map((specialty) => (
                         <span
-                          className={`rounded-md px-1 py-1 text-center text-[0.55rem] leading-3 font-bold sm:text-[0.68rem] ${specialty.className}`}
+                          className={`rounded-md px-1 py-1 text-center text-[0.55rem] leading-3 font-bold @lg/monthly-agenda:text-[0.68rem] ${specialty.className}`}
                           data-label={`${specialty.shortLabel} · ${specialty.count}`}
                           data-specialty={specialty.value}
                           key={specialty.value}
                         >
-                          <span className="sm:hidden">
+                          <span className="@lg/monthly-agenda:hidden">
                             <span className="block">{specialty.mobileLabel}</span>
                             <span className="block">{specialty.count}</span>
                           </span>
-                          <span className="hidden sm:inline">
+                          <span className="hidden @lg/monthly-agenda:inline">
                             {specialty.shortLabel} · {specialty.count}
                           </span>
                         </span>
                       ))}
                       {hiddenSpecialtyCount > 0 ? (
-                        <span className="rounded-md bg-[var(--color-neutral-soft)] px-1 py-1 text-center text-[0.55rem] leading-3 font-bold text-[var(--color-muted)] sm:text-[0.68rem]">
+                        <span className="rounded-md bg-[var(--color-neutral-soft)] px-1 py-1 text-center text-[0.55rem] leading-3 font-bold text-[var(--color-muted)] @lg/monthly-agenda:text-[0.68rem]">
                           +{hiddenSpecialtyCount}{" "}
                           {hiddenSpecialtyCount === 1
                             ? "especialidad"
@@ -314,7 +316,7 @@ export function MonthlyAgendaDaySelector({
                     </>
                   ) : null}
                   {blockCount > 0 ? (
-                    <span className="rounded-md bg-[var(--color-neutral-soft)] px-1 py-1 text-center text-[0.58rem] leading-3 font-bold text-[var(--color-muted)] sm:text-[0.68rem]">
+                    <span className="rounded-md bg-[var(--color-neutral-soft)] px-1 py-1 text-center text-[0.58rem] leading-3 font-bold text-[var(--color-muted)] @lg/monthly-agenda:text-[0.68rem]">
                       {blockText}
                     </span>
                   ) : null}
