@@ -1867,3 +1867,70 @@ comportamiento de los turnos.
   producción y aprobación visual manual.
 - No se identificaron cambios pendientes en fechas ni reglas de turnos dentro
   de este sprint.
+
+## Sprint 025 — Fixture RLS de turnos aislado
+
+- **Fecha:** 30 de agosto de 2026
+- **Estado:** publicado y mergeado
+- **Issue:** [#79](https://github.com/daifernandez/odontosync/issues/79)
+- **Rama:** `codex/sprint-025-isolated-appointments-rls`
+- **Publicación:** [PR #80](https://github.com/daifernandez/odontosync/pull/80),
+  merge commit `6d42b13`
+
+### Objetivo
+
+Evitar que la prueba RLS de turnos dependa del primer usuario real del proyecto
+y colisione con sus turnos al construir escenarios relativos a la hora actual.
+
+### Resultado
+
+- El fixture crea una identidad de Supabase Auth propia con un identificador
+  aleatorio dentro de la transacción de prueba.
+- El perfil, los pacientes y los turnos del fixture pertenecen únicamente a esa
+  identidad temporal y se revierten con el `ROLLBACK` existente.
+- Se eliminó la selección de `auth.users LIMIT 1`, por lo que los turnos reales
+  dejaron de influir en la verificación.
+- Una regresión automatizada protege el contrato de aislamiento, la marca del
+  fixture y la conservación del rollback.
+- No se modificaron políticas, permisos, migraciones, esquema, interfaz ni
+  comportamiento productivo.
+
+### Criterios verificados
+
+- La prueba enlazada de turnos aprueba aunque existan turnos reales para los
+  usuarios del proyecto.
+- Se conservan los casos de usuario anónimo, identidad ajena, propietario,
+  estados, superposición y reprogramación.
+- Las cuatro suites RLS enlazadas aprueban.
+- Una consulta posterior a la ejecución confirmó cero identidades de fixture
+  persistentes.
+- La batería completa del proyecto permanece aprobada.
+
+### Skills aplicadas
+
+- `project-sprint-workflow` para acordar el cambio, aislar la implementación y
+  separar el cierre documental.
+- Supabase y `supabase-postgres-best-practices` para verificar el uso de RLS,
+  transacciones y datos de prueba.
+- `security-sprint-review` para conservar los casos negativos y comprobar que
+  el fixture no deje datos persistentes.
+- `odontosync-release-check` para revisar el diff, ejecutar la batería final,
+  publicar la rama y comprobar GitHub Actions.
+
+### Verificaciones
+
+- Pruebas: 36 archivos y 224 casos aprobados.
+- TypeScript, ESLint, Prisma y build de producción: aprobados.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- Las cuatro suites RLS enlazadas y el asesor de seguridad: aprobados sin
+  errores.
+- GitHub Actions: aprobado en 53 segundos en el PR funcional.
+- La consulta posterior al rollback informó 0 usuarios marcados como fixture.
+
+### Riesgo residual y próximos pasos
+
+- Permanece la advertencia externa conocida de protección contra contraseñas
+  filtradas desactivada, postergada en el issue #19 hasta contar con un plan de
+  Supabase compatible o cambiar las condiciones del proyecto.
+- No quedaron cambios funcionales, visuales ni de datos pendientes dentro de
+  este sprint.
