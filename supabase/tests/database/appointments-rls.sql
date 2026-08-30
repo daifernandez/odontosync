@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE TEMP TABLE appointments_rls_test_context ON COMMIT DROP AS
 SELECT
-    id AS owner_id,
+    gen_random_uuid() AS owner_id,
     gen_random_uuid() AS other_id,
     gen_random_uuid() AS active_patient_id,
     gen_random_uuid() AS inactive_patient_id,
@@ -14,18 +14,20 @@ SELECT
     gen_random_uuid() AS ongoing_confirmed_appointment_id,
     gen_random_uuid() AS reschedule_original_id,
     gen_random_uuid() AS overlap_original_id,
-    gen_random_uuid() AS overlap_blocker_id
-FROM auth.users
-LIMIT 1;
+    gen_random_uuid() AS overlap_blocker_id;
 
 GRANT SELECT ON appointments_rls_test_context TO authenticated;
 
+INSERT INTO auth.users (id, raw_user_meta_data)
+SELECT owner_id, '{"fixture":"appointments_rls"}'::jsonb
+FROM appointments_rls_test_context;
+
+INSERT INTO public.profiles (id, full_name)
+SELECT owner_id, 'Appointment RLS fixture'
+FROM appointments_rls_test_context;
+
 DO $$
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM appointments_rls_test_context) THEN
-        RAISE EXCEPTION 'Appointment RLS verification requires one Supabase Auth user';
-    END IF;
-
     IF NOT EXISTS (
         SELECT 1
         FROM pg_class AS tables
