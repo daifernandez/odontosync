@@ -18,14 +18,12 @@ function applyProtectedResponseHeaders(
 }
 
 function createNextResponse(
-  requestHeaders: Headers,
+  request: NextRequest,
   contentSecurityPolicy: string,
 ) {
   return applyProtectedResponseHeaders(
     NextResponse.next({
-      request: {
-        headers: requestHeaders,
-      },
+      request,
     }),
     contentSecurityPolicy,
   );
@@ -58,29 +56,29 @@ export async function updateSession(request: NextRequest) {
     supabaseUrl: url,
     isDevelopment: process.env.NODE_ENV === "development",
   });
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-nonce", nonce);
-  requestHeaders.set("Content-Security-Policy", contentSecurityPolicy);
+  request.headers.set("x-nonce", nonce);
+  request.headers.set("Content-Security-Policy", contentSecurityPolicy);
 
-  let response = createNextResponse(requestHeaders, contentSecurityPolicy);
+  let response = createNextResponse(request, contentSecurityPolicy);
 
   const supabase = createServerClient(url, publishableKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll();
       },
-      setAll(cookiesToSet) {
+      setAll(cookiesToSet, headers) {
         cookiesToSet.forEach(({ name, value }) => {
           request.cookies.set(name, value);
         });
 
-        response = createNextResponse(
-          requestHeaders,
-          contentSecurityPolicy,
-        );
+        response = createNextResponse(request, contentSecurityPolicy);
 
         cookiesToSet.forEach(({ name, value, options }) => {
           response.cookies.set(name, value, options);
+        });
+
+        Object.entries(headers).forEach(([name, value]) => {
+          response.headers.set(name, value);
         });
       },
     },
