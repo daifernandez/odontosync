@@ -3,7 +3,8 @@ BEGIN;
 CREATE TEMP TABLE instruction_templates_rls_test_context ON COMMIT DROP AS
 SELECT
     id AS owner_id,
-    gen_random_uuid() AS other_id
+    gen_random_uuid() AS other_id,
+    'RLS template ' || gen_random_uuid()::text AS template_title
 FROM auth.users
 LIMIT 1;
 
@@ -127,7 +128,7 @@ INSERT INTO public.instruction_templates (
 )
 SELECT
     owner_id,
-    'Cuidados posteriores',
+    template_title,
     'surgery',
     'Indicaciones generales',
     'numbered',
@@ -136,7 +137,13 @@ FROM instruction_templates_rls_test_context;
 
 DO $$
 BEGIN
-    IF (SELECT count(*) FROM public.instruction_templates) <> 1 THEN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM public.instruction_templates
+        WHERE title = (
+            SELECT template_title FROM instruction_templates_rls_test_context
+        )
+    ) THEN
         RAISE EXCEPTION 'Owner could not read their instruction template';
     END IF;
 END;
@@ -209,11 +216,14 @@ SET LOCAL ROLE authenticated;
 
 UPDATE public.instruction_templates
 SET
-    title = 'Cuidados posteriores actualizados',
+    title = (
+        SELECT template_title || ' updated'
+        FROM instruction_templates_rls_test_context
+    ),
     list_style = 'checks',
     updated_at = current_timestamp
-WHERE id = (
-    SELECT id FROM public.instruction_templates LIMIT 1
+WHERE title = (
+    SELECT template_title FROM instruction_templates_rls_test_context
 );
 
 DO $$
@@ -221,7 +231,10 @@ BEGIN
     IF NOT EXISTS (
         SELECT 1
         FROM public.instruction_templates
-        WHERE title = 'Cuidados posteriores actualizados'
+        WHERE title = (
+            SELECT template_title || ' updated'
+            FROM instruction_templates_rls_test_context
+        )
           AND list_style = 'checks'
     ) THEN
         RAISE EXCEPTION 'Owner could not update their instruction template';
