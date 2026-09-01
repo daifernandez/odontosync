@@ -55,26 +55,26 @@ export default async function InstructionsPage() {
 
   return (
     <main className="mx-auto w-full max-w-[90rem] px-4 py-7 md:px-[clamp(1.5rem,3.5vw,4rem)] md:py-12">
-      <header className="relative overflow-hidden rounded-[2rem] bg-[#17332f] px-5 py-7 text-white shadow-[0_1.5rem_4rem_rgb(21_48_45/16%)] md:px-9 md:py-10">
+      <header className="relative overflow-hidden rounded-[1.75rem] bg-[#17332f] px-5 py-6 text-white shadow-[0_1.25rem_3rem_rgb(21_48_45/14%)] md:px-8 md:py-7">
         <div
           aria-hidden="true"
-          className="absolute -top-24 -right-20 size-72 rounded-full border-[3rem] border-[rgb(36_155_145/20%)]"
+          className="absolute -top-20 -right-16 size-60 rounded-full border-[2.5rem] border-[rgb(36_155_145/18%)]"
         />
-        <div className="relative flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
+        <div className="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="mb-3 text-[0.7rem] font-bold tracking-[0.14em] text-[#8ed5cf] uppercase">
+            <p className="mb-2 text-[0.68rem] font-bold tracking-[0.14em] text-[#8ed5cf] uppercase">
               Biblioteca profesional
             </p>
-            <h1 className="m-0 max-w-2xl text-[clamp(2rem,4vw,3.4rem)] leading-[1.02] tracking-[-0.055em]">
+            <h1 className="m-0 max-w-2xl text-[clamp(1.8rem,3vw,2.75rem)] leading-[1.05] tracking-[-0.05em]">
               Tus indicaciones, listas para usar.
             </h1>
-            <p className="mt-4 mb-0 max-w-xl text-sm leading-6 text-[#d6e7e4]">
+            <p className="mt-3 mb-0 max-w-2xl text-sm leading-6 text-[#d6e7e4]">
               Organizalas por especialidad, ajustá el contenido y prepará una
               hoja clara para imprimir cuando la necesites.
             </p>
           </div>
           <Link
-            className="inline-flex min-h-12 w-fit shrink-0 items-center gap-2 rounded-xl bg-[#37aea4] px-5 text-sm font-bold text-[#102b28] no-underline shadow-[0_0.7rem_2rem_rgb(0_0_0/18%)] transition-colors hover:bg-[#72cfc7]"
+            className="inline-flex min-h-11 w-fit shrink-0 items-center gap-2 rounded-xl bg-[#37aea4] px-4 text-sm font-bold text-[#102b28] no-underline shadow-[0_0.6rem_1.5rem_rgb(0_0_0/16%)] transition-colors hover:bg-[#72cfc7]"
             href="/app/indicaciones/nueva"
           >
             <Plus aria-hidden="true" size={18} />
