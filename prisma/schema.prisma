@@ -24,6 +24,16 @@ enum ExceptionalBlockCategory {
   @@map("exceptional_block_category")
 }
 
+enum InstructionListStyle {
+  NUMBERED  @map("numbered")
+  DASHES    @map("dashes")
+  BULLETS   @map("bullets")
+  CHECKS    @map("checks")
+  ODONTOSYNC @map("odontosync")
+
+  @@map("instruction_list_style")
+}
+
 enum AppointmentStatus {
   PENDING_CONFIRMATION @map("pending_confirmation")
   CONFIRMED            @map("confirmed")
@@ -61,8 +71,25 @@ model Profile {
   patients            Patient[]
   appointments        Appointment[]
   exceptionalAvailabilityBlocks ExceptionalAvailabilityBlock[]
+  instructionTemplates InstructionTemplate[]
 
   @@map("profiles")
+}
+
+model InstructionTemplate {
+  id           String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String               @map("user_id") @db.Uuid
+  title        String
+  specialty    AppointmentSpecialty
+  introduction String?
+  listStyle    InstructionListStyle @default(NUMBERED) @map("list_style")
+  points       String[]
+  createdAt    DateTime             @default(now()) @map("created_at") @db.Timestamptz(0)
+  updatedAt    DateTime             @default(now()) @map("updated_at") @db.Timestamptz(0)
+  profile      Profile              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, specialty, updatedAt(sort: Desc)])
+  @@map("instruction_templates")
 }
 
 model Patient {

@@ -31,6 +31,7 @@ describe("AppShell", () => {
     expect(markup).toContain('href="/app"');
     expect(markup).toContain('href="/app/agenda"');
     expect(markup).toContain('href="/app/pacientes"');
+    expect(markup).toContain('href="/app/indicaciones"');
     expect(markup).toContain('href="/app/configuracion"');
   });
 
@@ -69,9 +70,7 @@ describe("AppShell", () => {
     expect(markup).toMatch(
       /<button aria-disabled="true"[^>]+disabled="" title="Imprimibles: próximamente"/,
     );
-    expect(markup).toMatch(
-      /<button aria-disabled="true"[^>]+disabled="" title="Indicaciones: próximamente"/,
-    );
+    expect(markup).not.toContain('title="Indicaciones: próximamente"');
   });
 
   it("does not send demo navigation to authenticated routes", () => {
