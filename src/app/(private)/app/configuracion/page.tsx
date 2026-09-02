@@ -42,6 +42,12 @@ export default async function ConfigurationPage() {
         </Link>
         <Link
           className="rounded-full border border-[var(--color-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-subtle)]"
+          href="#documentos"
+        >
+          Datos para indicaciones
+        </Link>
+        <Link
+          className="rounded-full border border-[var(--color-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-subtle)]"
           href="#agenda"
         >
           Configuración de agenda
@@ -54,6 +60,11 @@ export default async function ConfigurationPage() {
             fullName: "",
             licenseNumber: null,
             licenseJurisdiction: null,
+            clinicName: null,
+            officeAddress: null,
+            contactPhone: null,
+            contactEmail: null,
+            additionalInformation: null,
             gridIntervalMinutes: 15,
             defaultAppointmentDurationMinutes: 30,
             defaultCleanupMinutes: 5,

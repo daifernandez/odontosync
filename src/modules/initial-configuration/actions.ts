@@ -32,6 +32,11 @@ export async function saveInitialConfigurationAction(
     fullName: readText(formData, "fullName"),
     licenseNumber: readText(formData, "licenseNumber"),
     licenseJurisdiction: readText(formData, "licenseJurisdiction"),
+    clinicName: readText(formData, "clinicName"),
+    officeAddress: readText(formData, "officeAddress"),
+    contactPhone: readText(formData, "contactPhone"),
+    contactEmail: readText(formData, "contactEmail"),
+    additionalInformation: readText(formData, "additionalInformation"),
     gridIntervalMinutes: readText(formData, "gridIntervalMinutes"),
     defaultAppointmentDurationMinutes: readText(
       formData,

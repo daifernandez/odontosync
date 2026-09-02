@@ -10,6 +10,11 @@ export type InitialConfiguration = {
   fullName: string;
   licenseNumber: string | null;
   licenseJurisdiction: string | null;
+  clinicName: string | null;
+  officeAddress: string | null;
+  contactPhone: string | null;
+  contactEmail: string | null;
+  additionalInformation: string | null;
   gridIntervalMinutes: number;
   defaultAppointmentDurationMinutes: number;
   defaultCleanupMinutes: number;
@@ -21,6 +26,11 @@ export type InitialConfigurationFieldErrors = Partial<
     | "fullName"
     | "licenseNumber"
     | "licenseJurisdiction"
+    | "clinicName"
+    | "officeAddress"
+    | "contactPhone"
+    | "contactEmail"
+    | "additionalInformation"
     | "gridIntervalMinutes"
     | "defaultAppointmentDurationMinutes"
     | "defaultCleanupMinutes"
@@ -44,6 +54,11 @@ type InitialConfigurationInput = {
   fullName: unknown;
   licenseNumber: unknown;
   licenseJurisdiction: unknown;
+  clinicName: unknown;
+  officeAddress: unknown;
+  contactPhone: unknown;
+  contactEmail: unknown;
+  additionalInformation: unknown;
   gridIntervalMinutes: unknown;
   defaultAppointmentDurationMinutes: unknown;
   defaultCleanupMinutes: unknown;
@@ -158,6 +173,11 @@ export function validateInitialConfiguration(
   const fullName = normalizeText(input.fullName);
   const licenseNumber = normalizeText(input.licenseNumber);
   const licenseJurisdiction = normalizeText(input.licenseJurisdiction);
+  const clinicName = normalizeText(input.clinicName);
+  const officeAddress = normalizeText(input.officeAddress);
+  const contactPhone = normalizeText(input.contactPhone);
+  const contactEmail = normalizeText(input.contactEmail).toLowerCase();
+  const additionalInformation = normalizeText(input.additionalInformation);
   const gridIntervalMinutes = parseInteger(input.gridIntervalMinutes);
   const defaultAppointmentDurationMinutes = parseInteger(
     input.defaultAppointmentDurationMinutes,
@@ -177,6 +197,32 @@ export function validateInitialConfiguration(
   if (licenseJurisdiction.length > 100) {
     fieldErrors.licenseJurisdiction =
       "La jurisdicción admite hasta 100 caracteres.";
+  }
+
+  if (clinicName.length > 120) {
+    fieldErrors.clinicName =
+      "El nombre de la clínica admite hasta 120 caracteres.";
+  }
+
+  if (officeAddress.length > 160) {
+    fieldErrors.officeAddress = "La dirección admite hasta 160 caracteres.";
+  }
+
+  if (contactPhone.length > 50) {
+    fieldErrors.contactPhone = "El teléfono admite hasta 50 caracteres.";
+  }
+
+  if (
+    contactEmail.length > 254 ||
+    (contactEmail.length > 0 &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail))
+  ) {
+    fieldErrors.contactEmail = "Ingresá un email válido.";
+  }
+
+  if (additionalInformation.length > 160) {
+    fieldErrors.additionalInformation =
+      "La información adicional admite hasta 160 caracteres.";
   }
 
   if (
@@ -222,6 +268,11 @@ export function validateInitialConfiguration(
       fullName,
       licenseNumber: licenseNumber || null,
       licenseJurisdiction: licenseJurisdiction || null,
+      clinicName: clinicName || null,
+      officeAddress: officeAddress || null,
+      contactPhone: contactPhone || null,
+      contactEmail: contactEmail || null,
+      additionalInformation: additionalInformation || null,
       gridIntervalMinutes: gridIntervalMinutes as number,
       defaultAppointmentDurationMinutes:
         defaultAppointmentDurationMinutes as number,

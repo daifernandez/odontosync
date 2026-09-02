@@ -6,13 +6,25 @@ import type { InitialConfiguration } from "./domain/initial-configuration";
 
 type Profile = Pick<
   InitialConfiguration,
-  "fullName" | "licenseNumber" | "licenseJurisdiction"
+  | "fullName"
+  | "licenseNumber"
+  | "licenseJurisdiction"
+  | "clinicName"
+  | "officeAddress"
+  | "contactPhone"
+  | "contactEmail"
+  | "additionalInformation"
 >;
 
 type ProfileRow = {
   full_name: string;
   license_number: string | null;
   license_jurisdiction: string | null;
+  clinic_name: string | null;
+  office_address: string | null;
+  contact_phone: string | null;
+  contact_email: string | null;
+  additional_information: string | null;
 };
 
 type AgendaSettingsRow = {
@@ -35,7 +47,9 @@ export const getProfile = cache(async (): Promise<Profile | null> => {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("profiles")
-    .select("full_name, license_number, license_jurisdiction")
+    .select(
+      "full_name, license_number, license_jurisdiction, clinic_name, office_address, contact_phone, contact_email, additional_information",
+    )
     .maybeSingle();
 
   if (error) {
@@ -49,6 +63,11 @@ export const getProfile = cache(async (): Promise<Profile | null> => {
         fullName: row.full_name,
         licenseNumber: row.license_number,
         licenseJurisdiction: row.license_jurisdiction,
+        clinicName: row.clinic_name,
+        officeAddress: row.office_address,
+        contactPhone: row.contact_phone,
+        contactEmail: row.contact_email,
+        additionalInformation: row.additional_information,
       }
     : null;
 });
@@ -105,6 +124,11 @@ export async function saveInitialConfiguration(
     p_full_name: configuration.fullName,
     p_license_number: configuration.licenseNumber ?? "",
     p_license_jurisdiction: configuration.licenseJurisdiction ?? "",
+    p_clinic_name: configuration.clinicName ?? "",
+    p_office_address: configuration.officeAddress ?? "",
+    p_contact_phone: configuration.contactPhone ?? "",
+    p_contact_email: configuration.contactEmail ?? "",
+    p_additional_information: configuration.additionalInformation ?? "",
     p_grid_interval_minutes: configuration.gridIntervalMinutes,
     p_default_appointment_duration_minutes:
       configuration.defaultAppointmentDurationMinutes,

@@ -11,8 +11,8 @@ export function PrintInstructionButton() {
       type="button"
     >
       <Printer aria-hidden="true" size={17} />
-      <span className="min-[30rem]:hidden">Imprimir / PDF</span>
-      <span className="hidden min-[30rem]:inline">
+      <span className="xl:hidden">Imprimir / PDF</span>
+      <span className="hidden xl:inline">
         Imprimir o guardar como PDF
       </span>
     </button>

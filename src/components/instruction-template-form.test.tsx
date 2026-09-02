@@ -16,6 +16,11 @@ describe("InstructionTemplateForm", () => {
           fullName: "Dra. Ana Pérez",
           licenseNumber: "12345",
           licenseJurisdiction: "CABA",
+          clinicName: null,
+          officeAddress: null,
+          contactPhone: null,
+          contactEmail: null,
+          additionalInformation: null,
         }}
       />,
     );
