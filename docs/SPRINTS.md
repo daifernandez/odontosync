@@ -2012,3 +2012,78 @@ a pacientes ni turnos.
   está desactivada; el seguimiento general permanece en el issue #19.
 - Eliminar o duplicar plantillas, almacenar PDFs y asociar indicaciones con
   pacientes o turnos quedaron fuera de alcance.
+
+## Sprint 028 — Pulido UX de indicaciones
+
+- **Fecha:** 2 de septiembre de 2026
+- **Estado:** publicado y mergeado
+- **Issue:** [#88](https://github.com/daifernandez/odontosync/issues/88)
+- **Rama:** `codex/sprint-028-pulido-ux-indicaciones`
+- **Publicación:** [PR #89](https://github.com/daifernandez/odontosync/pull/89),
+  merge commit `08ec359`
+
+### Objetivo
+
+Pulir la biblioteca de indicaciones para que sus controles y estados sean
+claros, compactos y consistentes en escritorio y mobile, sin sumar nuevas
+funciones ni alterar los datos guardados.
+
+### Resultado
+
+- Se quitó de la interfaz el contador redundante `N resultados` al buscar o
+  filtrar plantillas.
+- La cantidad filtrada permanece disponible como anuncio no visible para
+  tecnologías de asistencia.
+- El botón para restablecer filtros conserva la estética secundaria aprobada y
+  deja de competir visualmente con el contenido de la biblioteca.
+- Los estados de biblioteca vacía, búsqueda sin coincidencias y error utilizan
+  menos altura, tipografía y espaciado en mobile sin reducir las acciones
+  táctiles esenciales.
+- El estado de carga replica la estructura y las dimensiones responsive de la
+  biblioteca actual para reducir saltos al aparecer el contenido.
+- No se modificaron plantillas, esquema, persistencia, autenticación, permisos
+  ni RLS.
+
+### Criterios verificados
+
+- El contador de resultados no aparece visualmente al aplicar una búsqueda o
+  especialidad.
+- Las actualizaciones de resultados conservan un anuncio accesible y los
+  controles mantienen nombre semántico y foco nativo.
+- Los estados vacío, sin coincidencias, carga y error son compactos en mobile y
+  mantienen su siguiente acción visible.
+- La biblioteca no presenta desplazamiento horizontal accidental a 320 ni a
+  1280 píxeles.
+- El recorrido de buscar, filtrar, restablecer, abrir una nueva plantilla,
+  editar y acceder a la vista imprimible continúa funcionando.
+
+### Skills aplicadas
+
+- `project-sprint-workflow` para acordar el alcance, separar la implementación
+  del cierre documental y conservar abierto el issue hasta este PR.
+- `usability-review` para convertir densidad, estados, feedback, mobile y
+  accesibilidad básica en criterios observables.
+- Next.js y React Best Practices para mantener correctos los estados especiales
+  del App Router y revisar los componentes TSX modificados.
+- Browser para comprobar el flujo real, las dimensiones responsive, la consola
+  y el desbordamiento horizontal.
+- `odontosync-release-check` para revisar el diff, ejecutar la batería completa,
+  publicar la rama y comprobar GitHub Actions.
+
+### Verificaciones
+
+- Pruebas: 48 archivos y 259 casos aprobados.
+- TypeScript, ESLint y build de producción: aprobados.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- GitHub Actions: aprobado en 1 minuto y 3 segundos en el PR funcional.
+- Revisión visual aprobada por Dai después de comprobar 320 y 1280 píxeles.
+- La consola no presentó errores durante el recorrido verificado.
+- No aplicaron controles de Prisma, Supabase ni RLS porque el sprint no cambió
+  esquema, persistencia, consultas, permisos o autenticación.
+
+### Riesgo residual y próximos pasos
+
+- No se identificaron riesgos bloqueantes dentro del alcance del sprint.
+- La personalización premium de logo, encabezado, colores y firma continúa
+  separada en el backlog de producto
+  [#85](https://github.com/daifernandez/odontosync/issues/85).
