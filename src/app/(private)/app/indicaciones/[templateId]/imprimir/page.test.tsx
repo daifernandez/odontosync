@@ -64,6 +64,22 @@ describe("PrintableInstructionPage", () => {
     expect(markup).toContain("Dra. Ana Pérez");
     expect(markup).toContain("Cuidados posteriores");
     expect(markup).toContain("Imprimir o guardar como PDF");
+    expect(markup).toContain("Imprimir / PDF");
+    expect(markup).toContain(
+      "grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]",
+    );
+    expect(markup).toContain('aria-label="Imprimir o guardar como PDF"');
+    expect(markup).toContain('class="min-[30rem]:hidden"');
+    expect(markup).toContain('class="hidden min-[30rem]:inline"');
+    expect(markup).toContain('class="px-3 py-5 md:px-8 md:py-10"');
+    expect(markup).toContain("px-3 py-2.5 text-xs leading-5");
+    expect(markup).toContain("max-w-[30rem] md:max-w-[60rem]");
+    expect(markup).toContain("w-fit max-w-full");
+    expect(markup).toContain(
+      "min-[30rem]:grid-cols-[auto_minmax(0,1fr)]",
+    );
+    expect(markup).toContain("hidden text-[0.72rem]");
+    expect(markup).toContain("md:block");
     expect(markup).toContain("instruction-screen-only");
     expect(markup).toContain("instruction-print-root");
   });

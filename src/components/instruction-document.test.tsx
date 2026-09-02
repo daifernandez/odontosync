@@ -38,13 +38,24 @@ describe("InstructionDocument", () => {
     );
     expect(markup).toContain("flex items-center justify-end");
     expect(markup).toContain("border-t border-[#d7e5e2]");
-    expect(markup).toContain('class="size-5 shrink-0"');
-    expect(markup).toContain("text-[0.68rem] font-semibold");
+    expect(markup).toContain("size-4 shrink-0 md:size-5");
+    expect(markup).toContain("text-[0.64rem] font-semibold");
+    expect(markup).toContain("md:text-[0.68rem]");
+    expect(markup).toContain(
+      "min-h-0 min-[30rem]:min-h-[42rem] md:min-h-[70rem]",
+    );
+    expect(markup).toContain("px-5 pt-5 pb-4");
+    expect(markup).toContain("md:px-[clamp(1.5rem,4.5vw,3.75rem)]");
     expect(markup).toContain("text-[clamp(1rem,2.2vw,1.25rem)]");
-    expect(markup).toContain("text-[clamp(1.65rem,3.8vw,2.35rem)]");
+    expect(markup).toContain("text-[1.35rem] leading-[1.15]");
+    expect(markup).toContain(
+      "md:text-[clamp(1.65rem,3.8vw,2.35rem)] md:leading-[1.12]",
+    );
     expect(markup).toContain('class="h-px w-12');
-    expect(markup).toContain("grid size-6 place-items-center");
-    expect(markup).toContain("text-[0.84rem] leading-6");
+    expect(markup).toContain("grid size-5 place-items-center");
+    expect(markup).toContain("md:size-6");
+    expect(markup).toContain("text-[0.78rem] leading-[1.2rem]");
+    expect(markup).toContain("md:text-[0.84rem] md:leading-6");
     expect(markup).not.toContain("text-[clamp(2rem,5vw,3.35rem)]");
     expect(markup).not.toContain("border-t-2 border-[#147d73]");
     expect(markup).not.toContain("Paciente");
@@ -90,7 +101,8 @@ describe("InstructionDocument", () => {
       />,
     );
 
-    expect(markup).toContain("min-h-[42rem]");
+    expect(markup).toContain("min-h-0");
+    expect(markup).toContain("min-[30rem]:min-h-[42rem]");
     expect(markup).toContain("max-w-[30rem]");
     expect(markup).not.toContain("min-h-[70rem]");
   });

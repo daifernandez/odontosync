@@ -66,10 +66,10 @@ export default async function PrintableInstructionPage({
         : null;
 
   return (
-    <main className="px-4 py-7 md:px-8 md:py-10">
-      <div className="instruction-screen-only mx-auto mb-5 max-w-[60rem]">
+    <main className="px-3 py-5 md:px-8 md:py-10">
+      <div className="instruction-screen-only mx-auto max-w-[30rem] md:max-w-[60rem] mb-4 md:mb-5">
         <Link
-          className="inline-flex min-h-10 items-center gap-2 text-sm font-bold text-[var(--color-brand-dark)] no-underline hover:underline"
+          className="inline-flex min-h-10 items-center gap-2 text-xs font-bold text-[var(--color-brand-dark)] no-underline hover:underline sm:text-sm"
           href="/app/indicaciones"
         >
           <ArrowLeft aria-hidden="true" size={17} />
@@ -78,26 +78,26 @@ export default async function PrintableInstructionPage({
 
         {feedback ? (
           <p
-            className="mt-4 mb-0 rounded-xl border border-[var(--color-border)] bg-[var(--color-brand-soft)] px-4 py-3 text-sm font-semibold text-[var(--color-brand-dark)]"
+            className="mt-3 mb-0 w-fit max-w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-brand-soft)] px-3 py-2.5 text-xs leading-5 font-semibold text-[var(--color-brand-dark)] md:mt-4 md:px-4 md:py-3 md:text-sm"
             role="status"
           >
             {feedback}
           </p>
         ) : null}
 
-        <div className="mt-4 flex flex-col gap-3 rounded-[var(--radius-large)] border border-[var(--color-border)] bg-white p-4 shadow-[var(--shadow-card)] sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-3 flex flex-col gap-2.5 rounded-[1.25rem] border border-[var(--color-border)] bg-white p-3 shadow-[var(--shadow-card)] min-[30rem]:grid min-[30rem]:grid-cols-[auto_minmax(0,1fr)] min-[30rem]:items-center min-[30rem]:gap-3 md:mt-4 md:flex md:items-center md:justify-between md:rounded-[var(--radius-large)] md:p-4">
           <div>
-            <p className="m-0 text-[0.68rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
+            <p className="m-0 text-[0.62rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase md:text-[0.68rem]">
               Vista final
             </p>
-            <p className="mt-1 mb-0 text-xs leading-5 text-[var(--color-muted)]">
+            <p className="mt-1 mb-0 hidden text-[0.72rem] leading-[1.1rem] text-[var(--color-muted)] md:block md:text-xs md:leading-5">
               Revisá la hoja y luego elegí imprimir o guardar como PDF desde tu
               navegador.
             </p>
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row">
+          <div className="grid grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-2 md:flex md:flex-row">
             <Link
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] px-4 text-sm font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-soft)]"
+              className="inline-flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] px-2 text-xs font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-soft)] md:px-4 md:text-sm"
               href={`/app/indicaciones/${template.id}/editar`}
             >
               <FilePenLine aria-hidden="true" size={17} />
@@ -108,7 +108,7 @@ export default async function PrintableInstructionPage({
         </div>
       </div>
 
-      <div className="instruction-print-root mx-auto max-w-[60rem]">
+      <div className="instruction-print-root mx-auto max-w-[30rem] md:max-w-[60rem]">
         <InstructionDocument
           profile={
             profile ?? {
