@@ -1934,3 +1934,81 @@ y colisione con sus turnos al construir escenarios relativos a la hora actual.
   Supabase compatible o cambiar las condiciones del proyecto.
 - No quedaron cambios funcionales, visuales ni de datos pendientes dentro de
   este sprint.
+
+## Sprint 027 — Indicaciones imprimibles base
+
+- **Fecha:** 2 de septiembre de 2026
+- **Estado:** publicado y mergeado
+- **Issue:** [#84](https://github.com/daifernandez/odontosync/issues/84)
+- **Rama:** `codex/sprint-027-indicaciones-base`
+- **Publicación:** [PR #86](https://github.com/daifernandez/odontosync/pull/86),
+  merge commit `41ed2b1`
+
+### Objetivo
+
+Permitir que cada odontólogo cree, edite, organice y reutilice indicaciones
+generales, con una hoja clara para imprimir o guardar como PDF y sin asociarlas
+a pacientes ni turnos.
+
+### Resultado
+
+- Se incorporó una biblioteca privada de plantillas agrupadas por especialidad,
+  con búsqueda, filtro y estados vacío, carga y error.
+- El profesional puede definir título, introducción opcional, puntos extensos y
+  elegir entre listas numeradas, guiones, viñetas, checks o ícono OdontoSync.
+- Las plantillas pueden crearse, editarse y reutilizarse con distintos pacientes
+  sin guardar información clínica individual.
+- La vista final presenta una hoja A4 minimalista con datos profesionales,
+  contenido completo y una firma de marca OdontoSync discreta.
+- La biblioteca, el editor, los controles de impresión y la hoja se adaptaron a
+  escritorio y mobile, incluyendo anchos de 319 y 634 píxeles.
+- La persistencia aplica permisos mínimos y RLS forzada para que cada usuario
+  sólo pueda leer, crear y modificar sus propias plantillas.
+- Se actualizaron `fast-uri` y el `mysql2` transitivo de Prisma a versiones sin
+  los avisos detectados, sin degradar Prisma ni relajar el audit.
+
+### Criterios verificados
+
+- Una plantilla guardada reaparece en la biblioteca y puede editarse e
+  imprimirse posteriormente.
+- Se exige título, especialidad y al menos una indicación; los textos largos se
+  conservan sin recortes.
+- La aplicación no solicita ni persiste datos de pacientes en este flujo.
+- Un usuario anónimo o una identidad distinta no puede acceder a las plantillas
+  del propietario; tampoco se permite eliminarlas en este sprint.
+- La vista previa conserva el contenido y la jerarquía de la hoja imprimible.
+- El recorrido responsive no presenta desbordamiento horizontal y fue aprobado
+  visualmente por Dai.
+
+### Skills aplicadas
+
+- `project-sprint-workflow` para delimitar la entrega, separar el PR funcional
+  del cierre documental y conservar las ideas futuras fuera del alcance.
+- `usability-review` para iterar la jerarquía, densidad, controles, biblioteca y
+  experiencia responsive.
+- Supabase y `security-sprint-review` para persistencia, RLS, permisos mínimos y
+  pruebas de aislamiento entre profesionales.
+- Browser para revisar el flujo real y sus composiciones de escritorio y mobile.
+- `odontosync-release-check` para comprobar dependencias, Prisma, pruebas,
+  build, publicación y GitHub Actions.
+
+### Verificaciones
+
+- Pruebas: 46 archivos y 255 casos aprobados.
+- TypeScript, ESLint, Prisma y build de producción: aprobados.
+- Base vinculada al día con 19 migraciones.
+- Las cinco suites RLS vinculadas y el asesor de seguridad de Supabase se
+  ejecutaron sin errores.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- GitHub Actions: aprobado en 1 minuto y 5 segundos en el PR funcional.
+- Revisión visual aprobada en escritorio y en anchos de 319 y 634 píxeles.
+
+### Riesgo residual y próximos pasos
+
+- La personalización de logo, encabezado, colores y firma de marca permanece en
+  el backlog de producto [#85](https://github.com/daifernandez/odontosync/issues/85)
+  y no forma parte de esta entrega base.
+- Supabase continúa informando que la protección contra contraseñas filtradas
+  está desactivada; el seguimiento general permanece en el issue #19.
+- Eliminar o duplicar plantillas, almacenar PDFs y asociar indicaciones con
+  pacientes o turnos quedaron fuera de alcance.
