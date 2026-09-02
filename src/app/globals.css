@@ -48,3 +48,50 @@ button:focus-visible {
     transition-duration: 0.01ms !important;
   }
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+
+  body {
+    background: #ffffff;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .instruction-print-root,
+  .instruction-print-root * {
+    visibility: visible;
+  }
+
+  .instruction-screen-only {
+    display: none !important;
+  }
+
+  .instruction-print-root {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+  }
+
+  .instruction-document {
+    min-height: 269mm;
+    overflow: visible;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .instruction-document-header,
+  .instruction-document-footer,
+  .instruction-document-point {
+    break-inside: avoid;
+  }
+}

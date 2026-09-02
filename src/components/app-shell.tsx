@@ -43,7 +43,11 @@ const navigation: NavigationItem[] = [
     demoHref: "/demo/pacientes",
   },
   { label: "Imprimibles", icon: FileText },
-  { label: "Indicaciones", icon: ClipboardList },
+  {
+    label: "Indicaciones",
+    icon: ClipboardList,
+    href: "/app/indicaciones",
+  },
 ];
 
 function getInitials(fullName: string) {
