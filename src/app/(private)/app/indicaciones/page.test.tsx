@@ -60,6 +60,10 @@ describe("InstructionsPage", () => {
     expect(markup).toContain("Cirugía");
     expect(markup).toContain("Cuidados posteriores");
     expect(markup).toContain("Higiene diaria");
+    expect(markup).toContain("Descansá.");
+    expect(markup).toContain("Cepillate.");
+    expect(markup).toContain("1 plantilla");
+    expect(markup).not.toContain("Especialidades con indicaciones");
     expect(markup).toContain('href="/app/indicaciones/nueva"');
     expect(markup).toContain(
       'href="/app/indicaciones/00000000-0000-4000-8000-000000000010/editar"',
@@ -67,5 +71,9 @@ describe("InstructionsPage", () => {
     expect(markup).toContain(
       'href="/app/indicaciones/00000000-0000-4000-8000-000000000010/imprimir"',
     );
+    expect(markup).toContain("text-[1.55rem]");
+    expect(markup).toContain("md:text-[clamp(1.8rem,3vw,2.75rem)]");
+    expect(markup).toContain("line-clamp-2");
+    expect(markup).toContain("md:line-clamp-none");
   });
 });
