@@ -76,4 +76,17 @@ describe("InstructionsPage", () => {
     expect(markup).toContain("line-clamp-2");
     expect(markup).toContain("md:line-clamp-none");
   });
+
+  it("keeps the empty library compact on mobile", async () => {
+    mocks.listInstructionTemplates.mockResolvedValue([]);
+
+    const page = await InstructionsPage();
+    const markup = renderToStaticMarkup(page);
+
+    expect(markup).toContain("Tu biblioteca empieza en blanco");
+    expect(markup).toContain("min-h-72");
+    expect(markup).toContain("sm:min-h-[25rem]");
+    expect(markup).toContain("text-xl");
+    expect(markup).toContain("sm:text-2xl");
+  });
 });

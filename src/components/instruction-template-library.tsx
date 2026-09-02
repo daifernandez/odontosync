@@ -156,39 +156,37 @@ export function InstructionTemplateLibrary({
       </div>
 
       {hasActiveFilters ? (
-        <div className="mt-2 flex min-h-7 items-center justify-between gap-3 px-1">
-          <p
-            aria-live="polite"
-            className="m-0 text-xs text-[var(--color-muted)]"
+        <p aria-atomic="true" aria-live="polite" className="sr-only">
+          {filteredTemplates.length}{" "}
+          {filteredTemplates.length === 1 ? "resultado" : "resultados"}
+        </p>
+      ) : null}
+
+      {hasActiveFilters && groups.length > 0 ? (
+        <div className="mt-2 flex min-h-7 items-center justify-end px-1">
+          <button
+            aria-label="Restablecer filtros"
+            className="relative inline-flex min-h-8 cursor-pointer items-center gap-1 rounded-full border border-[rgb(219_230_228/70%)] bg-white/70 px-2 text-xs! font-semibold text-[var(--color-brand-dark)] transition-colors after:absolute after:-inset-x-1 after:-inset-y-1.5 after:content-[''] hover:border-[#9bcac5] hover:bg-[var(--color-brand-soft)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand)] sm:min-h-9 sm:gap-1.5 sm:px-3"
+            onClick={clearFilters}
+            type="button"
           >
-            {filteredTemplates.length}{" "}
-            {filteredTemplates.length === 1 ? "resultado" : "resultados"}
-          </p>
-          {groups.length > 0 ? (
-            <button
-              aria-label="Restablecer filtros"
-              className="relative inline-flex min-h-8 cursor-pointer items-center gap-1 rounded-full border border-[rgb(219_230_228/70%)] bg-white/70 px-2 text-xs! font-semibold text-[var(--color-brand-dark)] transition-colors after:absolute after:-inset-x-1 after:-inset-y-1.5 after:content-[''] hover:border-[#9bcac5] hover:bg-[var(--color-brand-soft)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand)] sm:min-h-9 sm:gap-1.5 sm:px-3"
-              onClick={clearFilters}
-              type="button"
-            >
-              <RotateCcw aria-hidden="true" size={10} />
-              Restablecer<span className="hidden sm:inline"> filtros</span>
-            </button>
-          ) : null}
+            <RotateCcw aria-hidden="true" size={10} />
+            Restablecer<span className="hidden sm:inline"> filtros</span>
+          </button>
         </div>
       ) : null}
 
       {groups.length === 0 ? (
         <section
           aria-labelledby="no-instruction-results-title"
-          className="mt-5 grid min-h-64 place-items-center rounded-[var(--radius-large)] border border-dashed border-[var(--color-border)] bg-white px-6 py-10 text-center shadow-[var(--shadow-card)]"
+          className="mt-5 grid min-h-52 place-items-center rounded-[var(--radius-large)] border border-dashed border-[var(--color-border)] bg-white px-4 py-8 text-center shadow-[var(--shadow-card)] sm:min-h-64 sm:px-6 sm:py-10"
         >
           <div className="max-w-sm">
-            <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[var(--color-brand-soft)] text-[var(--color-brand-dark)]">
-              <SearchX aria-hidden="true" size={23} />
+            <span className="mx-auto grid size-10 place-items-center rounded-xl bg-[var(--color-brand-soft)] text-[var(--color-brand-dark)] sm:size-12 sm:rounded-2xl">
+              <SearchX aria-hidden="true" size={21} />
             </span>
             <h2
-              className="mt-4 mb-0 text-xl tracking-[-0.03em]"
+              className="mt-3 mb-0 text-lg tracking-[-0.03em] sm:mt-4 sm:text-xl"
               id="no-instruction-results-title"
             >
               No encontramos indicaciones
@@ -197,7 +195,7 @@ export function InstructionTemplateLibrary({
               Probá con otras palabras o elegí otra especialidad.
             </p>
             <button
-              className="mt-5 min-h-11 cursor-pointer rounded-xl border border-[var(--color-border)] bg-white px-4 text-sm font-bold text-[var(--color-brand-dark)] hover:bg-[var(--color-brand-soft)]"
+              className="mt-4 min-h-11 cursor-pointer rounded-xl border border-[var(--color-border)] bg-white px-4 text-sm font-bold text-[var(--color-brand-dark)] hover:bg-[var(--color-brand-soft)] sm:mt-5"
               onClick={clearFilters}
               type="button"
             >
