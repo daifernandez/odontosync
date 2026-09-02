@@ -54,20 +54,20 @@ export default async function InstructionsPage() {
       </header>
 
       {templates.length === 0 ? (
-        <section className="mt-6 grid min-h-[25rem] place-items-center rounded-[var(--radius-large)] border border-dashed border-[var(--color-border)] bg-white px-6 py-12 text-center shadow-[var(--shadow-card)]">
+        <section className="mt-6 grid min-h-72 place-items-center rounded-[var(--radius-large)] border border-dashed border-[var(--color-border)] bg-white px-4 py-8 text-center shadow-[var(--shadow-card)] sm:min-h-[25rem] sm:px-6 sm:py-12">
           <div className="max-w-md">
-            <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-[var(--color-brand-soft)] text-[var(--color-brand-dark)]">
-              <BookOpenText aria-hidden="true" size={27} />
+            <span className="mx-auto grid size-12 place-items-center rounded-xl bg-[var(--color-brand-soft)] text-[var(--color-brand-dark)] sm:size-14 sm:rounded-2xl">
+              <BookOpenText aria-hidden="true" size={25} />
             </span>
-            <h2 className="mt-5 mb-0 text-2xl tracking-[-0.035em]">
+            <h2 className="mt-4 mb-0 text-xl tracking-[-0.035em] sm:mt-5 sm:text-2xl">
               Tu biblioteca empieza en blanco
             </h2>
-            <p className="mt-3 mb-0 text-sm leading-6 text-[var(--color-muted)]">
+            <p className="mt-2 mb-0 text-sm leading-6 text-[var(--color-muted)] sm:mt-3">
               Creá la primera indicación con tus propias palabras. Después
               podrás editarla y volver a imprimirla cuando quieras.
             </p>
             <Link
-              className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[var(--color-brand)] px-5 text-sm font-bold text-white no-underline hover:bg-[var(--color-brand-dark)]"
+              className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[var(--color-brand)] px-5 text-sm font-bold text-white no-underline hover:bg-[var(--color-brand-dark)] sm:mt-6"
               href="/app/indicaciones/nueva"
             >
               Crear primera indicación

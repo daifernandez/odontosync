@@ -107,7 +107,28 @@ describe("InstructionTemplateLibrary", () => {
     expect(markup).toContain("rounded-full");
     expect(markup).toContain("border-[rgb(219_230_228/70%)]");
     expect(markup).toContain("bg-white/70");
-    expect(markup).toContain("items-center justify-between");
+    expect(markup).toContain('aria-live="polite"');
+    expect(markup).toContain('class="sr-only">1 resultado</p>');
+    expect(markup).not.toContain(
+      'class="m-0 text-xs text-[var(--color-muted)]">1 resultado',
+    );
+    expect(markup).toContain("items-center justify-end");
     expect(markup).toContain("mt-8 flex min-w-0");
+  });
+
+  it("keeps the no-results state compact on mobile", () => {
+    reactMocks.useState
+      .mockReturnValueOnce(["sin coincidencias", vi.fn()])
+      .mockReturnValueOnce(["all", vi.fn()]);
+
+    const markup = renderToStaticMarkup(
+      <InstructionTemplateLibrary templates={templates} />,
+    );
+
+    expect(markup).toContain("No encontramos indicaciones");
+    expect(markup).toContain("min-h-52");
+    expect(markup).toContain("sm:min-h-64");
+    expect(markup).toContain("text-lg");
+    expect(markup).toContain("sm:text-xl");
   });
 });
