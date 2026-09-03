@@ -64,6 +64,16 @@ BEGIN
         RAISE EXCEPTION 'Agenda view preference schema is incomplete';
     END IF;
 
+    IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'profiles'
+          AND column_name = 'show_professional_data_on_instructions'
+    ) THEN
+        RAISE EXCEPTION 'Print-only preference must not be persisted in profiles';
+    END IF;
+
     IF has_function_privilege(
         'authenticated',
         'private.handle_new_auth_user()',
@@ -78,15 +88,15 @@ BEGIN
 
     IF NOT has_function_privilege(
         'authenticated',
-        'public.save_initial_configuration(text,text,text,integer,integer,integer,jsonb)',
+        'public.save_initial_configuration(text,text,text,text,text,text,text,text,integer,integer,integer,jsonb)',
         'EXECUTE'
     ) OR has_function_privilege(
         'anon',
-        'public.save_initial_configuration(text,text,text,integer,integer,integer,jsonb)',
+        'public.save_initial_configuration(text,text,text,text,text,text,text,text,integer,integer,integer,jsonb)',
         'EXECUTE'
     ) OR has_function_privilege(
         'service_role',
-        'public.save_initial_configuration(text,text,text,integer,integer,integer,jsonb)',
+        'public.save_initial_configuration(text,text,text,text,text,text,text,text,integer,integer,integer,jsonb)',
         'EXECUTE'
     ) THEN
         RAISE EXCEPTION 'Initial configuration RPC privileges are too broad or incomplete';
@@ -208,6 +218,11 @@ BEGIN
             'Anonymous attacker',
             '',
             '',
+            '',
+            '',
+            '',
+            '',
+            '',
             15,
             30,
             5,
@@ -303,6 +318,11 @@ BEGIN
             'Forged configuration',
             '',
             '',
+            '',
+            '',
+            '',
+            '',
+            '',
             15,
             30,
             5,
@@ -341,6 +361,11 @@ BEGIN
         'RLS owner RPC verification',
         'MP 1234',
         'Buenos Aires',
+        'Clínica de prueba',
+        'Calle 123',
+        '11 4444 5555',
+        'turnos@example.com',
+        'Atención con turno previo',
         15,
         30,
         5,
@@ -356,6 +381,11 @@ BEGIN
         WHERE full_name = 'RLS owner RPC verification'
           AND license_number = 'MP 1234'
           AND license_jurisdiction = 'Buenos Aires'
+          AND clinic_name = 'Clínica de prueba'
+          AND office_address = 'Calle 123'
+          AND contact_phone = '11 4444 5555'
+          AND contact_email = 'turnos@example.com'
+          AND additional_information = 'Atención con turno previo'
     ) OR (SELECT count(*) FROM public.weekly_availability_blocks) <> 2 THEN
         RAISE EXCEPTION 'The owner configuration RPC did not save every section';
     END IF;
@@ -363,6 +393,11 @@ BEGIN
     BEGIN
         PERFORM public.save_initial_configuration(
             'This update must roll back',
+            '',
+            '',
+            '',
+            '',
+            '',
             '',
             '',
             15,

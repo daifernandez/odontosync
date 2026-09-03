@@ -9,6 +9,11 @@ const validInput = {
   fullName: "  Daiana   Fernández ",
   licenseNumber: "  MP 1234 ",
   licenseJurisdiction: " Buenos Aires ",
+  clinicName: "  Clínica   del Parque ",
+  officeAddress: " Av. Siempre Viva 742 ",
+  contactPhone: " 11 4444 5555 ",
+  contactEmail: " TURNOS@CLINICA.COM ",
+  additionalInformation: " Atención con turno previo ",
   gridIntervalMinutes: "15",
   defaultAppointmentDurationMinutes: "30",
   defaultCleanupMinutes: "5",
@@ -33,6 +38,11 @@ describe("validateInitialConfiguration", () => {
         fullName: "Daiana Fernández",
         licenseNumber: "MP 1234",
         licenseJurisdiction: "Buenos Aires",
+        clinicName: "Clínica del Parque",
+        officeAddress: "Av. Siempre Viva 742",
+        contactPhone: "11 4444 5555",
+        contactEmail: "turnos@clinica.com",
+        additionalInformation: "Atención con turno previo",
         gridIntervalMinutes: 15,
         defaultAppointmentDurationMinutes: 30,
         defaultCleanupMinutes: 5,
@@ -49,6 +59,11 @@ describe("validateInitialConfiguration", () => {
       ...validInput,
       licenseNumber: " ",
       licenseJurisdiction: "",
+      clinicName: " ",
+      officeAddress: "",
+      contactPhone: " ",
+      contactEmail: "",
+      additionalInformation: " ",
     });
 
     expect(result.success).toBe(true);
@@ -56,7 +71,35 @@ describe("validateInitialConfiguration", () => {
     if (result.success) {
       expect(result.data.licenseNumber).toBeNull();
       expect(result.data.licenseJurisdiction).toBeNull();
+      expect(result.data.clinicName).toBeNull();
+      expect(result.data.officeAddress).toBeNull();
+      expect(result.data.contactPhone).toBeNull();
+      expect(result.data.contactEmail).toBeNull();
+      expect(result.data.additionalInformation).toBeNull();
     }
+  });
+
+  it("rejects invalid or oversized public professional data", () => {
+    expect(
+      validateInitialConfiguration({
+        ...validInput,
+        clinicName: "C".repeat(121),
+        officeAddress: "A".repeat(161),
+        contactPhone: "1".repeat(51),
+        contactEmail: "correo-invalido",
+        additionalInformation: "I".repeat(161),
+      }),
+    ).toEqual({
+      success: false,
+      fieldErrors: {
+        clinicName: "El nombre de la clínica admite hasta 120 caracteres.",
+        officeAddress: "La dirección admite hasta 160 caracteres.",
+        contactPhone: "El teléfono admite hasta 50 caracteres.",
+        contactEmail: "Ingresá un email válido.",
+        additionalInformation:
+          "La información adicional admite hasta 160 caracteres.",
+      },
+    });
   });
 
   it("requires at least one availability block", () => {

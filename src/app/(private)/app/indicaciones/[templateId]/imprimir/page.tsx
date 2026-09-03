@@ -1,10 +1,9 @@
-import { ArrowLeft, FilePenLine } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { InstructionDocument } from "@/components/instruction-document";
-import { PrintInstructionButton } from "@/components/print-instruction-button";
+import { PrintableInstructionView } from "@/components/printable-instruction-view";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile } from "@/modules/initial-configuration/repository";
 import { validateInstructionTemplateId } from "@/modules/instructions/domain/instruction-template";
@@ -67,7 +66,7 @@ export default async function PrintableInstructionPage({
 
   return (
     <main className="px-3 py-5 md:px-8 md:py-10">
-      <div className="instruction-screen-only mx-auto max-w-[30rem] md:max-w-[60rem] mb-4 md:mb-5">
+      <div className="instruction-screen-only mx-auto mb-4 max-w-[30rem] md:mb-5 md:max-w-[60rem]">
         <Link
           className="inline-flex min-h-10 items-center gap-2 text-xs font-bold text-[var(--color-brand-dark)] no-underline hover:underline sm:text-sm"
           href="/app/indicaciones"
@@ -84,42 +83,23 @@ export default async function PrintableInstructionPage({
             {feedback}
           </p>
         ) : null}
-
-        <div className="mt-3 flex flex-col gap-2.5 rounded-[1.25rem] border border-[var(--color-border)] bg-white p-3 shadow-[var(--shadow-card)] min-[30rem]:grid min-[30rem]:grid-cols-[auto_minmax(0,1fr)] min-[30rem]:items-center min-[30rem]:gap-3 md:mt-4 md:flex md:items-center md:justify-between md:rounded-[var(--radius-large)] md:p-4">
-          <div>
-            <p className="m-0 text-[0.62rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase md:text-[0.68rem]">
-              Vista final
-            </p>
-            <p className="mt-1 mb-0 hidden text-[0.72rem] leading-[1.1rem] text-[var(--color-muted)] md:block md:text-xs md:leading-5">
-              Revisá la hoja y luego elegí imprimir o guardar como PDF desde tu
-              navegador.
-            </p>
-          </div>
-          <div className="grid grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-2 md:flex md:flex-row">
-            <Link
-              className="inline-flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] px-2 text-xs font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-soft)] md:px-4 md:text-sm"
-              href={`/app/indicaciones/${template.id}/editar`}
-            >
-              <FilePenLine aria-hidden="true" size={17} />
-              Editar
-            </Link>
-            <PrintInstructionButton />
-          </div>
-        </div>
       </div>
 
-      <div className="instruction-print-root mx-auto max-w-[30rem] md:max-w-[60rem]">
-        <InstructionDocument
-          profile={
-            profile ?? {
-              fullName: "Profesional odontológico",
-              licenseNumber: null,
-              licenseJurisdiction: null,
-            }
+      <PrintableInstructionView
+        profile={
+          profile ?? {
+            fullName: "Profesional odontológico",
+            licenseNumber: null,
+            licenseJurisdiction: null,
+            clinicName: null,
+            officeAddress: null,
+            contactPhone: null,
+            contactEmail: null,
+            additionalInformation: null,
           }
-          template={template}
-        />
-      </div>
+        }
+        template={template}
+      />
     </main>
   );
 }

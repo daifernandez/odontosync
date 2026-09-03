@@ -4,6 +4,11 @@ import { Plus, Trash2 } from "lucide-react";
 import { useActionState, useState } from "react";
 
 import { SubmitButton } from "@/components/auth/submit-button";
+import {
+  InstructionProfessionalFooter,
+  InstructionProfessionalHeader,
+  type InstructionProfessionalProfile,
+} from "@/components/instruction-document";
 import { saveInitialConfigurationAction } from "@/modules/initial-configuration/actions";
 import {
   type AvailabilityBlock,
@@ -50,6 +55,24 @@ export function InitialConfigurationForm({
   const [availability, setAvailability] = useState(
     initialConfiguration.availability,
   );
+  const [professionalProfile, setProfessionalProfile] =
+    useState<InstructionProfessionalProfile>({
+      fullName: initialConfiguration.fullName,
+      licenseNumber: initialConfiguration.licenseNumber,
+      licenseJurisdiction: initialConfiguration.licenseJurisdiction,
+      clinicName: initialConfiguration.clinicName,
+      officeAddress: initialConfiguration.officeAddress,
+      contactPhone: initialConfiguration.contactPhone,
+      contactEmail: initialConfiguration.contactEmail,
+      additionalInformation: initialConfiguration.additionalInformation,
+    });
+
+  function updateProfessionalProfile(
+    field: keyof InstructionProfessionalProfile,
+    value: string,
+  ) {
+    setProfessionalProfile((current) => ({ ...current, [field]: value }));
+  }
 
   function updateAvailability(
     index: number,
@@ -106,10 +129,13 @@ export function InitialConfigurationForm({
               aria-invalid={Boolean(state.fieldErrors.fullName)}
               autoComplete="name"
               className={inputClassName}
-              defaultValue={initialConfiguration.fullName}
               maxLength={120}
               name="fullName"
+              onChange={(event) =>
+                updateProfessionalProfile("fullName", event.target.value)
+              }
               type="text"
+              value={professionalProfile.fullName}
             />
             <FieldError
               id="configuration-full-name-error"
@@ -130,10 +156,13 @@ export function InitialConfigurationForm({
               }
               aria-invalid={Boolean(state.fieldErrors.licenseNumber)}
               className={inputClassName}
-              defaultValue={initialConfiguration.licenseNumber ?? ""}
               maxLength={50}
               name="licenseNumber"
+              onChange={(event) =>
+                updateProfessionalProfile("licenseNumber", event.target.value)
+              }
               type="text"
+              value={professionalProfile.licenseNumber ?? ""}
             />
             <FieldError
               id="configuration-license-error"
@@ -154,17 +183,218 @@ export function InitialConfigurationForm({
               }
               aria-invalid={Boolean(state.fieldErrors.licenseJurisdiction)}
               className={inputClassName}
-              defaultValue={initialConfiguration.licenseJurisdiction ?? ""}
               maxLength={100}
               name="licenseJurisdiction"
+              onChange={(event) =>
+                updateProfessionalProfile(
+                  "licenseJurisdiction",
+                  event.target.value,
+                )
+              }
               placeholder="Ej. Provincia de Buenos Aires"
               type="text"
+              value={professionalProfile.licenseJurisdiction ?? ""}
             />
             <FieldError
               id="configuration-jurisdiction-error"
               message={state.fieldErrors.licenseJurisdiction}
             />
           </label>
+        </div>
+      </section>
+
+      <section
+        className={`${cardClassName} scroll-mt-5`}
+        aria-labelledby="documents-profile-title"
+        id="documentos"
+      >
+        <p className="mb-2 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
+          Documentos
+        </p>
+        <h2 className="m-0 text-xl" id="documents-profile-title">
+          Datos para tus pacientes
+        </h2>
+        <p className="mt-2 mb-0 max-w-2xl text-sm leading-6 text-[var(--color-muted)]">
+          Completá únicamente la información que quieras reutilizar. Podrás
+          decidir si incluirla antes de cada impresión.
+        </p>
+
+        <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.82fr)] lg:items-start">
+          <div className="grid gap-5 md:grid-cols-2">
+            <label className="text-sm font-semibold md:col-span-2">
+              Clínica o consultorio{" "}
+              <span className="font-normal text-[var(--color-muted)]">
+                (opcional)
+              </span>
+              <input
+                aria-describedby={
+                  state.fieldErrors.clinicName
+                    ? "configuration-clinic-name-error"
+                    : undefined
+                }
+                aria-invalid={Boolean(state.fieldErrors.clinicName)}
+                autoComplete="organization"
+                className={inputClassName}
+                maxLength={120}
+                name="clinicName"
+                onChange={(event) =>
+                  updateProfessionalProfile("clinicName", event.target.value)
+                }
+                type="text"
+                value={professionalProfile.clinicName ?? ""}
+              />
+              <FieldError
+                id="configuration-clinic-name-error"
+                message={state.fieldErrors.clinicName}
+              />
+            </label>
+
+            <label className="text-sm font-semibold md:col-span-2">
+              Dirección{" "}
+              <span className="font-normal text-[var(--color-muted)]">
+                (opcional)
+              </span>
+              <input
+                aria-describedby={
+                  state.fieldErrors.officeAddress
+                    ? "configuration-office-address-error"
+                    : undefined
+                }
+                aria-invalid={Boolean(state.fieldErrors.officeAddress)}
+                autoComplete="street-address"
+                className={inputClassName}
+                maxLength={160}
+                name="officeAddress"
+                onChange={(event) =>
+                  updateProfessionalProfile(
+                    "officeAddress",
+                    event.target.value,
+                  )
+                }
+                type="text"
+                value={professionalProfile.officeAddress ?? ""}
+              />
+              <FieldError
+                id="configuration-office-address-error"
+                message={state.fieldErrors.officeAddress}
+              />
+            </label>
+
+            <label className="text-sm font-semibold">
+              Teléfono{" "}
+              <span className="font-normal text-[var(--color-muted)]">
+                (opcional)
+              </span>
+              <input
+                aria-describedby={
+                  state.fieldErrors.contactPhone
+                    ? "configuration-contact-phone-error"
+                    : undefined
+                }
+                aria-invalid={Boolean(state.fieldErrors.contactPhone)}
+                autoComplete="tel"
+                className={inputClassName}
+                maxLength={50}
+                name="contactPhone"
+                onChange={(event) =>
+                  updateProfessionalProfile("contactPhone", event.target.value)
+                }
+                type="tel"
+                value={professionalProfile.contactPhone ?? ""}
+              />
+              <FieldError
+                id="configuration-contact-phone-error"
+                message={state.fieldErrors.contactPhone}
+              />
+            </label>
+
+            <label className="text-sm font-semibold">
+              Email{" "}
+              <span className="font-normal text-[var(--color-muted)]">
+                (opcional)
+              </span>
+              <input
+                aria-describedby={
+                  state.fieldErrors.contactEmail
+                    ? "configuration-contact-email-error"
+                    : undefined
+                }
+                aria-invalid={Boolean(state.fieldErrors.contactEmail)}
+                autoComplete="email"
+                className={inputClassName}
+                maxLength={254}
+                name="contactEmail"
+                onChange={(event) =>
+                  updateProfessionalProfile("contactEmail", event.target.value)
+                }
+                type="email"
+                value={professionalProfile.contactEmail ?? ""}
+              />
+              <FieldError
+                id="configuration-contact-email-error"
+                message={state.fieldErrors.contactEmail}
+              />
+            </label>
+
+            <label className="text-sm font-semibold md:col-span-2">
+              Información adicional{" "}
+              <span className="font-normal text-[var(--color-muted)]">
+                (opcional)
+              </span>
+              <input
+                aria-describedby={
+                  state.fieldErrors.additionalInformation
+                    ? "configuration-additional-information-error"
+                    : "configuration-additional-information-help"
+                }
+                aria-invalid={Boolean(state.fieldErrors.additionalInformation)}
+                className={inputClassName}
+                maxLength={160}
+                name="additionalInformation"
+                onChange={(event) =>
+                  updateProfessionalProfile(
+                    "additionalInformation",
+                    event.target.value,
+                  )
+                }
+                placeholder="Ej. Atención con turno previo"
+                type="text"
+                value={professionalProfile.additionalInformation ?? ""}
+              />
+              <span
+                className="mt-2 block text-xs font-normal text-[var(--color-muted)]"
+                id="configuration-additional-information-help"
+              >
+                Usá una frase breve que resulte útil para el paciente.
+              </span>
+              <FieldError
+                id="configuration-additional-information-error"
+                message={state.fieldErrors.additionalInformation}
+              />
+            </label>
+          </div>
+
+          <div className="rounded-[1.1rem] border border-[var(--color-border)] bg-[var(--color-page)] p-3 md:p-4">
+            <p className="m-0 text-[0.65rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
+              Vista previa de tus datos
+            </p>
+            <div className="mt-3 rounded-xl bg-white p-4 shadow-[var(--shadow-card)]">
+              <InstructionProfessionalHeader
+                profile={professionalProfile}
+                showProfessionalData
+              />
+              <div aria-hidden="true" className="h-20" />
+              <InstructionProfessionalFooter
+                profile={professionalProfile}
+                showProfessionalData
+              />
+            </div>
+            <p
+              className="mt-3 mb-0 text-xs leading-5 text-[var(--color-muted)]"
+            >
+              Podrás decidir si incluirlos antes de cada impresión.
+            </p>
+          </div>
         </div>
       </section>
 

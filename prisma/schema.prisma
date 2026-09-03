@@ -67,6 +67,11 @@ model Profile {
   fullName            String          @map("full_name")
   licenseNumber       String?         @map("license_number")
   licenseJurisdiction String?         @map("license_jurisdiction")
+  clinicName          String?         @map("clinic_name")
+  officeAddress       String?         @map("office_address")
+  contactPhone        String?         @map("contact_phone")
+  contactEmail        String?         @map("contact_email")
+  additionalInformation String?       @map("additional_information")
   agendaSettings      AgendaSettings?
   patients            Patient[]
   appointments        Appointment[]

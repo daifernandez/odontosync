@@ -37,6 +37,11 @@ export default async function NewInstructionPage() {
             fullName: "Profesional odontológico",
             licenseNumber: null,
             licenseJurisdiction: null,
+            clinicName: null,
+            officeAddress: null,
+            contactPhone: null,
+            contactEmail: null,
+            additionalInformation: null,
           }
         }
       />
