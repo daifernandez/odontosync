@@ -6,13 +6,17 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 import {
+  buildInstructionTemplateCopyTitle,
   type InstructionTemplateFormState,
   type InstructionTemplateFormValues,
+  type InstructionTemplateManagementState,
   validateInstructionTemplate,
   validateInstructionTemplateId,
 } from "./domain/instruction-template";
 import {
   createInstructionTemplate,
+  deleteInstructionTemplate,
+  getInstructionTemplate,
   updateInstructionTemplate,
 } from "./repository";
 
@@ -60,6 +64,22 @@ function writeError(
     message: "No pudimos guardar los cambios. Volvé a intentarlo.",
     fieldErrors: {},
     values,
+  };
+}
+
+function managementError(
+  action: "duplicar" | "eliminar",
+): InstructionTemplateManagementState {
+  return {
+    status: "error",
+    message: `No pudimos ${action} la plantilla. Volvé a intentarlo.`,
+  };
+}
+
+function managementSessionError(): InstructionTemplateManagementState {
+  return {
+    status: "error",
+    message: "Tu sesión venció. Volvé a ingresar para continuar.",
   };
 }
 
@@ -137,4 +157,81 @@ export async function updateInstructionTemplateAction(
   revalidatePath("/app/indicaciones");
   revalidatePath(`/app/indicaciones/${templateId}/imprimir`);
   redirect(`/app/indicaciones/${templateId}/imprimir?actualizada=1`);
+}
+
+export async function duplicateInstructionTemplateAction(
+  templateIdValue: string,
+  _previousState: InstructionTemplateManagementState,
+): Promise<InstructionTemplateManagementState> {
+  void _previousState;
+  const templateId = validateInstructionTemplateId(templateIdValue);
+
+  if (!templateId) {
+    return managementError("duplicar");
+  }
+
+  const userId = await getAuthenticatedUserId();
+
+  if (!userId) {
+    return managementSessionError();
+  }
+
+  let copyId: string;
+
+  try {
+    const template = await getInstructionTemplate(templateId, userId);
+
+    if (!template) {
+      return managementError("duplicar");
+    }
+
+    copyId = await createInstructionTemplate(
+      {
+        title: buildInstructionTemplateCopyTitle(template.title),
+        specialty: template.specialty,
+        introduction: template.introduction,
+        listStyle: template.listStyle,
+        points: template.points,
+      },
+      userId,
+    );
+  } catch {
+    return managementError("duplicar");
+  }
+
+  revalidatePath("/app/indicaciones");
+  redirect(`/app/indicaciones/${copyId}/editar?duplicada=1`);
+}
+
+export async function deleteInstructionTemplateAction(
+  templateIdValue: string,
+  _previousState: InstructionTemplateManagementState,
+): Promise<InstructionTemplateManagementState> {
+  void _previousState;
+  const templateId = validateInstructionTemplateId(templateIdValue);
+
+  if (!templateId) {
+    return managementError("eliminar");
+  }
+
+  const userId = await getAuthenticatedUserId();
+
+  if (!userId) {
+    return managementSessionError();
+  }
+
+  try {
+    if (!(await deleteInstructionTemplate(templateId, userId))) {
+      return managementError("eliminar");
+    }
+  } catch {
+    return managementError("eliminar");
+  }
+
+  revalidatePath("/app/indicaciones");
+
+  return {
+    status: "success",
+    message: "La plantilla se eliminó correctamente.",
+  };
 }

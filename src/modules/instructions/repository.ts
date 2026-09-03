@@ -124,3 +124,23 @@ export async function updateInstructionTemplate(
 
   return data !== null;
 }
+
+export async function deleteInstructionTemplate(
+  templateId: string,
+  userId: string,
+) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("instruction_templates")
+    .delete()
+    .eq("id", templateId)
+    .eq("user_id", userId)
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    throw new Error("Could not delete instruction template");
+  }
+
+  return data !== null;
+}
