@@ -2,7 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   createInstructionTemplate: vi.fn(),
+  deleteInstructionTemplate: vi.fn(),
   getClaims: vi.fn(),
+  getInstructionTemplate: vi.fn(),
   redirect: vi.fn((path: string) => {
     throw new Error(`redirect:${path}`);
   }),
@@ -19,14 +21,21 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 vi.mock("./repository", () => ({
   createInstructionTemplate: mocks.createInstructionTemplate,
+  deleteInstructionTemplate: mocks.deleteInstructionTemplate,
+  getInstructionTemplate: mocks.getInstructionTemplate,
   updateInstructionTemplate: mocks.updateInstructionTemplate,
 }));
 
 import {
   createInstructionTemplateAction,
+  deleteInstructionTemplateAction,
+  duplicateInstructionTemplateAction,
   updateInstructionTemplateAction,
 } from "./actions";
-import { instructionTemplateFormState } from "./domain/instruction-template";
+import {
+  instructionTemplateFormState,
+  instructionTemplateManagementState,
+} from "./domain/instruction-template";
 
 function buildValidFormData() {
   const formData = new FormData();
@@ -48,6 +57,16 @@ describe("instruction template actions", () => {
     mocks.createInstructionTemplate.mockResolvedValue(
       "00000000-0000-4000-8000-000000000010",
     );
+    mocks.getInstructionTemplate.mockResolvedValue({
+      id: "00000000-0000-4000-8000-000000000011",
+      title: "Cuidados posteriores",
+      specialty: "surgery",
+      introduction: "Indicaciones generales",
+      listStyle: "checks",
+      points: ["Descansá durante las primeras horas."],
+      updatedAt: "2026-09-01T03:00:00.000Z",
+    });
+    mocks.deleteInstructionTemplate.mockResolvedValue(true);
     mocks.updateInstructionTemplate.mockResolvedValue(true);
   });
 
@@ -141,6 +160,90 @@ describe("instruction template actions", () => {
     ).resolves.toMatchObject({
       status: "error",
       message: "No pudimos guardar los cambios. Volvé a intentarlo.",
+    });
+  });
+
+  it("duplicates an owned template and opens the copy for editing", async () => {
+    await expect(
+      duplicateInstructionTemplateAction(
+        "00000000-0000-4000-8000-000000000011",
+        instructionTemplateManagementState,
+      ),
+    ).rejects.toThrow(
+      "redirect:/app/indicaciones/00000000-0000-4000-8000-000000000010/editar?duplicada=1",
+    );
+
+    expect(mocks.getInstructionTemplate).toHaveBeenCalledWith(
+      "00000000-0000-4000-8000-000000000011",
+      "00000000-0000-4000-8000-000000000002",
+    );
+    expect(mocks.createInstructionTemplate).toHaveBeenCalledWith(
+      {
+        title: "Copia de Cuidados posteriores",
+        specialty: "surgery",
+        introduction: "Indicaciones generales",
+        listStyle: "checks",
+        points: ["Descansá durante las primeras horas."],
+      },
+      "00000000-0000-4000-8000-000000000002",
+    );
+  });
+
+  it("does not duplicate an invalid or inaccessible template", async () => {
+    mocks.getInstructionTemplate.mockResolvedValue(null);
+
+    await expect(
+      duplicateInstructionTemplateAction(
+        "00000000-0000-4000-8000-000000000011",
+        instructionTemplateManagementState,
+      ),
+    ).resolves.toMatchObject({
+      status: "error",
+      message: "No pudimos duplicar la plantilla. Volvé a intentarlo.",
+    });
+    expect(mocks.createInstructionTemplate).not.toHaveBeenCalled();
+  });
+
+  it("deletes an owned template and refreshes the library", async () => {
+    await expect(
+      deleteInstructionTemplateAction(
+        "00000000-0000-4000-8000-000000000011",
+        instructionTemplateManagementState,
+      ),
+    ).resolves.toEqual({
+      status: "success",
+      message: "La plantilla se eliminó correctamente.",
+    });
+
+    expect(mocks.deleteInstructionTemplate).toHaveBeenCalledWith(
+      "00000000-0000-4000-8000-000000000011",
+      "00000000-0000-4000-8000-000000000002",
+    );
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/app/indicaciones");
+  });
+
+  it("does not delete with an expired session or an inaccessible identifier", async () => {
+    mocks.getClaims.mockResolvedValueOnce({ data: { claims: null } });
+
+    await expect(
+      deleteInstructionTemplateAction(
+        "00000000-0000-4000-8000-000000000011",
+        instructionTemplateManagementState,
+      ),
+    ).resolves.toMatchObject({
+      status: "error",
+      message: "Tu sesión venció. Volvé a ingresar para continuar.",
+    });
+
+    mocks.deleteInstructionTemplate.mockResolvedValueOnce(false);
+    await expect(
+      deleteInstructionTemplateAction(
+        "00000000-0000-4000-8000-000000000011",
+        instructionTemplateManagementState,
+      ),
+    ).resolves.toMatchObject({
+      status: "error",
+      message: "No pudimos eliminar la plantilla. Volvé a intentarlo.",
     });
   });
 });

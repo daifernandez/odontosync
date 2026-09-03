@@ -86,6 +86,11 @@ describe("InstructionTemplateLibrary", () => {
     expect(markup).toContain("sm:inline");
     expect(markup).toContain("line-clamp-1");
     expect(markup).toContain("sm:line-clamp-2");
+    expect(markup).toContain("Más acciones para Cuidados después de una extracción");
+    expect(markup).toContain("Duplicar");
+    expect(markup).toContain("Eliminar");
+    expect(markup).toContain("¿Eliminar esta plantilla?");
+    expect(markup).toContain("Esta acción no se puede deshacer.");
   });
 
   it("presents filter reset as a subtle secondary button", () => {

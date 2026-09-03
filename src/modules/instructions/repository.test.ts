@@ -10,6 +10,7 @@ vi.mock("@/lib/supabase/server", () => ({
 
 import {
   createInstructionTemplate,
+  deleteInstructionTemplate,
   getInstructionTemplate,
   listInstructionTemplates,
   updateInstructionTemplate,
@@ -144,6 +145,30 @@ describe("instruction template repository", () => {
       points: templateInput.points,
       updated_at: expect.any(String),
     });
+    expect(query.eq).toHaveBeenNthCalledWith(1, "id", "template-id");
+    expect(query.eq).toHaveBeenNthCalledWith(2, "user_id", "owner-id");
+  });
+
+  it("deletes only a template visible to the authenticated owner", async () => {
+    const query = {
+      delete: vi.fn(),
+      eq: vi.fn(),
+      select: vi.fn(),
+      maybeSingle: vi.fn().mockResolvedValue({
+        data: { id: "template-id" },
+        error: null,
+      }),
+    };
+    query.delete.mockReturnValue(query);
+    query.eq.mockReturnValue(query);
+    query.select.mockReturnValue(query);
+    mocks.createClient.mockResolvedValue({
+      from: vi.fn().mockReturnValue(query),
+    });
+
+    await expect(
+      deleteInstructionTemplate("template-id", "owner-id"),
+    ).resolves.toBe(true);
     expect(query.eq).toHaveBeenNthCalledWith(1, "id", "template-id");
     expect(query.eq).toHaveBeenNthCalledWith(2, "user_id", "owner-id");
   });

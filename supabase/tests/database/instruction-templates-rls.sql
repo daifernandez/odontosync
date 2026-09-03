@@ -48,6 +48,12 @@ BEGIN
           AND polcmd = 'w'
           AND polqual IS NOT NULL
           AND polwithcheck IS NOT NULL
+    ) OR NOT EXISTS (
+        SELECT 1 FROM pg_policy
+        WHERE polrelid = 'public.instruction_templates'::regclass
+          AND polname = 'instruction_templates_delete_own'
+          AND polcmd = 'd'
+          AND polqual IS NOT NULL
     ) THEN
         RAISE EXCEPTION 'Instruction template ownership policies are incomplete';
     END IF;
@@ -63,7 +69,7 @@ BEGIN
            'public.instruction_templates',
            'SELECT'
        )
-       OR has_table_privilege(
+       OR NOT has_table_privilege(
            'authenticated',
            'public.instruction_templates',
            'DELETE'
@@ -178,6 +184,13 @@ BEGIN
         RAISE EXCEPTION 'Another user updated an owner instruction template';
     END IF;
 
+    DELETE FROM public.instruction_templates;
+    GET DIAGNOSTICS updated_rows = ROW_COUNT;
+
+    IF updated_rows <> 0 THEN
+        RAISE EXCEPTION 'Another user deleted an owner instruction template';
+    END IF;
+
     BEGIN
         INSERT INTO public.instruction_templates (
             user_id,
@@ -202,7 +215,7 @@ $$;
 
 RESET ROLE;
 
--- The owner can edit content but cannot delete templates in this sprint.
+-- The owner can edit and delete their own templates.
 DO $$
 BEGIN
     PERFORM set_config(
@@ -240,12 +253,22 @@ BEGIN
         RAISE EXCEPTION 'Owner could not update their instruction template';
     END IF;
 
-    BEGIN
-        DELETE FROM public.instruction_templates;
-        RAISE EXCEPTION 'Owner deleted an instruction template without grant';
-    EXCEPTION
-        WHEN insufficient_privilege THEN NULL;
-    END;
+    DELETE FROM public.instruction_templates
+    WHERE title = (
+        SELECT template_title || ' updated'
+        FROM instruction_templates_rls_test_context
+    );
+
+    IF EXISTS (
+        SELECT 1
+        FROM public.instruction_templates
+        WHERE title = (
+            SELECT template_title || ' updated'
+            FROM instruction_templates_rls_test_context
+        )
+    ) THEN
+        RAISE EXCEPTION 'Owner could not delete their instruction template';
+    END IF;
 END;
 $$;
 

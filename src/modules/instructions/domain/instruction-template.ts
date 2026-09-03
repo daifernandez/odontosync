@@ -58,6 +58,16 @@ export const instructionTemplateFormState: InstructionTemplateFormState = {
   fieldErrors: {},
 };
 
+export type InstructionTemplateManagementState = {
+  status: "idle" | "error" | "success";
+  message?: string;
+};
+
+export const instructionTemplateManagementState: InstructionTemplateManagementState =
+  {
+    status: "idle",
+  };
+
 type InstructionTemplateFormInput = Record<
   keyof InstructionTemplateFormValues,
   unknown
@@ -138,6 +148,10 @@ export function validateInstructionTemplateId(value: unknown) {
   return typeof value === "string" && uuidPattern.test(value)
     ? value.toLowerCase()
     : null;
+}
+
+export function buildInstructionTemplateCopyTitle(title: string) {
+  return `Copia de ${title}`.slice(0, 120).trimEnd();
 }
 
 export function getInstructionListMarker(

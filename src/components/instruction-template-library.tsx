@@ -1,21 +1,30 @@
 "use client";
 
 import {
+  Copy,
+  Ellipsis,
   FilePenLine,
   Printer,
   RotateCcw,
   Search,
   SearchX,
+  Trash2,
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
+import { useFormStatus } from "react-dom";
 
 import {
   instructionListStyles,
+  instructionTemplateManagementState,
   instructionSpecialties,
   type InstructionTemplate,
 } from "@/modules/instructions/domain/instruction-template";
+import {
+  deleteInstructionTemplateAction,
+  duplicateInstructionTemplateAction,
+} from "@/modules/instructions/actions";
 
 type SpecialtyFilter = "all" | InstructionTemplate["specialty"];
 
@@ -73,6 +82,166 @@ function groupInstructionTemplates(templates: InstructionTemplate[]) {
   });
 }
 
+function ManagementSubmitButton({
+  children,
+  destructive = false,
+  pendingLabel,
+}: Readonly<{
+  children: React.ReactNode;
+  destructive?: boolean;
+  pendingLabel: string;
+}>) {
+  const { pending } = useFormStatus();
+
+  return (
+    <button
+      className={
+        destructive
+          ? "inline-flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border-0 bg-red-700 px-4 text-xs font-bold text-white hover:bg-red-800 disabled:cursor-wait disabled:opacity-70"
+          : "flex min-h-10 w-full cursor-pointer items-center gap-2 rounded-lg border-0 bg-transparent px-3 text-left text-xs font-semibold text-[var(--color-foreground)] hover:bg-[var(--color-brand-soft)] disabled:cursor-wait disabled:opacity-70"
+      }
+      disabled={pending}
+      type="submit"
+    >
+      {pending ? pendingLabel : children}
+    </button>
+  );
+}
+
+function InstructionTemplateManagement({
+  onDeleted,
+  template,
+}: Readonly<{
+  onDeleted: (templateId: string, title: string) => void;
+  template: InstructionTemplate;
+}>) {
+  const detailsRef = useRef<HTMLDetailsElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const handledDeletion = useRef(false);
+  const [duplicateState, duplicateAction] = useActionState(
+    duplicateInstructionTemplateAction.bind(null, template.id),
+    instructionTemplateManagementState,
+  );
+  const [deleteState, deleteAction] = useActionState(
+    deleteInstructionTemplateAction.bind(null, template.id),
+    instructionTemplateManagementState,
+  );
+
+  useEffect(() => {
+    if (deleteState.status === "success" && !handledDeletion.current) {
+      handledDeletion.current = true;
+      dialogRef.current?.close();
+      onDeleted(template.id, template.title);
+    }
+  }, [deleteState.status, onDeleted, template.id, template.title]);
+
+  function openDeleteConfirmation() {
+    detailsRef.current?.removeAttribute("open");
+    dialogRef.current?.showModal();
+  }
+
+  function closeDeleteConfirmation() {
+    dialogRef.current?.close();
+  }
+
+  return (
+    <>
+      <details className="relative" ref={detailsRef}>
+        <summary
+          aria-label={`Más acciones para ${template.title}`}
+          className="grid min-h-11 cursor-pointer list-none place-items-center rounded-xl border border-[var(--color-border)] bg-white text-[var(--color-brand-dark)] hover:bg-[var(--color-brand-soft)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand)] [&::-webkit-details-marker]:hidden"
+        >
+          <Ellipsis aria-hidden="true" size={18} />
+        </summary>
+        <div className="absolute right-0 bottom-[calc(100%+0.5rem)] z-20 w-52 rounded-xl border border-[var(--color-border)] bg-white p-1.5 shadow-[0_1rem_2.5rem_rgb(24_51_48/18%)]">
+          <form action={duplicateAction}>
+            <ManagementSubmitButton pendingLabel="Duplicando…">
+              <Copy aria-hidden="true" size={15} />
+              Duplicar
+            </ManagementSubmitButton>
+          </form>
+          <button
+            className="flex min-h-10 w-full cursor-pointer items-center gap-2 rounded-lg border-0 bg-transparent px-3 text-left text-xs font-semibold text-red-700 hover:bg-red-50"
+            onClick={openDeleteConfirmation}
+            type="button"
+          >
+            <Trash2 aria-hidden="true" size={15} />
+            Eliminar
+          </button>
+          {duplicateState.status === "error" ? (
+            <p
+              className="m-1 rounded-lg bg-[var(--color-warning-soft)] px-2.5 py-2 text-[0.7rem] leading-4 text-[var(--color-warning-foreground)]"
+              role="alert"
+            >
+              {duplicateState.message}
+            </p>
+          ) : null}
+        </div>
+      </details>
+
+      <dialog
+        aria-labelledby={`delete-template-${template.id}-title`}
+        className="m-auto w-[calc(100%-2rem)] max-w-sm rounded-[var(--radius-large)] border border-[var(--color-border)] bg-white p-0 text-[var(--color-foreground)] shadow-[0_1.5rem_4rem_rgb(24_51_48/22%)] backdrop:bg-[rgb(24_51_48/45%)]"
+        onClick={(event) => {
+          if (event.target === event.currentTarget) {
+            closeDeleteConfirmation();
+          }
+        }}
+        ref={dialogRef}
+      >
+        <div className="p-5 sm:p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="mb-2 text-[0.68rem] font-bold tracking-[0.12em] text-red-700 uppercase">
+                Eliminar plantilla
+              </p>
+              <h2
+                className="m-0 text-xl tracking-[-0.03em]"
+                id={`delete-template-${template.id}-title`}
+              >
+                ¿Eliminar esta plantilla?
+              </h2>
+            </div>
+            <button
+              aria-label="Cerrar confirmación"
+              className="grid size-10 shrink-0 cursor-pointer place-items-center rounded-full border border-[var(--color-border)] bg-white text-[var(--color-muted)] hover:bg-[var(--color-brand-subtle)]"
+              onClick={closeDeleteConfirmation}
+              type="button"
+            >
+              <X aria-hidden="true" size={18} />
+            </button>
+          </div>
+          <p className="mt-4 mb-0 text-sm leading-6 text-[var(--color-muted)]">
+            Vas a eliminar <strong>“{template.title}”</strong>. Esta acción no
+            se puede deshacer.
+          </p>
+          {deleteState.status === "error" ? (
+            <p
+              className="mt-4 mb-0 rounded-xl border border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] px-3 py-2.5 text-xs leading-5 text-[var(--color-warning-foreground)]"
+              role="alert"
+            >
+              {deleteState.message}
+            </p>
+          ) : null}
+          <form action={deleteAction} className="mt-5 flex gap-2">
+            <button
+              className="min-h-11 flex-1 cursor-pointer rounded-xl border border-[var(--color-border)] bg-white px-4 text-xs font-bold text-[var(--color-brand-dark)] hover:bg-[var(--color-brand-subtle)]"
+              onClick={closeDeleteConfirmation}
+              type="button"
+            >
+              Cancelar
+            </button>
+            <ManagementSubmitButton destructive pendingLabel="Eliminando…">
+              <Trash2 aria-hidden="true" size={15} />
+              Sí, eliminar
+            </ManagementSubmitButton>
+          </form>
+        </div>
+      </dialog>
+    </>
+  );
+}
+
 export function InstructionTemplateLibrary({
   templates,
 }: {
@@ -80,8 +249,13 @@ export function InstructionTemplateLibrary({
 }) {
   const [query, setQuery] = useState("");
   const [specialty, setSpecialty] = useState<SpecialtyFilter>("all");
+  const [deletedTemplateIds, setDeletedTemplateIds] = useState<string[]>([]);
+  const [managementFeedback, setManagementFeedback] = useState<string>();
+  const visibleTemplates = templates.filter(
+    (template) => !deletedTemplateIds.includes(template.id),
+  );
   const filteredTemplates = filterInstructionTemplates(
-    templates,
+    visibleTemplates,
     query,
     specialty,
   );
@@ -91,6 +265,11 @@ export function InstructionTemplateLibrary({
   function clearFilters() {
     setQuery("");
     setSpecialty("all");
+  }
+
+  function handleDeleted(templateId: string, title: string) {
+    setDeletedTemplateIds((currentIds) => [...currentIds, templateId]);
+    setManagementFeedback(`Eliminaste “${title}”.`);
   }
 
   return (
@@ -174,6 +353,15 @@ export function InstructionTemplateLibrary({
             Restablecer<span className="hidden sm:inline"> filtros</span>
           </button>
         </div>
+      ) : null}
+
+      {managementFeedback ? (
+        <p
+          className="mt-4 mb-0 w-fit max-w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-brand-soft)] px-3 py-2.5 text-xs font-semibold text-[var(--color-brand-dark)]"
+          role="status"
+        >
+          {managementFeedback}
+        </p>
       ) : null}
 
       {groups.length === 0 ? (
@@ -262,7 +450,7 @@ export function InstructionTemplateLibrary({
                           {listStyle ? ` · ${listStyle.label}` : ""}
                         </p>
                       </div>
-                      <div className="col-span-2 grid grid-cols-2 gap-2 border-t border-[var(--color-border)] pt-3 sm:pt-4 lg:col-span-1 lg:w-72 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-4">
+                      <div className="col-span-2 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_2.75rem] gap-2 border-t border-[var(--color-border)] pt-3 sm:pt-4 lg:col-span-1 lg:w-80 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-4">
                         <Link
                           className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] text-xs font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-soft)]"
                           href={`/app/indicaciones/${template.id}/editar`}
@@ -277,6 +465,10 @@ export function InstructionTemplateLibrary({
                           <Printer aria-hidden="true" size={15} />
                           Ver e imprimir
                         </Link>
+                        <InstructionTemplateManagement
+                          onDeleted={handleDeleted}
+                          template={template}
+                        />
                       </div>
                     </article>
                   );

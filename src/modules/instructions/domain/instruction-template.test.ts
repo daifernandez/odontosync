@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  buildInstructionTemplateCopyTitle,
   getInstructionListMarker,
   validateInstructionTemplate,
   validateInstructionTemplateId,
@@ -97,6 +98,15 @@ describe("validateInstructionTemplate", () => {
 });
 
 describe("instruction identifiers and markers", () => {
+  it("builds a recognizable copy title without exceeding the saved limit", () => {
+    expect(buildInstructionTemplateCopyTitle("Higiene diaria")).toBe(
+      "Copia de Higiene diaria",
+    );
+    expect(buildInstructionTemplateCopyTitle("a".repeat(120))).toHaveLength(
+      120,
+    );
+  });
+
   it("normalizes UUIDs and rejects arbitrary identifiers", () => {
     expect(
       validateInstructionTemplateId("00000000-0000-4000-8000-0000000000AA"),

@@ -16,12 +16,17 @@ export const metadata: Metadata = {
 
 type EditInstructionPageProps = {
   params: Promise<{ templateId: string }>;
+  searchParams: Promise<{ duplicada?: string | string[] }>;
 };
 
 export default async function EditInstructionPage({
   params,
+  searchParams,
 }: EditInstructionPageProps) {
-  const { templateId: templateIdValue } = await params;
+  const [{ templateId: templateIdValue }, query] = await Promise.all([
+    params,
+    searchParams,
+  ]);
   const templateId = validateInstructionTemplateId(templateIdValue);
 
   if (!templateId) {
@@ -54,6 +59,17 @@ export default async function EditInstructionPage({
         <ArrowLeft aria-hidden="true" size={17} />
         Volver a la biblioteca
       </Link>
+
+      {query.duplicada === "1" ? (
+        <p
+          className="mt-3 mb-0 w-fit max-w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-brand-soft)] px-3 py-2.5 text-xs leading-5 font-semibold text-[var(--color-brand-dark)] md:mt-4 md:px-4 md:py-3 md:text-sm"
+          role="status"
+        >
+          Creamos una copia independiente. Podés editarla sin modificar la
+          original.
+        </p>
+      ) : null}
+
       <header className="mt-4">
         <p className="mb-2 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
           Editar plantilla
