@@ -31,6 +31,7 @@ describe("AppShell", () => {
     expect(markup).toContain('href="/app"');
     expect(markup).toContain('href="/app/agenda"');
     expect(markup).toContain('href="/app/pacientes"');
+    expect(markup).toContain('href="/app/imprimibles"');
     expect(markup).toContain('href="/app/indicaciones"');
     expect(markup).toContain('href="/app/configuracion"');
   });
@@ -67,9 +68,7 @@ describe("AppShell", () => {
       <AppShell user={user}>Contenido</AppShell>,
     );
 
-    expect(markup).toMatch(
-      /<button aria-disabled="true"[^>]+disabled="" title="Imprimibles: próximamente"/,
-    );
+    expect(markup).not.toContain('title="Imprimibles: próximamente"');
     expect(markup).not.toContain('title="Indicaciones: próximamente"');
   });
 
@@ -86,6 +85,8 @@ describe("AppShell", () => {
     expect(markup).toContain('href="/demo"');
     expect(markup).toContain('href="/demo/agenda"');
     expect(markup).toContain('href="/demo/pacientes"');
+    expect(markup).not.toContain('href="/demo/imprimibles"');
+    expect(markup).toContain('title="Imprimibles: próximamente"');
   });
 
   it("keeps only the current demo section active", () => {

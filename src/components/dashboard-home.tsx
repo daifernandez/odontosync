@@ -47,7 +47,11 @@ const demoAppointments = [
 ] as const;
 
 const printables = [
-  { name: "Plan de tratamiento", detail: "Hoja clínica y administrativa" },
+  {
+    name: "Historia clínica odontológica",
+    detail: "Cuatro páginas para completar a mano",
+    href: "/app/imprimibles",
+  },
   { name: "Odontograma", detail: "Adulto y odontopediátrico" },
   { name: "Indicaciones generales", detail: "Organizadas por especialidad" },
 ];
@@ -344,26 +348,43 @@ export function DashboardHome({
           </div>
 
           <div className="mt-4 flex flex-col">
-            {printables.map((printable) => (
-              <button
-                aria-disabled="true"
-                className="flex min-h-17.5 cursor-not-allowed items-center justify-between gap-4 border-0 border-t border-[var(--color-border)] bg-transparent p-0 text-left text-[var(--color-foreground)] opacity-60"
-                disabled
-                key={printable.name}
-                title={`${printable.name}: próximamente`}
-                type="button"
-              >
-                <span className="flex flex-col gap-1">
-                  <strong className="text-[0.8rem]">{printable.name}</strong>
-                  <small className="text-[0.67rem] leading-5 text-[var(--color-muted)]">
-                    {printable.detail}
-                  </small>
-                </span>
-                <span className="text-[0.58rem] font-bold tracking-[0.05em] text-[var(--color-muted)] uppercase">
-                  Próximamente
-                </span>
-              </button>
-            ))}
+            {printables.map((printable) => {
+              const href = demoMode ? undefined : printable.href;
+              const content = (
+                <>
+                  <span className="flex flex-col gap-1">
+                    <strong className="text-[0.8rem]">{printable.name}</strong>
+                    <small className="text-[0.67rem] leading-5 text-[var(--color-muted)]">
+                      {printable.detail}
+                    </small>
+                  </span>
+                  <span className="text-[0.58rem] font-bold tracking-[0.05em] text-[var(--color-muted)] uppercase">
+                    {href ? "Abrir" : "Próximamente"}
+                  </span>
+                </>
+              );
+
+              return href ? (
+                <Link
+                  className="flex min-h-17.5 items-center justify-between gap-4 border-t border-[var(--color-border)] text-left text-[var(--color-foreground)] no-underline hover:bg-[var(--color-brand-subtle)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand)]"
+                  href={href}
+                  key={printable.name}
+                >
+                  {content}
+                </Link>
+              ) : (
+                <button
+                  aria-disabled="true"
+                  className="flex min-h-17.5 cursor-not-allowed items-center justify-between gap-4 border-0 border-t border-[var(--color-border)] bg-transparent p-0 text-left text-[var(--color-foreground)] opacity-60"
+                  disabled
+                  key={printable.name}
+                  title={`${printable.name}: próximamente`}
+                  type="button"
+                >
+                  {content}
+                </button>
+              );
+            })}
           </div>
         </section>
       </div>

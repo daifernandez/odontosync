@@ -42,7 +42,11 @@ const navigation: NavigationItem[] = [
     href: "/app/pacientes",
     demoHref: "/demo/pacientes",
   },
-  { label: "Imprimibles", icon: FileText },
+  {
+    label: "Imprimibles",
+    icon: FileText,
+    href: "/app/imprimibles",
+  },
   {
     label: "Indicaciones",
     icon: ClipboardList,
