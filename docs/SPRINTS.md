@@ -2171,3 +2171,85 @@ la plantilla ni asociarlos con un paciente.
   continúan separadas en el backlog de producto
   [#85](https://github.com/daifernandez/odontosync/issues/85).
 - No se almacenan datos por paciente ni archivos PDF en esta entrega.
+
+## Sprint 030 — Gestión de plantillas de indicaciones
+
+- **Fecha:** 2 de septiembre de 2026
+- **Estado:** publicado y mergeado
+- **Issue:** [#94](https://github.com/daifernandez/odontosync/issues/94)
+- **Rama:** `codex/sprint-030-gestion-plantillas`
+- **Publicación:** [PR #95](https://github.com/daifernandez/odontosync/pull/95),
+  merge commit `2243aed`
+
+### Objetivo
+
+Permitir que cada odontólogo duplique y elimine sus propias plantillas de
+indicaciones con acciones claras, seguras y adaptables, sin incorporar datos
+de pacientes ni alterar el flujo principal de edición e impresión.
+
+### Resultado
+
+- Cada plantilla conserva como acciones principales `Editar` y
+  `Ver e imprimir`, y reúne `Duplicar` y `Eliminar` en un menú secundario
+  compacto.
+- Duplicar crea una plantilla independiente con el mismo contenido, antepone
+  `Copia de` al título y abre directamente su edición con confirmación visual.
+- Eliminar exige una confirmación explícita que identifica la plantilla,
+  advierte que la acción es irreversible y comunica el resultado sin sacar al
+  usuario de la búsqueda o especialidad actual.
+- Las acciones del servidor validan sesión, identificador y propiedad del
+  recurso antes de duplicar o eliminar.
+- La migración `20260903021328_allow_instruction_template_delete` habilita la
+  eliminación con permisos mínimos y una política RLS limitada al propietario.
+- No se modificó el contenido de las plantillas originales ni se agregaron
+  datos de pacientes, archivos PDF o preferencias de impresión persistentes.
+
+### Criterios verificados
+
+- Una copia conserva especialidad, introducción, estilo de lista e indicaciones
+  de la plantilla de origen, utiliza un identificador nuevo y puede editarse de
+  forma independiente.
+- La plantilla original permanece sin cambios después de duplicarla.
+- La eliminación sólo se completa después de confirmar y actualiza la
+  biblioteca actual con feedback de éxito o error.
+- Una sesión vencida, un identificador inválido y una plantilla inexistente o
+  ajena son rechazados por las acciones del servidor.
+- RLS impide que otro usuario elimine la plantilla y permite la operación al
+  propietario autenticado.
+- El flujo fue aprobado visualmente a 375, 512 y 1280 píxeles, sin
+  desplazamiento horizontal ni errores de consola.
+
+### Skills aplicadas
+
+- `project-sprint-workflow` para delimitar la entrega, separar la implementación
+  de este cierre documental y conservar el issue abierto hasta este PR.
+- `usability-review` para definir la jerarquía de acciones, la confirmación
+  destructiva, el feedback y el comportamiento responsive.
+- Supabase, `supabase-postgres-best-practices` y `security-sprint-review` para
+  permisos mínimos, RLS, casos negativos y verificación sobre la base enlazada.
+- Next.js y React Best Practices para implementar las Server Actions, la
+  actualización de la biblioteca y revisar los componentes modificados.
+- Browser para comprobar duplicación, eliminación, estados visuales, consola y
+  dimensiones responsive con datos ficticios.
+- `odontosync-release-check` para revisar el diff, ejecutar la batería completa,
+  publicar la rama y comprobar GitHub Actions.
+
+### Verificaciones
+
+- Pruebas: 51 archivos y 271 casos aprobados.
+- TypeScript, ESLint, Prisma y build de producción: aprobados.
+- Las migraciones locales y remotas de Supabase quedaron sincronizadas.
+- Las cinco suites RLS vinculadas se ejecutaron sin errores.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- GitHub Actions: aprobado en 1 minuto y 3 segundos en el PR funcional.
+- Revisión funcional y visual aprobada por Dai en mobile y escritorio.
+
+### Riesgo residual y próximos pasos
+
+- Supabase continúa informando que la protección contra contraseñas filtradas
+  está desactivada; el seguimiento general permanece en el issue #19.
+- La carga de logo y las personalizaciones premium de color, encabezado y firma
+  continúan separadas en el backlog de producto
+  [#85](https://github.com/daifernandez/odontosync/issues/85).
+- La papelera o recuperación de plantillas, el almacenamiento de PDFs y las
+  asociaciones con pacientes o turnos permanecen fuera de alcance.
