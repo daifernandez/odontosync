@@ -2253,3 +2253,86 @@ de pacientes ni alterar el flujo principal de edición e impresión.
   [#85](https://github.com/daifernandez/odontosync/issues/85).
 - La papelera o recuperación de plantillas, el almacenamiento de PDFs y las
   asociaciones con pacientes o turnos permanecen fuera de alcance.
+
+## Sprint 031 — Historia clínica odontológica imprimible base
+
+- **Fecha:** 3 de septiembre de 2026
+- **Estado:** publicado y mergeado
+- **Issue:** [#97](https://github.com/daifernandez/odontosync/issues/97)
+- **Rama:** `codex/sprint-031-papeleria-base`
+- **Publicación:** [PR #98](https://github.com/daifernandez/odontosync/pull/98),
+  merge commit `a57fe1a`
+
+### Objetivo
+
+Incorporar una primera biblioteca privada de historia clínica odontológica
+imprimible, compuesta por hojas A4 vacías para completar manualmente, sin
+persistir datos clínicos ni modificar la experiencia de demostración.
+
+### Resultado
+
+- La sección `Imprimibles` quedó disponible únicamente dentro de la aplicación
+  autenticada y conserva el estado `Próximamente` en la demo.
+- La biblioteca ofrece cuatro accesos: historia clínica completa,
+  identificación y antecedentes, examen y registro odontológico, y evolución
+  y documentación.
+- La historia completa reúne cuatro hojas A4. La ficha de examen y registro
+  combina dos hojas preparadas para impresión doble faz: examen y odontograma
+  al frente, y diagnóstico y pronóstico al reverso.
+- Cada acceso permite abrir e imprimir su ficha de forma independiente.
+- Las hojas incluyen una marca de agua diagonal repetida de `OdontoSync`,
+  visible pero tenue tanto en pantalla como al imprimir.
+- Se eliminaron los indicadores de número de página y se compactó el encabezado
+  clínico con una única fecha. La ficha de examen no incluye hora ni signos
+  vitales.
+- La implementación es estática: no incorpora formularios interactivos,
+  pacientes, persistencia, Supabase ni almacenamiento de PDFs.
+
+### Criterios verificados
+
+- La biblioteca y sus fichas sólo son accesibles desde la aplicación privada.
+- La historia completa genera cuatro hojas y la ficha combinada genera dos
+  hojas A4 sin agregar páginas vacías.
+- El odontograma utiliza nomenclatura FDI para dentición permanente y temporal.
+- El frente de la ficha combinada incluye examen extraoral e intraoral,
+  odontograma, observaciones, estudios e interconsultas.
+- El reverso contiene únicamente identificación, fecha, diagnóstico,
+  pronóstico y espacio para firma y sello profesional.
+- Las fichas pueden abrirse individualmente y conservan su composición al
+  imprimir.
+- La demo no expone enlaces ni rutas nuevas hacia los imprimibles.
+
+### Skills aplicadas
+
+- `project-sprint-workflow` para delimitar la entrega y separar la
+  implementación de este cierre documental.
+- `usability-review` para iterar la jerarquía, el aprovechamiento de la hoja y
+  la composición para pantalla e impresión.
+- `security-sprint-review` para mantener los documentos clínicos sin datos
+  persistidos y explicitar los límites de esta primera versión.
+- Next.js y React Best Practices para las rutas privadas, la composición de los
+  componentes y la revisión del código TSX.
+- Browser para revisar la biblioteca, las fichas individuales y la vista previa
+  de impresión.
+
+### Verificaciones
+
+- Pruebas: 55 archivos y 288 casos aprobados.
+- TypeScript, ESLint y build de producción: aprobados.
+- GitHub Actions: aprobado en 1 minuto y 2 segundos en el PR funcional.
+- La vista previa confirmó dos hojas para la ficha combinada y cuatro para la
+  historia completa.
+- La revisión visual fue aprobada por Dai durante la iteración funcional.
+- No aplicaron verificaciones de Prisma, Supabase ni RLS porque el sprint no
+  modificó datos, esquema, consultas, permisos ni autenticación.
+
+### Riesgo residual y próximos pasos
+
+- Esta entrega es una primera iteración funcional, no el diseño definitivo de
+  las planillas ni un formulario validado legal o profesionalmente.
+- La composición visual y el contenido clínico requieren una revisión futura
+  antes de utilizarse con pacientes reales.
+- Quedaron pendientes ajustes de distribución, espacios y contenido que se
+  definirán en otro sprint sin ampliar retroactivamente este alcance.
+- El almacenamiento de PDFs, los datos clínicos persistidos y la vinculación
+  con pacientes permanecen fuera de alcance.
