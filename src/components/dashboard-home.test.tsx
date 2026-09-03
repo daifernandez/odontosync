@@ -168,9 +168,18 @@ describe("DashboardHome", () => {
     );
   });
 
+  it("describes the complete clinical history as four pages", () => {
+    const markup = renderToStaticMarkup(<DashboardHome />);
+
+    expect(markup).toContain("Cuatro páginas para completar a mano");
+    expect(markup).not.toContain("Tres páginas para completar a mano");
+  });
+
   it("disables modules that are not part of the demo yet", () => {
     const markup = renderToStaticMarkup(<DashboardHome demoMode />);
 
+    expect(markup).not.toContain('href="/demo/imprimibles"');
+    expect(markup).toContain('title="Historia clínica odontológica: próximamente"');
     expect(markup).toContain('aria-disabled="true"');
     expect(markup).toContain("Próximamente");
   });

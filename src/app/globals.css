@@ -42,6 +42,30 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
+.printable-document-watermark {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(6, minmax(0, 1fr));
+  place-items: center;
+  overflow: hidden;
+  color: #147d73;
+  user-select: none;
+}
+
+.printable-document-watermark > span {
+  transform: rotate(-32deg);
+  opacity: 0.05;
+  font-size: clamp(0.9rem, 3.2vw, 1.65rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     scroll-behavior: auto !important;
@@ -64,19 +88,31 @@ button:focus-visible {
   }
 
   .instruction-print-root,
-  .instruction-print-root * {
+  .instruction-print-root *,
+  .printable-print-root,
+  .printable-print-root * {
     visibility: visible;
   }
 
-  .instruction-screen-only {
+  .instruction-screen-only,
+  .printable-screen-only {
     display: none !important;
   }
 
-  .instruction-print-root {
+  .instruction-print-root,
+  .printable-print-root {
     position: absolute;
     inset: 0;
     width: 100%;
     max-width: none;
+  }
+
+  .printable-print-root {
+    bottom: auto;
+  }
+
+  body:has(.printable-print-root) .min-h-screen {
+    min-height: 0;
   }
 
   .instruction-document {
@@ -91,7 +127,35 @@ button:focus-visible {
 
   .instruction-document-header,
   .instruction-document-footer,
-  .instruction-document-point {
+  .instruction-document-point,
+  .printable-document-section {
     break-inside: avoid;
+  }
+
+  .printable-document-set {
+    display: block;
+  }
+
+  .printable-document {
+    width: 100%;
+    min-height: 269mm;
+    height: 269mm;
+    overflow: hidden;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+    break-after: page;
+    font-size: 8pt;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .printable-document-watermark {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .printable-document:last-child {
+    break-after: auto;
   }
 }
