@@ -2087,3 +2087,87 @@ funciones ni alterar los datos guardados.
 - La personalización premium de logo, encabezado, colores y firma continúa
   separada en el backlog de producto
   [#85](https://github.com/daifernandez/odontosync/issues/85).
+
+## Sprint 029 — Perfil profesional en indicaciones
+
+- **Fecha:** 2 de septiembre de 2026
+- **Estado:** publicado y mergeado
+- **Issue:** [#91](https://github.com/daifernandez/odontosync/issues/91)
+- **Rama:** `codex/sprint-029-perfil-profesional-indicaciones`
+- **Publicación:** [PR #92](https://github.com/daifernandez/odontosync/pull/92),
+  merge commit `5ddb591`
+
+### Objetivo
+
+Permitir que el odontólogo configure datos generales de su perfil y decida, en
+cada impresión, si desea incorporarlos a la indicación sin guardarlos dentro de
+la plantilla ni asociarlos con un paciente.
+
+### Resultado
+
+- La configuración profesional admite clínica o consultorio, dirección,
+  teléfono, email e información adicional como campos opcionales reutilizables.
+- Una vista previa compartida muestra cómo se componen esos datos antes de
+  utilizarlos en una indicación.
+- La hoja adopta un encabezado editorial con consultorio, profesional y
+  matrícula, y un pie lineal con los datos de contacto y la firma discreta de
+  OdontoSync.
+- La vista de impresión permite incluir los datos profesionales sólo para esa
+  salida. La opción comienza desactivada y vuelve a ese estado al recargar.
+- Cuando no se incluyen datos profesionales, la hoja conserva un encabezado
+  neutro y la plantilla mantiene exclusivamente su contenido general.
+- El control de impresión y la hoja fueron ajustados para mobile, tablet,
+  notebook y escritorio sin superposiciones ni desbordamiento horizontal.
+- Se amplió el perfil y la función transaccional de configuración en Supabase.
+  Una migración correctiva eliminó la preferencia global explorada inicialmente
+  para asegurar que la decisión sea efímera.
+
+### Criterios verificados
+
+- Los datos profesionales se validan, guardan y reaparecen en configuración sin
+  modificar las plantillas existentes.
+- El email se normaliza y valida; los campos opcionales respetan sus límites de
+  longitud tanto en aplicación como en base de datos.
+- Activar la opción incorpora los datos a la hoja y recargar la página vuelve a
+  ocultarlos.
+- La plantilla no persiste la preferencia de impresión ni información de un
+  paciente.
+- La función de configuración conserva permisos mínimos y sólo opera sobre el
+  perfil autenticado.
+- El recorrido no presenta desplazamiento horizontal en 375, 527, 900 ni 1280
+  píxeles y fue aprobado visualmente por Dai.
+
+### Skills aplicadas
+
+- `project-sprint-workflow` para delimitar la entrega, separar la implementación
+  del cierre documental y mantener las ideas premium fuera del alcance.
+- `usability-review` para iterar la jerarquía editorial, el control temporal de
+  impresión y sus composiciones responsive.
+- Supabase, `supabase-postgres-best-practices` y `security-sprint-review` para
+  validar esquema, función transaccional, permisos y pruebas de aislamiento.
+- Next.js y React Best Practices para separar la obtención del perfil en el
+  servidor del estado efímero de la vista imprimible.
+- Browser para comprobar el flujo real, los datos ficticios y los tamaños de
+  pantalla acordados.
+- `odontosync-release-check` para revisar el diff, ejecutar la batería completa,
+  publicar la rama y comprobar GitHub Actions.
+
+### Verificaciones
+
+- Pruebas: 50 archivos y 264 casos aprobados.
+- TypeScript, ESLint, Prisma y build de producción: aprobados.
+- Las migraciones locales y remotas de Supabase quedaron sincronizadas.
+- Las cinco suites RLS vinculadas y el asesor de seguridad se ejecutaron sin
+  errores.
+- Dependencias: 0 vulnerabilidades reportadas por `npm audit`.
+- GitHub Actions: aprobado en 57 segundos en el PR funcional.
+- Revisión funcional y visual aprobada en 375, 527, 900 y 1280 píxeles.
+
+### Riesgo residual y próximos pasos
+
+- Supabase continúa informando que la protección contra contraseñas filtradas
+  está desactivada; el seguimiento general permanece en el issue #19.
+- La carga de logo y las personalizaciones premium de color, encabezado y firma
+  continúan separadas en el backlog de producto
+  [#85](https://github.com/daifernandez/odontosync/issues/85).
+- No se almacenan datos por paciente ni archivos PDF en esta entrega.
