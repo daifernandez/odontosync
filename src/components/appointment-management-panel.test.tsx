@@ -122,6 +122,10 @@ describe("AppointmentManagementPanel", () => {
     expect(markup).toContain("Reprogramar turno");
     expect(markup).toContain("Elegí la nueva fecha y el nuevo horario");
     expect(markup).toContain("Ocupado");
+    expect(markup).toContain("Ver horarios ocupados");
+    expect(markup).toContain("Horario original");
+    expect(markup).toContain("Nuevo horario elegido");
+    expect(markup.indexOf("Horarios libres")).toBeLessThan(markup.indexOf("Ver horarios ocupados"));
     expect(markup).toContain('name="startsAt"');
     expect(markup).not.toContain('name="durationMinutes"');
     expect(markup).not.toContain('name="cleanupMinutes"');
