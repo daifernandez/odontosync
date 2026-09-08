@@ -23,17 +23,17 @@ describe("AppShell", () => {
     pathname = "/app";
   });
 
-  it("links every available authenticated section and omits retired printables", () => {
+  it("uses Agenda as the single authenticated entry point", () => {
     const markup = renderToStaticMarkup(
       <AppShell user={user}>Contenido</AppShell>,
     );
 
-    expect(markup).toContain('href="/app"');
     expect(markup).toContain('href="/app/agenda"');
     expect(markup).toContain('href="/app/pacientes"');
     expect(markup).toContain('href="/app/indicaciones"');
     expect(markup).toContain('href="/app/configuracion"');
     expect(markup).not.toContain('href="/app/imprimibles"');
+    expect(markup).not.toContain(">Inicio</span>");
     expect(markup).not.toContain(">Imprimibles</span>");
   });
 
@@ -73,7 +73,7 @@ describe("AppShell", () => {
     expect(markup).not.toContain('title="Indicaciones: próximamente"');
   });
 
-  it("does not send demo navigation to authenticated routes", () => {
+  it("uses Agenda as the single demo entry point", () => {
     pathname = "/demo";
 
     const markup = renderToStaticMarkup(
@@ -83,9 +83,9 @@ describe("AppShell", () => {
     );
 
     expect(markup).not.toContain('href="/app');
-    expect(markup).toContain('href="/demo"');
     expect(markup).toContain('href="/demo/agenda"');
     expect(markup).toContain('href="/demo/pacientes"');
+    expect(markup).not.toContain(">Inicio</span>");
     expect(markup).not.toContain('href="/demo/imprimibles"');
     expect(markup).not.toContain('title="Imprimibles: próximamente"');
   });

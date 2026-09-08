@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   createClient: vi.fn(),
-  getLastAgendaView: vi.fn(),
   getInitialConfiguration: vi.fn(),
   listAppointmentsForRange: vi.fn(),
   listAppointmentOccupancy: vi.fn(),
@@ -28,9 +27,6 @@ vi.mock("@/components/weekly-agenda", () => ({
 vi.mock("@/modules/initial-configuration/repository", () => ({
   getInitialConfiguration: mocks.getInitialConfiguration,
 }));
-vi.mock("@/modules/agenda/repository", () => ({
-  getLastAgendaView: mocks.getLastAgendaView,
-}));
 vi.mock("@/modules/appointments/repository", () => ({
   listAppointmentsForRange: mocks.listAppointmentsForRange,
   listAppointmentOccupancy: mocks.listAppointmentOccupancy,
@@ -46,7 +42,7 @@ vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
 
 import AgendaPage from "./page";
 
-describe("AgendaPage monthly view", () => {
+describe("AgendaPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.createClient.mockResolvedValue({
@@ -64,7 +60,6 @@ describe("AgendaPage monthly view", () => {
     mocks.listExceptionalBlocksForRange.mockResolvedValue([]);
     mocks.listExceptionalBlocks.mockResolvedValue([]);
     mocks.listPatients.mockResolvedValue([]);
-    mocks.getLastAgendaView.mockResolvedValue("week");
   });
 
   it("loads only the selected owner month and renders the monthly component", async () => {
@@ -89,23 +84,18 @@ describe("AgendaPage monthly view", () => {
     expect(mocks.listAppointmentOccupancy).not.toHaveBeenCalled();
     expect(result.type).toBe(mocks.MonthlyAgenda);
     expect(result.props.month.startDate).toBe("2026-08-01");
-    expect(mocks.getLastAgendaView).not.toHaveBeenCalled();
   });
 
-  it("opens the authenticated owner saved view when the URL does not choose one", async () => {
-    mocks.getLastAgendaView.mockResolvedValue("month");
-
+  it("opens Today when the URL does not choose a view", async () => {
     const result = await AgendaPage({
       searchParams: Promise.resolve({ fecha: "2026-08-22" }),
     });
 
-    expect(mocks.getLastAgendaView).toHaveBeenCalledWith("owner-id");
-    expect(result.type).toBe(mocks.MonthlyAgenda);
+    expect(result.type).toBe(mocks.WeeklyAgenda);
+    expect(result.props.view).toBe("day");
   });
 
-  it("lets a valid explicit URL override the saved view without reading it", async () => {
-    mocks.getLastAgendaView.mockResolvedValue("month");
-
+  it("keeps an explicit daily URL on the requested day", async () => {
     const result = await AgendaPage({
       searchParams: Promise.resolve({
         vista: "dia",
@@ -113,7 +103,6 @@ describe("AgendaPage monthly view", () => {
       }),
     });
 
-    expect(mocks.getLastAgendaView).not.toHaveBeenCalled();
     expect(result.type).toBe(mocks.WeeklyAgenda);
     expect(result.props.view).toBe("day");
     expect(mocks.listAppointmentsForRange).toHaveBeenCalledWith(
@@ -125,26 +114,20 @@ describe("AgendaPage monthly view", () => {
   });
 
   it("keeps legacy weekly URLs on their requested week", async () => {
-    mocks.getLastAgendaView.mockResolvedValue("month");
-
     const result = await AgendaPage({
       searchParams: Promise.resolve({ semana: "2026-08-10" }),
     });
 
-    expect(mocks.getLastAgendaView).not.toHaveBeenCalled();
     expect(result.type).toBe(mocks.WeeklyAgenda);
     expect(result.props.view).toBe("week");
     expect(result.props.week.startDate).toBe("2026-08-10");
   });
 
-  it("opens the new appointment workflow even when month is preferred", async () => {
-    mocks.getLastAgendaView.mockResolvedValue("month");
-
+  it("opens the new appointment workflow from its direct URL", async () => {
     const result = await AgendaPage({
       searchParams: Promise.resolve({ nuevo: "1" }),
     });
 
-    expect(mocks.getLastAgendaView).not.toHaveBeenCalled();
     expect(result.type).toBe(mocks.WeeklyAgenda);
     expect(result.props.autoOpenNewAppointment).toBe(true);
   });
@@ -196,17 +179,6 @@ describe("AgendaPage monthly view", () => {
 
     expect(result.type).toBe(mocks.WeeklyAgenda);
     expect(result.props.readOnlyAppointment).toBe(true);
-  });
-
-  it("falls back to weekly agenda when the preference cannot be read", async () => {
-    mocks.getLastAgendaView.mockRejectedValue(new Error("database unavailable"));
-
-    const result = await AgendaPage({
-      searchParams: Promise.resolve({}),
-    });
-
-    expect(result.type).toBe(mocks.WeeklyAgenda);
-    expect(result.props.view).toBe("week");
   });
 
   it("redirects an expired session before reading private calendar data", async () => {

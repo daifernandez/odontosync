@@ -122,7 +122,13 @@ describe("WeeklyAgenda", () => {
       />,
     );
 
-    expect(markup).toContain("Agenda semanal");
+    expect(markup).toContain(">Agenda</h1>");
+    expect(markup).toContain("Organizá tus turnos y horarios.");
+    expect(markup.indexOf("Cambiar vista de agenda")).toBeLessThan(
+      markup.indexOf("Prototipo académico"),
+    );
+    expect(markup).not.toContain("Intervalo de grilla");
+    expect(markup).not.toContain("Duración habitual");
     expect(markup).not.toContain("style=");
     expect(markup).toContain("Prueba, Lucía");
     expect(markup).toContain("09:00–09:50");
@@ -144,7 +150,7 @@ describe("WeeklyAgenda", () => {
     expect(markup).toContain("Ver historial");
     expect(markup).toContain("Ver turno");
     expect(markup).toContain(
-      'href="/app/agenda?vista=mes&amp;fecha=2026-08-01">Vista mensual',
+      'href="/app/agenda?vista=mes&amp;fecha=2026-08-01">Mes',
     );
     expect(markup).not.toContain(
       "semana=2026-08-10&amp;nuevo=1&amp;fecha=2026-08-11&amp;hora=09:45",
@@ -432,7 +438,15 @@ describe("WeeklyAgenda", () => {
       />,
     );
 
-    expect(markup).toContain("Mi jornada");
+    expect(markup).toContain(">Agenda</h1>");
+    expect(markup).toContain("Organizá tus turnos y horarios.");
+    expect(markup.indexOf("Cambiar vista de agenda")).toBeLessThan(
+      markup.indexOf("Prototipo académico"),
+    );
+    expect(markup).toContain("1 turno en este día");
+    expect(markup).toContain("0 confirmados");
+    expect(markup).toContain("1 pendiente de confirmación");
+    expect(markup).toContain("Próximo turno");
     expect(markup).toContain("Libre · 09:35–12:00");
     expect(markup).toContain("Reservar 09:45");
     expect(markup).toContain("Seguimiento y cambios de la jornada");
@@ -449,7 +463,8 @@ describe("WeeklyAgenda", () => {
       "semana=2026-08-10&amp;vista=dia&amp;fecha=2026-08-11&amp;turno=00000000-0000-4000-8000-000000000010",
     );
     expect(markup).toContain(
-      "semana=2026-08-10&amp;fecha=2026-08-11\">Vista semanal",
+      "semana=2026-08-10&amp;fecha=2026-08-11\">Semana",
     );
+    expect(markup).toContain(">Día</a>");
   });
 });

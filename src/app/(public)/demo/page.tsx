@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-
-import { DashboardHome } from "@/components/dashboard-home";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Demo | OdontoSync",
@@ -13,5 +12,5 @@ export const metadata: Metadata = {
 };
 
 export default function DemoPage() {
-  return <DashboardHome demoMode />;
+  redirect("/demo/agenda");
 }

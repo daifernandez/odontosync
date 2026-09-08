@@ -1,13 +1,6 @@
 "use client";
 
-import { CalendarDays, CalendarOff, CalendarPlus } from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
-
-import {
-  buildAgendaPath,
-  type AgendaMonth,
-} from "@/modules/agenda/domain/weekly-schedule";
+import type { AgendaMonth } from "@/modules/agenda/domain/weekly-schedule";
 import type { AppointmentSpecialty } from "@/modules/appointments/domain/appointment";
 
 const fullDateFormatter = new Intl.DateTimeFormat("es-AR", {
@@ -138,15 +131,13 @@ function countLabel(count: number, singular: string, plural: string) {
   return `${count} ${count === 1 ? singular : plural}`;
 }
 
-function capitalizeFirst(value: string) {
-  return `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
-}
-
 export function MonthlyAgendaDaySelector({
   appointmentSpecialtyCounts,
   blockCounts,
   currentDate,
   month,
+  onSelectedDateChange,
+  selectedDate,
 }: Readonly<{
   appointmentSpecialtyCounts: Record<
     string,
@@ -155,84 +146,11 @@ export function MonthlyAgendaDaySelector({
   blockCounts: Record<string, number>;
   currentDate: string;
   month: AgendaMonth;
+  onSelectedDateChange: (date: string) => void;
+  selectedDate: string;
 }>) {
-  const initialSelectedDate = month.days.some(
-    (day) => day.isCurrentMonth && day.date === currentDate,
-  )
-    ? currentDate
-    : month.startDate;
-  const [selectedDate, setSelectedDate] = useState(initialSelectedDate);
-  const selectedDateLabel = fullDateFormatter.format(
-    new Date(`${selectedDate}T12:00:00-03:00`),
-  );
-  const selectedDayPath = buildAgendaPath({
-    weekStartDate: selectedDate,
-    view: "day",
-    selectedDate,
-  });
-  const canCreateForSelectedDate = selectedDate >= currentDate;
-
   return (
     <>
-      <div className="flex flex-col gap-4 border-b border-[var(--color-border)] bg-[var(--color-brand-subtle)] p-4 @4xl/monthly-agenda:flex-row @4xl/monthly-agenda:items-center @4xl/monthly-agenda:justify-between @4xl/monthly-agenda:px-6">
-        <div>
-          <p className="m-0 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
-            Día para gestionar
-          </p>
-          <p aria-live="polite" className="mt-1 mb-0 text-sm font-bold">
-            {capitalizeFirst(selectedDateLabel)}
-          </p>
-        </div>
-        <div className="flex flex-col items-stretch gap-2 @4xl/monthly-agenda:items-end">
-          <div className="grid grid-cols-2 gap-2 @4xl/monthly-agenda:grid-cols-3">
-            <Link
-              className="col-span-2 flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] bg-white px-4 text-center text-sm leading-5 font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-soft)] @4xl/monthly-agenda:col-span-1"
-              href={selectedDayPath}
-            >
-              <CalendarDays aria-hidden="true" size={17} />
-              Abrir agenda diaria
-            </Link>
-            {canCreateForSelectedDate ? (
-              <>
-                <Link
-                  className="flex min-h-11 items-center justify-center gap-2 rounded-xl border-0 bg-[var(--color-brand)] px-3 text-center text-sm leading-5 font-bold text-white no-underline shadow-[0_0.45rem_1.2rem_rgb(20_125_115/18%)] hover:bg-[var(--color-brand-dark)] @xl/monthly-agenda:px-4"
-                  href={`${buildAgendaPath({
-                    weekStartDate: selectedDate,
-                    view: "day",
-                    selectedDate,
-                    params: { nuevo: "1" },
-                  })}#nuevo-turno`}
-                >
-                  <CalendarPlus aria-hidden="true" size={17} />
-                  Nuevo turno
-                </Link>
-                <Link
-                  className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] bg-white px-3 text-center text-sm leading-5 font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-soft)] @xl/monthly-agenda:px-4"
-                  href={buildAgendaPath({
-                    weekStartDate: selectedDate,
-                    view: "day",
-                    selectedDate,
-                    params: { bloqueos: "1" },
-                  })}
-                >
-                  <CalendarOff aria-hidden="true" size={17} />
-                  Bloquear horario
-                </Link>
-              </>
-            ) : null}
-          </div>
-          {!canCreateForSelectedDate ? (
-            <p
-              className="m-0 px-1 text-left text-xs leading-5 text-[var(--color-muted)] @4xl/monthly-agenda:text-right"
-              role="note"
-            >
-              Nota: en los días pasados podés consultar turnos y registrar
-              resultados pendientes.
-            </p>
-          ) : null}
-        </div>
-      </div>
-
       <div className="grid grid-cols-7 border-b border-[var(--color-border)] bg-[var(--color-brand-subtle)]">
         {weekDayLabels.map(([shortLabel, label]) => (
           <div className="px-1 py-3 text-center text-xs font-bold" key={label}>
@@ -274,7 +192,7 @@ export function MonthlyAgendaDaySelector({
               aria-pressed={day.date === selectedDate}
               className={`flex min-h-24 cursor-pointer flex-col border-t-0 border-r border-b border-l-0 border-[var(--color-border)] p-1 text-left text-[var(--color-foreground)] hover:bg-[var(--color-brand-soft)] focus-visible:z-10 @lg/monthly-agenda:min-h-32 @lg/monthly-agenda:p-3 ${day.date === selectedDate ? "bg-[var(--color-brand-soft)] ring-2 ring-inset ring-[var(--color-brand)]" : day.isCurrentMonth ? "bg-white" : "bg-[var(--color-brand-subtle)] text-[var(--color-muted)]"}`}
               key={day.date}
-              onClick={() => setSelectedDate(day.date)}
+              onClick={() => onSelectedDateChange(day.date)}
               type="button"
             >
               <span className="flex min-h-7 w-full shrink-0 items-start @lg/monthly-agenda:min-h-8">

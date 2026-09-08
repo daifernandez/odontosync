@@ -3,7 +3,6 @@
 import {
   CalendarDays,
   ClipboardList,
-  LayoutDashboard,
   LogOut,
   Menu,
   PanelLeftClose,
@@ -28,7 +27,6 @@ type NavigationItem = {
 };
 
 const navigation: NavigationItem[] = [
-  { label: "Inicio", icon: LayoutDashboard, href: "/app", demoHref: "/demo" },
   {
     label: "Agenda",
     icon: CalendarDays,

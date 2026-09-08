@@ -1,12 +1,14 @@
 import {
   CalendarClock,
-  ChevronLeft,
-  ChevronRight,
   Settings2,
 } from "lucide-react";
 import Link from "next/link";
 
-import { AgendaViewPreferenceLink } from "@/components/agenda-view-preference-link";
+import {
+  AgendaPageHeader,
+  AgendaPrototypeNotice,
+  AgendaViewToolbar,
+} from "@/components/agenda-page-shell";
 import { AppointmentManagementPanel } from "@/components/appointment-management-panel";
 import { AppointmentPanel } from "@/components/appointment-panel";
 import { AppointmentTimeline } from "@/components/appointment-timeline";
@@ -46,8 +48,6 @@ type AppointmentPatientOption = Pick<
   "id" | "firstName" | "lastName"
 >;
 
-const summaryCardClassName =
-  "rounded-[var(--radius-medium)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-card)]";
 const pixelsPerMinute = 1.2;
 
 function timeToMinutes(value: string) {
@@ -149,6 +149,17 @@ export function WeeklyAgenda({
       appointment.status !== "cancelled" &&
       appointment.status !== "rescheduled",
   );
+  const dayAppointments = visibleAppointments.filter(
+    (appointment) =>
+      appointment.status !== "cancelled" &&
+      appointment.status !== "rescheduled",
+  );
+  const confirmedDayAppointments = dayAppointments.filter(
+    (appointment) => appointment.status === "confirmed",
+  ).length;
+  const pendingDayAppointments = dayAppointments.filter(
+    (appointment) => appointment.status === "pending_confirmation",
+  ).length;
   const calendarAvailability = configuration.availability.filter((block) =>
     visibleDays.some((visibleDay) => visibleDay.dayOfWeek === block.dayOfWeek),
   );
@@ -174,6 +185,7 @@ export function WeeklyAgenda({
   ).filter((minutes) => minutes <= calendarEnd);
   const currentWeekStart = buildAgendaWeek(undefined, currentTime).startDate;
   const currentDay = buildAgendaDay(undefined, currentTime);
+  const isCurrentDay = day.date === currentDay.date;
   const shortDateFormatter = new Intl.DateTimeFormat("es-AR", {
     timeZone: "America/Argentina/Buenos_Aires",
     day: "2-digit",
@@ -222,62 +234,103 @@ export function WeeklyAgenda({
     ) : undefined;
 
   return (
-    <main className={`@container/daily-agenda mx-auto w-full max-w-[90rem] px-4 md:px-[clamp(1.5rem,3.5vw,4rem)] ${view === "day" ? "py-5 md:py-7" : "py-7 md:py-12"}`}>
-      <header className="flex flex-col items-start gap-5 @4xl/daily-agenda:flex-row @4xl/daily-agenda:items-end @4xl/daily-agenda:justify-between @4xl/daily-agenda:gap-8">
-        <div>
-          <p className="mb-2 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
-            Agenda
-          </p>
-          <h1 className="m-0 text-[clamp(1.8rem,3vw,2.55rem)] leading-[1.1] tracking-[-0.045em]">
-            {view === "day" ? "Mi jornada" : "Agenda semanal"}
-          </h1>
-          <p className={`${view === "day" ? "hidden" : "mt-3 mb-0 max-w-2xl text-sm leading-6 text-[var(--color-muted)]"}`}>
-            Visualizá el tiempo clínico y el acondicionamiento reservado de cada
-            turno.
-          </p>
-        </div>
-        <div className="grid w-full grid-cols-2 gap-2 [&>a]:w-full [&>button]:w-full [&>button:first-of-type]:col-span-2 @2xl/daily-agenda:flex @2xl/daily-agenda:w-auto @2xl/daily-agenda:[&>a]:w-auto @2xl/daily-agenda:[&>button]:w-auto @2xl/daily-agenda:[&>button:first-of-type]:col-span-1">
-          <AppointmentPanel
-            context={dayContext}
-            autoOpen={autoOpenNewAppointment}
-            appointmentOccupancy={appointmentOccupancy}
-            availability={configuration.availability}
-            currentTime={currentTime.toISOString()}
-            defaultCleanupMinutes={configuration.defaultCleanupMinutes}
-            defaultDurationMinutes={
-              configuration.defaultAppointmentDurationMinutes
-            }
-            gridIntervalMinutes={configuration.gridIntervalMinutes}
-            exceptionalBlocks={exceptionalBlocks}
-            initialDate={initialDate}
-            initialPatientId={initialPatientId}
-            initialTime={initialTime}
-            key={`${initialDate ?? ""}-${initialTime ?? ""}-${initialPatientId ?? ""}-${created}`}
-            minimumDate={formatArgentinaDateInput(currentTime)}
-            patients={patients}
-            selectedDate={day.date}
-            view={view}
-            weekStartDate={week.startDate}
-          />
-          <ExceptionalBlocksPanel
-            autoOpen={exceptionalBlockPanelOpen}
-            blocks={exceptionalBlocks}
-            created={exceptionalBlockCreated}
-            deleted={exceptionalBlockDeleted}
-            managementError={exceptionalBlockManagementError}
-            selectedDate={day.date}
-            view={view}
-            weekStartDate={week.startDate}
-          />
-          <Link
-            className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] bg-white px-4 text-sm font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-subtle)]"
-            href="/app/configuracion#agenda"
-          >
-            <Settings2 aria-hidden="true" size={17} />
-            Ajustar horarios
-          </Link>
-        </div>
-      </header>
+    <main className="@container/daily-agenda mx-auto w-full max-w-[90rem] px-4 py-7 md:px-[clamp(1.5rem,3.5vw,4rem)] md:py-12">
+      <AgendaPageHeader
+        actions={
+          <>
+            <AppointmentPanel
+              context={dayContext}
+              autoOpen={autoOpenNewAppointment}
+              appointmentOccupancy={appointmentOccupancy}
+              availability={configuration.availability}
+              currentTime={currentTime.toISOString()}
+              defaultCleanupMinutes={configuration.defaultCleanupMinutes}
+              defaultDurationMinutes={
+                configuration.defaultAppointmentDurationMinutes
+              }
+              gridIntervalMinutes={configuration.gridIntervalMinutes}
+              exceptionalBlocks={exceptionalBlocks}
+              initialDate={initialDate}
+              initialPatientId={initialPatientId}
+              initialTime={initialTime}
+              key={`${initialDate ?? ""}-${initialTime ?? ""}-${initialPatientId ?? ""}-${created}`}
+              minimumDate={formatArgentinaDateInput(currentTime)}
+              patients={patients}
+              selectedDate={day.date}
+              view={view}
+              weekStartDate={week.startDate}
+            />
+            <ExceptionalBlocksPanel
+              autoOpen={exceptionalBlockPanelOpen}
+              blocks={exceptionalBlocks}
+              created={exceptionalBlockCreated}
+              deleted={exceptionalBlockDeleted}
+              managementError={exceptionalBlockManagementError}
+              selectedDate={day.date}
+              view={view}
+              weekStartDate={week.startDate}
+            />
+            <Link
+              className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] bg-white px-4 text-sm font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-subtle)]"
+              href="/app/configuracion#agenda"
+            >
+              <Settings2 aria-hidden="true" size={17} />
+              Ajustar horarios
+            </Link>
+          </>
+        }
+      />
+
+      <AgendaViewToolbar
+        currentHref={buildAgendaPath({
+          weekStartDate: view === "day" ? currentDay.date : currentWeekStart,
+          view,
+          selectedDate: currentDay.date,
+        })}
+        dayHref={buildAgendaPath({
+          weekStartDate: week.startDate,
+          view: "day",
+          selectedDate: day.date,
+        })}
+        monthHref={buildAgendaPath({
+          view: "month",
+          selectedDate: day.date,
+        })}
+        nextHref={
+          view === "day"
+            ? buildAgendaPath({
+                weekStartDate: day.nextDate,
+                view,
+                selectedDate: day.nextDate,
+              })
+            : buildAgendaPath({
+                weekStartDate: week.nextStartDate,
+                view,
+              })
+        }
+        nextLabel={view === "day" ? "Día siguiente" : "Semana siguiente"}
+        previousHref={
+          view === "day"
+            ? buildAgendaPath({
+                weekStartDate: day.previousDate,
+                view,
+                selectedDate: day.previousDate,
+              })
+            : buildAgendaPath({
+                weekStartDate: week.previousStartDate,
+                view,
+              })
+        }
+        previousLabel={
+          view === "day" ? "Día anterior" : "Semana anterior"
+        }
+        view={view}
+        weekHref={buildAgendaPath({
+          weekStartDate: week.startDate,
+          view: "week",
+          params: view === "day" ? { fecha: day.date } : undefined,
+        })}
+      />
 
       {selectedAppointment ? (
         <AppointmentManagementPanel
@@ -314,183 +367,64 @@ export function WeeklyAgenda({
             ? "El turno pendiente se guardó correctamente."
             : updated
               ? "El turno se actualizó correctamente."
-            : rescheduled
-              ? "El turno se reprogramó y el nuevo horario quedó pendiente de confirmación."
-            : cancelled
-              ? "El turno se canceló y el horario volvió a quedar disponible."
-              : confirmed
-                ? "El turno quedó confirmado correctamente."
-                : closureStatus === "completed"
-                  ? "El turno quedó registrado como atendido."
-                  : closureStatus === "no_show"
-                    ? "El turno quedó registrado como ausente."
-                    : closureStatus === "cancelled"
-                      ? "El turno quedó registrado como cancelado."
-                      : "No pudimos gestionar ese turno. Actualizá la agenda e intentá nuevamente."}
+              : rescheduled
+                ? "El turno se reprogramó y el nuevo horario quedó pendiente de confirmación."
+                : cancelled
+                  ? "El turno se canceló y el horario volvió a quedar disponible."
+                  : confirmed
+                    ? "El turno quedó confirmado correctamente."
+                    : closureStatus === "completed"
+                      ? "El turno quedó registrado como atendido."
+                      : closureStatus === "no_show"
+                        ? "El turno quedó registrado como ausente."
+                        : closureStatus === "cancelled"
+                          ? "El turno quedó registrado como cancelado."
+                          : "No pudimos gestionar ese turno. Actualizá la agenda e intentá nuevamente."}
         </div>
       ) : null}
 
-      {view === "day" ? (
-        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[var(--color-muted)]">
-          <span>Habitual: {configuration.defaultAppointmentDurationMinutes} + {configuration.defaultCleanupMinutes} min</span>
-          <span>Grilla: {configuration.gridIntervalMinutes} min</span>
-          <span>Prototipo académico · Solo pacientes ficticios</span>
-        </div>
-      ) : (<>
-      <aside className="mt-8 flex items-start gap-3 rounded-[var(--radius-medium)] border border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] px-4 py-3 text-[var(--color-warning-foreground)] @sm/daily-agenda:items-center">
-        <CalendarClock aria-hidden="true" className="mt-1 shrink-0 @sm/daily-agenda:mt-0" size={18} />
-        <p className="m-0 text-[0.78rem] leading-6">
-          Prototipo académico: asociá únicamente pacientes ficticios y no
-          ingreses información clínica en la agenda.
-        </p>
-      </aside>
-
-      <section
-        aria-label="Preferencias de la agenda"
-        className="mt-5 grid gap-4 @sm/daily-agenda:grid-cols-3"
-      >
-        <article className={summaryCardClassName}>
-          <p className="m-0 text-xs font-semibold text-[var(--color-muted)]">
-            Intervalo de grilla
-          </p>
-          <strong className="mt-2 block text-xl">
-            {configuration.gridIntervalMinutes} min
-          </strong>
-        </article>
-        <article className={summaryCardClassName}>
-          <p className="m-0 text-xs font-semibold text-[var(--color-muted)]">
-            Duración habitual
-          </p>
-          <strong className="mt-2 block text-xl">
-            {configuration.defaultAppointmentDurationMinutes} min
-          </strong>
-        </article>
-        <article className={summaryCardClassName}>
-          <p className="m-0 text-xs font-semibold text-[var(--color-muted)]">
-            Acondicionamiento
-          </p>
-          <strong className="mt-2 block text-xl">
-            {configuration.defaultCleanupMinutes} min
-          </strong>
-        </article>
-      </section>
-      </>)}
+      <AgendaPrototypeNotice />
 
       <section
         aria-labelledby="agenda-calendar-title"
         className="mt-5 overflow-hidden rounded-[var(--radius-large)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-card)]"
       >
-        <div className="flex flex-col gap-4 border-b border-[var(--color-border)] p-4 @sm/daily-agenda:p-6 @4xl/daily-agenda:flex-row @4xl/daily-agenda:items-center @4xl/daily-agenda:justify-between">
-          <div>
-            <p className="mb-2 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
-              {view === "day" ? "Día seleccionado" : "Semana seleccionada"}
+        <div className="border-b border-[var(--color-border)] p-4 @sm/daily-agenda:p-6">
+          <p className="mb-2 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
+            {view === "day" ? "Día seleccionado" : "Semana seleccionada"}
+          </p>
+          <h2 className="m-0 text-xl" id="agenda-calendar-title">
+            {view === "day"
+              ? `${day.label}, ${weekTitleFormatter.format(firstDay)}`
+              : `${weekTitleFormatter.format(firstDay)} — ${weekTitleFormatter.format(lastDay)}`}
+          </h2>
+          {view === "day" ? (
+            <p className="mt-3 mb-0 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[var(--color-muted)]">
+              <strong className="text-[var(--color-foreground)]">
+                {dayAppointments.length}{" "}
+                {dayAppointments.length === 1 ? "turno" : "turnos"}{" "}
+                {isCurrentDay ? "hoy" : "en este día"}
+              </strong>
+              <span aria-hidden="true">·</span>
+              <span>
+                {confirmedDayAppointments}{" "}
+                {confirmedDayAppointments === 1
+                  ? "confirmado"
+                  : "confirmados"}
+              </span>
+              <span aria-hidden="true">·</span>
+              <span>
+                {pendingDayAppointments}{" "}
+                {pendingDayAppointments === 1 ? "pendiente" : "pendientes"}{" "}
+                de confirmación
+              </span>
             </p>
-            <h2 className="m-0 text-xl" id="agenda-calendar-title">
-              {view === "day"
-                ? `${day.label}, ${weekTitleFormatter.format(firstDay)}`
-                : `${weekTitleFormatter.format(firstDay)} — ${weekTitleFormatter.format(lastDay)}`}
-            </h2>
-          </div>
-          <div className="flex w-full flex-col gap-3 @xl/daily-agenda:w-auto @xl/daily-agenda:items-end">
-            <nav
-              aria-label="Cambiar vista de agenda"
-              className="flex w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-brand-subtle)] p-1 @xl/daily-agenda:w-auto"
-            >
-              <AgendaViewPreferenceLink
-                ariaCurrent={view === "week" ? "page" : undefined}
-                className={`flex min-h-11 flex-1 items-center justify-center rounded-lg px-2 text-xs font-bold no-underline @xl/daily-agenda:flex-none @xl/daily-agenda:px-3 ${view === "week" ? "bg-white text-[var(--color-brand-dark)] shadow-sm" : "text-[var(--color-muted)] hover:text-[var(--color-brand-dark)]"}`}
-                href={buildAgendaPath({
-                  weekStartDate: week.startDate,
-                  view: "week",
-                  params: view === "day" ? { fecha: day.date } : undefined,
-                })}
-                view="week"
-              >
-                Vista semanal
-              </AgendaViewPreferenceLink>
-              <AgendaViewPreferenceLink
-                ariaCurrent={view === "day" ? "page" : undefined}
-                className={`flex min-h-11 flex-1 items-center justify-center rounded-lg px-2 text-xs font-bold no-underline @xl/daily-agenda:flex-none @xl/daily-agenda:px-3 ${view === "day" ? "bg-white text-[var(--color-brand-dark)] shadow-sm" : "text-[var(--color-muted)] hover:text-[var(--color-brand-dark)]"}`}
-                href={buildAgendaPath({
-                  weekStartDate: week.startDate,
-                  view: "day",
-                  selectedDate: day.date,
-                })}
-                view="day"
-              >
-                Vista diaria
-              </AgendaViewPreferenceLink>
-              <AgendaViewPreferenceLink
-                className="flex min-h-11 flex-1 items-center justify-center rounded-lg px-2 text-xs font-bold text-[var(--color-muted)] no-underline hover:text-[var(--color-brand-dark)] @xl/daily-agenda:flex-none @xl/daily-agenda:px-3"
-                href={buildAgendaPath({
-                  view: "month",
-                  selectedDate: day.date,
-                })}
-                view="month"
-              >
-                Vista mensual
-              </AgendaViewPreferenceLink>
-            </nav>
-            <nav
-              aria-label={view === "day" ? "Navegar días" : "Navegar semanas"}
-              className="flex flex-wrap justify-end gap-2"
-            >
-              <Link
-                aria-label={
-                  view === "day" ? "Día anterior" : "Semana anterior"
-                }
-                className="grid size-11 place-items-center rounded-xl border border-[var(--color-border)] bg-white text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-subtle)]"
-                href={
-                  view === "day"
-                    ? buildAgendaPath({
-                        weekStartDate: day.previousDate,
-                        view,
-                        selectedDate: day.previousDate,
-                      })
-                    : buildAgendaPath({
-                        weekStartDate: week.previousStartDate,
-                        view,
-                      })
-                }
-              >
-                <ChevronLeft aria-hidden="true" size={18} />
-              </Link>
-              <Link
-                className="flex min-h-11 items-center rounded-xl border border-[var(--color-border)] bg-white px-4 text-sm font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-subtle)]"
-                href={buildAgendaPath({
-                  weekStartDate:
-                    view === "day" ? currentDay.date : currentWeekStart,
-                  view,
-                  selectedDate: currentDay.date,
-                })}
-              >
-                Hoy
-              </Link>
-              <Link
-                aria-label={
-                  view === "day" ? "Día siguiente" : "Semana siguiente"
-                }
-                className="grid size-11 place-items-center rounded-xl border border-[var(--color-border)] bg-white text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-subtle)]"
-                href={
-                  view === "day"
-                    ? buildAgendaPath({
-                        weekStartDate: day.nextDate,
-                        view,
-                        selectedDate: day.nextDate,
-                      })
-                    : buildAgendaPath({
-                        weekStartDate: week.nextStartDate,
-                        view,
-                      })
-                }
-              >
-                <ChevronRight aria-hidden="true" size={18} />
-              </Link>
-            </nav>
-          </div>
+          ) : null}
         </div>
 
-        {view === "day" ? <DailyAgenda {...dailyAgendaProps} /> : !hasCalendarAvailability ? (
+        {view === "day" ? (
+          <DailyAgenda {...dailyAgendaProps} />
+        ) : !hasCalendarAvailability ? (
           <div className="px-5 py-10 text-center">
             <CalendarClock
               aria-hidden="true"
@@ -498,8 +432,7 @@ export function WeeklyAgenda({
               size={28}
             />
             <h3 className="mt-3 mb-0 text-base">
-              No hay horarios configurados{" "}
-              en esta semana
+              No hay horarios configurados en esta semana
             </h3>
             <p className="mx-auto mt-2 mb-0 max-w-md text-sm leading-6 text-[var(--color-muted)]">
               Podés elegir otro período o ajustar tus horarios habituales.
@@ -528,28 +461,28 @@ export function WeeklyAgenda({
               </div>
 
               <div className={`grid ${calendarGridClassName}`}>
-              <svg
-                aria-hidden="true"
-                className="block w-full"
-                height={calendarHeight}
-                width="100%"
-              >
-                {hourMarkers.map((minutes) => {
-                  const y = (minutes - calendarStart) * pixelsPerMinute;
+                <svg
+                  aria-hidden="true"
+                  className="block w-full"
+                  height={calendarHeight}
+                  width="100%"
+                >
+                  {hourMarkers.map((minutes) => {
+                    const y = (minutes - calendarStart) * pixelsPerMinute;
 
-                  return (
-                    <text
-                      className="fill-[var(--color-muted)] text-[0.68rem] font-semibold"
-                      key={minutes}
-                      textAnchor="end"
-                      x="60"
-                      y={Math.min(y + 4, calendarHeight - 4)}
-                    >
-                      {formatTime(minutes)}
-                    </text>
-                  );
-                })}
-              </svg>
+                    return (
+                      <text
+                        className="fill-[var(--color-muted)] text-[0.68rem] font-semibold"
+                        key={minutes}
+                        textAnchor="end"
+                        x="60"
+                        y={Math.min(y + 4, calendarHeight - 4)}
+                      >
+                        {formatTime(minutes)}
+                      </text>
+                    );
+                  })}
+                </svg>
 
               {visibleDays.map((day) => {
                 const dayAvailability = configuration.availability.filter(
