@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { AppointmentForm } from "./appointment-form";
 
 describe("AppointmentForm", () => {
-  it("presents the appointment as a guided flow with a review summary", () => {
+  it("presents the selected time first and clearly saves a pending appointment", () => {
     const markup = renderToStaticMarkup(
       <AppointmentForm
         appointmentOccupancy={[]}
@@ -31,14 +31,10 @@ describe("AppointmentForm", () => {
       />,
     );
 
-    expect(markup).toContain("Paso 1");
-    expect(markup).toContain("Paso 2");
-    expect(markup).toContain("Paso 3");
-    expect(markup.indexOf("Definí la práctica y el tiempo")).toBeLessThan(
-      markup.indexOf("Definí el horario"),
-    );
-    expect(markup).toContain("Revisá antes de confirmar");
-    expect(markup).toContain("Podés ajustarla para este paciente");
+    expect(markup.indexOf("Horario elegido")).toBeLessThan(markup.indexOf("Paciente ficticio"));
+    expect(markup).toContain("Guardar turno pendiente");
+    expect(markup).toContain("pendiente de confirmación");
+    expect(markup).toContain("Cambiar fecha u horario");
     expect(markup).toContain('type="date"');
     expect(markup).toContain('min="2026-08-10"');
     expect(markup).toContain("Elegí una fecha para ver los horarios libres.");

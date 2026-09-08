@@ -2,9 +2,10 @@
 
 import { CalendarClock, CheckCircle2, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { SubmitButton } from "@/components/auth/submit-button";
+import { preserveFormValues } from "@/components/preserve-form-values";
 import { AgendaContextFields } from "@/components/agenda-context-fields";
 import {
   buildAgendaPath,
@@ -39,6 +40,7 @@ const inputClassName =
   "mt-2 min-h-11 w-full rounded-xl border border-[var(--color-border)] bg-white px-3.5 text-sm outline-none focus:border-[var(--color-brand)] focus:ring-3 focus:ring-[rgb(20_125_115/12%)]";
 
 export function AppointmentManagementPanel({
+  context,
   appointment,
   appointmentOccupancy,
   availability,
@@ -51,6 +53,7 @@ export function AppointmentManagementPanel({
   view = "week",
   weekStartDate,
 }: Readonly<{
+  context?: ReactNode;
   appointment: Appointment;
   appointmentOccupancy: AppointmentOccupancy[];
   availability: AvailabilityBlock[];
@@ -217,10 +220,37 @@ export function AppointmentManagementPanel({
     </section>
   );
 
+  function renderRescheduleSlot(time: string) {
+    const value = `${date}T${time}`;
+    const isOccupied = !availableSlots.includes(time);
+
+    return (
+      <label className="relative cursor-pointer" key={time}>
+        <input
+          aria-label={isOccupied ? `${time} Ocupado` : time}
+          checked={startsAt === value}
+          className="peer sr-only"
+          name="startsAt"
+          onChange={(event) => setStartsAt(event.target.value)}
+          type="radio"
+          value={value}
+        />
+        <span
+          className={`flex min-h-11 flex-col items-center justify-center rounded-xl border bg-white text-sm font-bold peer-checked:border-[var(--color-brand)] peer-checked:bg-[var(--color-brand-soft)] peer-focus-visible:ring-3 peer-focus-visible:ring-[var(--color-brand)] ${isOccupied ? "border-[var(--color-warning-border)] text-[var(--color-warning-foreground)]" : "border-[var(--color-border)]"}`}
+        >
+          {time}
+          {isOccupied ? (
+            <small className="text-[0.62rem] font-semibold">Ocupado</small>
+          ) : null}
+        </span>
+      </label>
+    );
+  }
+
   return (
     <dialog
       aria-labelledby="manage-appointment-title"
-      className="fixed inset-y-0 right-0 left-auto m-0 h-dvh max-h-none w-full max-w-xl overflow-hidden border-0 bg-white p-0 text-[var(--color-foreground)] shadow-[-1rem_0_3rem_rgb(24_51_48/18%)] backdrop:bg-[rgb(24_51_48/45%)]"
+      className={`fixed inset-y-0 right-0 left-auto m-0 h-dvh max-h-none w-full max-w-xl overflow-clip border-0 bg-white p-0 text-[var(--color-foreground)] shadow-[-1rem_0_3rem_rgb(24_51_48/18%)] backdrop:bg-[rgb(24_51_48/45%)] ${context ? "lg:top-1/2 lg:bottom-auto lg:left-1/2 lg:h-[calc(100dvh-4rem)] lg:max-w-6xl lg:-translate-x-1/2 lg:-translate-y-1/2 lg:rounded-2xl" : ""}`}
       onClose={() =>
         router.replace(
           buildAgendaPath({ weekStartDate, view, selectedDate }),
@@ -229,7 +259,16 @@ export function AppointmentManagementPanel({
       }
       ref={dialogRef}
     >
-      <div className="flex h-full flex-col">
+      <div className={context ? "grid h-full lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]" : "h-full"}>
+          {context ? (
+            <aside
+              aria-label="Contexto de la jornada"
+              className="hidden min-h-0 overflow-y-auto border-r border-[var(--color-border)] bg-[var(--color-background)] p-5 lg:block"
+            >
+              {context}
+            </aside>
+          ) : null}
+        <div className="flex h-full min-h-0 flex-col">
         <header className="flex items-start justify-between gap-4 border-b border-[var(--color-border)] px-5 py-5 md:px-7">
           <div>
             <p className="mb-2 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
@@ -394,12 +433,13 @@ export function AppointmentManagementPanel({
                     </p>
                   )}
                   {canReschedule ? (
-                    <details className="mt-6 rounded-xl border border-[var(--color-border)] bg-white p-4">
-                      <summary className="cursor-pointer text-sm font-bold text-[var(--color-brand-dark)]">
+                    <details open className="mt-6 rounded-xl border border-[var(--color-border)] bg-white p-4">
+                      <summary className="flex min-h-11 cursor-pointer items-center text-sm font-bold text-[var(--color-brand-dark)]">
                         Reprogramar turno
                       </summary>
                       <form
                         action={rescheduleAction}
+                        ref={preserveFormValues}
                         className="mt-4 border-t border-[var(--color-border)] pt-4"
                         noValidate
                       >
@@ -461,37 +501,29 @@ export function AppointmentManagementPanel({
                             Los horarios ocupados requieren una confirmación
                             adicional antes de guardar.
                           </p>
-                          <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
-                            {rescheduleSlots.map((time) => {
-                              const value = `${date}T${time}`;
-                              const isOccupied = !availableSlots.includes(time);
-
-                              return (
-                                <label className="cursor-pointer" key={time}>
-                                  <input
-                                    checked={startsAt === value}
-                                    className="peer sr-only"
-                                    name="startsAt"
-                                    onChange={(event) =>
-                                      setStartsAt(event.target.value)
-                                    }
-                                    type="radio"
-                                    value={value}
-                                  />
-                                  <span
-                                    className={`flex min-h-11 flex-col items-center justify-center rounded-xl border bg-white text-sm font-bold peer-checked:border-[var(--color-brand)] peer-checked:bg-[var(--color-brand-soft)] ${isOccupied ? "border-[var(--color-warning-border)] text-[var(--color-warning-foreground)]" : "border-[var(--color-border)]"}`}
-                                  >
-                                    {time}
-                                    {isOccupied ? (
-                                      <small className="text-[0.62rem] font-semibold">
-                                        Ocupado
-                                      </small>
-                                    ) : null}
-                                  </span>
-                                </label>
-                              );
-                            })}
+                          <p className="mt-3 text-xs font-semibold">Horarios libres</p>
+                          <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4">
+                            {rescheduleSlots
+                              .filter((time) => availableSlots.includes(time))
+                              .map(renderRescheduleSlot)}
                           </div>
+                          {!rescheduleSlots.some((time) => availableSlots.includes(time)) ? (
+                            <p className="text-sm text-[var(--color-muted)]">
+                              No hay horarios libres para esta fecha. Probá otro día.
+                            </p>
+                          ) : null}
+                          {rescheduleSlots.some((time) => !availableSlots.includes(time)) ? (
+                            <details className="mt-3">
+                              <summary className="flex min-h-11 cursor-pointer items-center text-sm font-semibold text-[var(--color-warning-foreground)]">
+                                Ver horarios ocupados
+                              </summary>
+                              <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4">
+                                {rescheduleSlots
+                                  .filter((time) => !availableSlots.includes(time))
+                                  .map(renderRescheduleSlot)}
+                              </div>
+                            </details>
+                          ) : null}
                           {rescheduleSlots.length === 0 ? (
                             <p className="mt-3 mb-0 text-sm text-[var(--color-muted)]">
                               No hay otros horarios configurados para esta fecha.
@@ -507,6 +539,31 @@ export function AppointmentManagementPanel({
                           ) : null}
                         </fieldset>
 
+                        <dl
+                          className="mt-4 space-y-3 rounded-xl bg-[var(--color-brand-subtle)] p-3 text-sm"
+                          aria-live="polite"
+                        >
+                          <div>
+                            <dt className="text-xs text-[var(--color-muted)]">Horario original</dt>
+                            <dd className="m-0 font-semibold">
+                              {initialDate.split("-").reverse().join("/")} · {initialTime}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-xs text-[var(--color-muted)]">
+                              Nuevo horario elegido
+                            </dt>
+                            <dd className="m-0 font-semibold">
+                              {startsAt
+                                ? `${date.split("-").reverse().join("/")} · ${startsAt.slice(11, 16)}`
+                                : "Elegí una fecha y un horario"}
+                            </dd>
+                          </div>
+                        </dl>
+                        <p className="mt-3 text-xs leading-5 text-[var(--color-muted)]">
+                          Se liberará el horario original. El nuevo turno quedará pendiente de
+                          confirmación.
+                        </p>
                         {overlapRequiresConfirmation ? (
                           <input
                             name="overlapConfirmed"
@@ -523,8 +580,15 @@ export function AppointmentManagementPanel({
                         >
                           {overlapRequiresConfirmation
                             ? "Confirmar superposición y reprogramar"
-                            : "Reprogramar turno"}
+                            : "Reprogramar y dejar pendiente"}
                         </SubmitButton>
+                        <button
+                          className="mt-2 min-h-11 w-full cursor-pointer rounded-xl border border-[var(--color-border)] bg-white px-3 text-sm font-semibold"
+                          onClick={closePanel}
+                          type="button"
+                        >
+                          Conservar turno original
+                        </button>
                       </form>
                     </details>
                   ) : null}
@@ -683,6 +747,7 @@ export function AppointmentManagementPanel({
             </>
           )}
         </div>
+      </div>
       </div>
     </dialog>
   );

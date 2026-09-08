@@ -432,14 +432,10 @@ describe("WeeklyAgenda", () => {
       />,
     );
 
-    expect(markup).toContain("Agenda diaria");
-    expect(markup).toContain("@container/daily-agenda");
-    expect(markup).toContain("@4xl/daily-agenda:flex-row");
-    expect(markup).toContain("@sm/daily-agenda:grid-cols-3");
-    expect(markup).toContain("@xl/daily-agenda:flex-none");
-    expect(markup).toContain(
-      "[&amp;&gt;button:first-of-type]:col-span-2",
-    );
+    expect(markup).toContain("Mi jornada");
+    expect(markup).toContain("Libre · 09:35–12:00");
+    expect(markup).toContain("Reservar 09:45");
+    expect(markup).toContain("Seguimiento y cambios de la jornada");
     expect(markup).toContain("Martes, Lucía");
     expect(markup).not.toContain("Miércoles, Lucía");
     expect(markup).toContain("Navegar días");

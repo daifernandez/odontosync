@@ -10,6 +10,7 @@ import { AgendaViewPreferenceLink } from "@/components/agenda-view-preference-li
 import { AppointmentManagementPanel } from "@/components/appointment-management-panel";
 import { AppointmentPanel } from "@/components/appointment-panel";
 import { AppointmentTimeline } from "@/components/appointment-timeline";
+import { DailyAgenda } from "@/components/daily-agenda";
 import { ExceptionalBlocksPanel } from "@/components/exceptional-blocks-panel";
 import {
   buildAgendaDay,
@@ -197,23 +198,47 @@ export function WeeklyAgenda({
       )
     : -1;
 
+  const dailyAgendaProps = {
+    date: day.date,
+    weekStartDate: week.startDate,
+    currentTime: currentTime.toISOString(),
+    appointments: visibleAppointments,
+    appointmentOccupancy,
+    availability: configuration.availability,
+    exceptionalBlocks,
+    durationMinutes: configuration.defaultAppointmentDurationMinutes,
+    cleanupMinutes: configuration.defaultCleanupMinutes,
+    gridIntervalMinutes: configuration.gridIntervalMinutes,
+    readOnly: readOnlyAppointment,
+  };
+  const dayContext =
+    view === "day" ? (
+      <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-background)]">
+        <h3 className="px-5 pt-5 text-base">
+          Jornada · {day.label} {shortDateFormatter.format(firstDay)}
+        </h3>
+        <DailyAgenda {...dailyAgendaProps} preview />
+      </div>
+    ) : undefined;
+
   return (
-    <main className="@container/daily-agenda mx-auto w-full max-w-[90rem] px-4 py-7 md:px-[clamp(1.5rem,3.5vw,4rem)] md:py-12">
+    <main className={`@container/daily-agenda mx-auto w-full max-w-[90rem] px-4 md:px-[clamp(1.5rem,3.5vw,4rem)] ${view === "day" ? "py-5 md:py-7" : "py-7 md:py-12"}`}>
       <header className="flex flex-col items-start gap-5 @4xl/daily-agenda:flex-row @4xl/daily-agenda:items-end @4xl/daily-agenda:justify-between @4xl/daily-agenda:gap-8">
         <div>
           <p className="mb-2 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
             Agenda
           </p>
           <h1 className="m-0 text-[clamp(1.8rem,3vw,2.55rem)] leading-[1.1] tracking-[-0.045em]">
-            Agenda {view === "day" ? "diaria" : "semanal"}
+            {view === "day" ? "Mi jornada" : "Agenda semanal"}
           </h1>
-          <p className="mt-3 mb-0 max-w-2xl text-sm leading-6 text-[var(--color-muted)]">
+          <p className={`${view === "day" ? "hidden" : "mt-3 mb-0 max-w-2xl text-sm leading-6 text-[var(--color-muted)]"}`}>
             Visualizá el tiempo clínico y el acondicionamiento reservado de cada
             turno.
           </p>
         </div>
         <div className="grid w-full grid-cols-2 gap-2 [&>a]:w-full [&>button]:w-full [&>button:first-of-type]:col-span-2 @2xl/daily-agenda:flex @2xl/daily-agenda:w-auto @2xl/daily-agenda:[&>a]:w-auto @2xl/daily-agenda:[&>button]:w-auto @2xl/daily-agenda:[&>button:first-of-type]:col-span-1">
           <AppointmentPanel
+            context={dayContext}
             autoOpen={autoOpenNewAppointment}
             appointmentOccupancy={appointmentOccupancy}
             availability={configuration.availability}
@@ -256,6 +281,7 @@ export function WeeklyAgenda({
 
       {selectedAppointment ? (
         <AppointmentManagementPanel
+          context={dayContext}
           appointment={selectedAppointment}
           appointmentOccupancy={appointmentOccupancy.filter(
             (_, index) => index !== selectedOccupancyIndex,
@@ -304,6 +330,13 @@ export function WeeklyAgenda({
         </div>
       ) : null}
 
+      {view === "day" ? (
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[var(--color-muted)]">
+          <span>Habitual: {configuration.defaultAppointmentDurationMinutes} + {configuration.defaultCleanupMinutes} min</span>
+          <span>Grilla: {configuration.gridIntervalMinutes} min</span>
+          <span>Prototipo académico · Solo pacientes ficticios</span>
+        </div>
+      ) : (<>
       <aside className="mt-8 flex items-start gap-3 rounded-[var(--radius-medium)] border border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] px-4 py-3 text-[var(--color-warning-foreground)] @sm/daily-agenda:items-center">
         <CalendarClock aria-hidden="true" className="mt-1 shrink-0 @sm/daily-agenda:mt-0" size={18} />
         <p className="m-0 text-[0.78rem] leading-6">
@@ -341,6 +374,7 @@ export function WeeklyAgenda({
           </strong>
         </article>
       </section>
+      </>)}
 
       <section
         aria-labelledby="agenda-calendar-title"
@@ -364,7 +398,7 @@ export function WeeklyAgenda({
             >
               <AgendaViewPreferenceLink
                 ariaCurrent={view === "week" ? "page" : undefined}
-                className={`flex min-h-10 flex-1 items-center justify-center rounded-lg px-2 text-xs font-bold no-underline @xl/daily-agenda:flex-none @xl/daily-agenda:px-3 ${view === "week" ? "bg-white text-[var(--color-brand-dark)] shadow-sm" : "text-[var(--color-muted)] hover:text-[var(--color-brand-dark)]"}`}
+                className={`flex min-h-11 flex-1 items-center justify-center rounded-lg px-2 text-xs font-bold no-underline @xl/daily-agenda:flex-none @xl/daily-agenda:px-3 ${view === "week" ? "bg-white text-[var(--color-brand-dark)] shadow-sm" : "text-[var(--color-muted)] hover:text-[var(--color-brand-dark)]"}`}
                 href={buildAgendaPath({
                   weekStartDate: week.startDate,
                   view: "week",
@@ -376,7 +410,7 @@ export function WeeklyAgenda({
               </AgendaViewPreferenceLink>
               <AgendaViewPreferenceLink
                 ariaCurrent={view === "day" ? "page" : undefined}
-                className={`flex min-h-10 flex-1 items-center justify-center rounded-lg px-2 text-xs font-bold no-underline @xl/daily-agenda:flex-none @xl/daily-agenda:px-3 ${view === "day" ? "bg-white text-[var(--color-brand-dark)] shadow-sm" : "text-[var(--color-muted)] hover:text-[var(--color-brand-dark)]"}`}
+                className={`flex min-h-11 flex-1 items-center justify-center rounded-lg px-2 text-xs font-bold no-underline @xl/daily-agenda:flex-none @xl/daily-agenda:px-3 ${view === "day" ? "bg-white text-[var(--color-brand-dark)] shadow-sm" : "text-[var(--color-muted)] hover:text-[var(--color-brand-dark)]"}`}
                 href={buildAgendaPath({
                   weekStartDate: week.startDate,
                   view: "day",
@@ -387,7 +421,7 @@ export function WeeklyAgenda({
                 Vista diaria
               </AgendaViewPreferenceLink>
               <AgendaViewPreferenceLink
-                className="flex min-h-10 flex-1 items-center justify-center rounded-lg px-2 text-xs font-bold text-[var(--color-muted)] no-underline hover:text-[var(--color-brand-dark)] @xl/daily-agenda:flex-none @xl/daily-agenda:px-3"
+                className="flex min-h-11 flex-1 items-center justify-center rounded-lg px-2 text-xs font-bold text-[var(--color-muted)] no-underline hover:text-[var(--color-brand-dark)] @xl/daily-agenda:flex-none @xl/daily-agenda:px-3"
                 href={buildAgendaPath({
                   view: "month",
                   selectedDate: day.date,
@@ -456,7 +490,7 @@ export function WeeklyAgenda({
           </div>
         </div>
 
-        {!hasCalendarAvailability ? (
+        {view === "day" ? <DailyAgenda {...dailyAgendaProps} /> : !hasCalendarAvailability ? (
           <div className="px-5 py-10 text-center">
             <CalendarClock
               aria-hidden="true"
@@ -465,15 +499,15 @@ export function WeeklyAgenda({
             />
             <h3 className="mt-3 mb-0 text-base">
               No hay horarios configurados{" "}
-              {view === "day" ? "para este día" : "en esta semana"}
+              en esta semana
             </h3>
             <p className="mx-auto mt-2 mb-0 max-w-md text-sm leading-6 text-[var(--color-muted)]">
               Podés elegir otro período o ajustar tus horarios habituales.
             </p>
           </div>
         ) : (
-          <div className={view === "day" ? "" : "overflow-x-auto"}>
-            <div className={view === "day" ? "min-w-0" : "min-w-[64rem]"}>
+          <div className="overflow-x-auto">
+            <div className="min-w-[64rem]">
               <div
                 className={`grid border-b border-[var(--color-border)] bg-[var(--color-brand-subtle)] ${calendarGridClassName}`}
               >
@@ -800,7 +834,16 @@ export function WeeklyAgenda({
         )}
       </section>
 
-      <div className="mt-5">
+      {view === "day" ? <details className="mt-5 rounded-xl border border-[var(--color-border)] bg-white p-4"><summary className="flex min-h-11 cursor-pointer items-center text-sm font-semibold text-[var(--color-brand-dark)]">Seguimiento y cambios de la jornada</summary>
+        <AppointmentTimeline
+          appointments={visibleAppointments}
+          currentTime={currentTime.toISOString()}
+          days={visibleDays.map(({ date, label }) => ({ date, label }))}
+          readOnlyAppointment={readOnlyAppointment}
+          selectedDate={day.date}
+          view={view}
+          weekStartDate={week.startDate}
+        /></details> : (      <div className="mt-5">
         <AppointmentTimeline
           appointments={visibleAppointments}
           currentTime={currentTime.toISOString()}
@@ -810,7 +853,8 @@ export function WeeklyAgenda({
           view={view}
           weekStartDate={week.startDate}
         />
-      </div>
+      </div>)}
+
     </main>
   );
 }

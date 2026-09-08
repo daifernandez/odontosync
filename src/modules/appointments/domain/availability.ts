@@ -3,6 +3,7 @@ import type { ExceptionalBlock } from "@/modules/exceptional-blocks/domain/excep
 
 import {
   getArgentinaDateTimeParts,
+  formatArgentinaDateInput,
   parseArgentinaDateTime,
   type Appointment,
 } from "./appointment";
@@ -254,6 +255,67 @@ export function getAvailableAppointmentSlots({
   }
 
   return slots;
+}
+
+export function getAvailableAppointmentWindows(input: AvailableSlotsInput) {
+  const slots = getAvailableAppointmentSlots(input);
+  if (slots.length === 0) return [];
+  const now = input.now ?? new Date();
+  const nowParts = getArgentinaDateTimeParts(now);
+  const earliest =
+    formatArgentinaDateInput(now) === input.date
+      ? nowParts.hour * 60 + nowParts.minute
+      : 0;
+  const dayOfWeek = getDayOfWeek(input.date);
+  const occupied = [
+    ...input.exceptionalBlocks,
+    ...input.appointments.map((appointment) => ({
+      startsAt: appointment.startsAt,
+      endsAt: new Date(
+        new Date(appointment.startsAt).getTime() +
+          (appointment.durationMinutes + appointment.cleanupMinutes) * 60_000,
+      ).toISOString(),
+    })),
+  ]
+    .flatMap((block) => {
+      const segment = getExceptionalBlockSegmentForDate(block, input.date);
+      return segment ? [segment] : [];
+    })
+    .sort((a, b) => a.startMinutes - b.startMinutes);
+
+  return input.availability
+    .filter((block) => block.dayOfWeek === dayOfWeek)
+    .flatMap((block) => {
+      let cursor = Math.max(parseTime(block.startTime)!, earliest);
+      const end = parseTime(block.endTime)!;
+      const gaps: Array<{ start: number; end: number }> = [];
+      for (const busy of occupied) {
+        if (busy.endMinutes <= cursor || busy.startMinutes >= end) continue;
+        if (busy.startMinutes > cursor)
+          gaps.push({ start: cursor, end: busy.startMinutes });
+        cursor = Math.max(cursor, busy.endMinutes);
+      }
+      if (cursor < end) gaps.push({ start: cursor, end });
+      return gaps.flatMap((gap) => {
+        const available = slots.filter((slot) => {
+          const minutes = parseTime(slot)!;
+          return (
+            minutes >= gap.start &&
+            minutes + input.durationMinutes + input.cleanupMinutes <= gap.end
+          );
+        });
+        return available.length > 0
+          ? [
+              {
+                startTime: formatTime(gap.start),
+                endTime: formatTime(gap.end),
+                slots: available,
+              },
+            ]
+          : [];
+      });
+    })
+    .sort((a, b) => a.startTime.localeCompare(b.startTime));
 }
 
 export function isAppointmentWithinWeeklyAvailability(

@@ -3,7 +3,7 @@
 import { CalendarPlus, Settings2, UsersRound, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 import { AppointmentForm } from "@/components/appointment-form";
 import {
@@ -23,6 +23,7 @@ type AppointmentPatientOption = Pick<
 >;
 
 export function AppointmentPanel({
+  context,
   autoOpen,
   appointmentOccupancy,
   availability,
@@ -40,6 +41,7 @@ export function AppointmentPanel({
   view = "week",
   weekStartDate,
 }: Readonly<{
+  context?: ReactNode;
   autoOpen: boolean;
   appointmentOccupancy: AppointmentOccupancy[];
   availability: AvailabilityBlock[];
@@ -99,7 +101,7 @@ export function AppointmentPanel({
 
       <dialog
         aria-labelledby="new-appointment-title"
-        className="fixed inset-y-0 right-0 left-auto m-0 h-dvh max-h-none w-full max-w-xl overflow-hidden border-0 bg-white p-0 text-[var(--color-foreground)] shadow-[-1rem_0_3rem_rgb(24_51_48/18%)] backdrop:bg-[rgb(24_51_48/45%)]"
+        className={`fixed inset-y-0 right-0 left-auto m-0 h-dvh max-h-none w-full max-w-xl overflow-clip border-0 bg-white p-0 text-[var(--color-foreground)] shadow-[-1rem_0_3rem_rgb(24_51_48/18%)] backdrop:bg-[rgb(24_51_48/45%)] ${context ? "lg:top-1/2 lg:bottom-auto lg:left-1/2 lg:h-[calc(100dvh-4rem)] lg:max-w-6xl lg:-translate-x-1/2 lg:-translate-y-1/2 lg:rounded-2xl" : ""}`}
         id="nuevo-turno"
         onClick={(event) => {
           if (event.target === event.currentTarget) {
@@ -112,17 +114,23 @@ export function AppointmentPanel({
         }}
         ref={dialogRef}
       >
-        <div className="flex h-full flex-col">
-          <header className="flex items-start justify-between gap-4 border-b border-[var(--color-border)] px-5 py-5 md:px-7">
+        <div className={context ? "grid h-full lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]" : "h-full"}>
+          {context ? (
+            <aside
+              aria-label="Contexto de la jornada"
+              className="hidden min-h-0 overflow-y-auto border-r border-[var(--color-border)] bg-[var(--color-background)] p-5 lg:block"
+            >
+              {context}
+            </aside>
+          ) : null}
+        <div className="flex h-full min-h-0 flex-col">
+          <header className="flex items-start justify-between gap-4 border-b border-[var(--color-border)] px-5 py-4 md:px-6">
             <div>
-              <p className="mb-2 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
-                Agenda
-              </p>
               <h2 className="m-0 text-2xl" id="new-appointment-title">
                 Nuevo turno
               </h2>
               <p className="mt-2 mb-0 text-sm leading-6 text-[var(--color-muted)]">
-                Revisá los datos antes de guardar el turno como pendiente.
+                El turno quedará pendiente de confirmación.
               </p>
             </div>
             <button
@@ -135,7 +143,7 @@ export function AppointmentPanel({
             </button>
           </header>
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 md:px-7 md:py-6">
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 md:px-6 md:py-6">
             {patients.length === 0 ? (
               <div className="rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-brand-subtle)] p-6 text-center">
                 <UsersRound
@@ -185,7 +193,8 @@ export function AppointmentPanel({
             </Link>
           </div>
         </div>
-      </dialog>
+        </div>
+    </dialog>
     </>
   );
 }
