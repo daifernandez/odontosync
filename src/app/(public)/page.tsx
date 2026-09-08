@@ -5,7 +5,7 @@ import {
   ClipboardList,
   Clock3,
   FileText,
-  Printer,
+  UserRound,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -15,7 +15,7 @@ import { BrandMark } from "@/components/brand-mark";
 export const metadata: Metadata = {
   title: "OdontoSync | Organización para odontólogos independientes",
   description:
-    "Agenda, disponibilidad y materiales imprimibles para organizar el trabajo diario del consultorio.",
+    "Agenda, disponibilidad y pacientes para organizar el trabajo diario del consultorio.",
 };
 
 const features = [
@@ -26,10 +26,10 @@ const features = [
     icon: CalendarDays,
   },
   {
-    title: "Imprimibles útiles",
+    title: "Pacientes organizados",
     description:
-      "Accedé a planes de tratamiento y odontogramas preparados para completar en papel.",
-    icon: Printer,
+      "Mantené los datos administrativos y los turnos de cada paciente en un mismo lugar.",
+    icon: UserRound,
   },
   {
     title: "Indicaciones ordenadas",
@@ -108,9 +108,8 @@ export default function LandingPage() {
             </span>
           </h1>
           <p className="mt-7 max-w-xl text-base leading-7 text-[var(--color-muted)] md:text-lg md:leading-8">
-            OdontoSync reúne agenda, disponibilidad y materiales imprimibles en
-            un espacio simple, pensado para quienes atienden y gestionan su
-            consultorio.
+            OdontoSync reúne agenda, disponibilidad y pacientes en un espacio
+            simple, pensado para quienes atienden y gestionan su consultorio.
           </p>
 
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
@@ -246,7 +245,7 @@ export default function LandingPage() {
           <ul className="m-0 flex list-none flex-col gap-5 p-0">
             {[
               "Agenda configurable para la dinámica del consultorio.",
-              "Plantillas en blanco para completar y conservar en papel.",
+              "Fichas administrativas mínimas conectadas con los turnos.",
               "Indicaciones generales organizadas por área odontológica.",
               "Prototipo académico limitado a información ficticia.",
             ].map((item) => (

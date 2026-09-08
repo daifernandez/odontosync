@@ -168,19 +168,14 @@ describe("DashboardHome", () => {
     );
   });
 
-  it("describes the complete clinical history as four pages", () => {
+  it("omits the retired static printables without leaving a secondary column", () => {
     const markup = renderToStaticMarkup(<DashboardHome />);
 
-    expect(markup).toContain("Cuatro páginas para completar a mano");
-    expect(markup).not.toContain("Tres páginas para completar a mano");
-  });
-
-  it("disables modules that are not part of the demo yet", () => {
-    const markup = renderToStaticMarkup(<DashboardHome demoMode />);
-
-    expect(markup).not.toContain('href="/demo/imprimibles"');
-    expect(markup).toContain('title="Historia clínica odontológica: próximamente"');
-    expect(markup).toContain('aria-disabled="true"');
-    expect(markup).toContain("Próximamente");
+    expect(markup).not.toContain('href="/app/imprimibles"');
+    expect(markup).not.toContain("Historia clínica odontológica");
+    expect(markup).not.toContain('aria-labelledby="printables-title"');
+    expect(markup).not.toContain(
+      "xl:grid-cols-[minmax(0,1.6fr)_minmax(18rem,0.8fr)]",
+    );
   });
 });

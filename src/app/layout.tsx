@@ -5,7 +5,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "OdontoSync",
   description:
-    "Agenda, organización y materiales imprimibles para odontólogos independientes.",
+    "Agenda, disponibilidad y pacientes para odontólogos independientes.",
 };
 
 export default function RootLayout({

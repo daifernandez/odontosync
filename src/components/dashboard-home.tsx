@@ -5,7 +5,6 @@ import {
   Clock3,
   FileText,
   Plus,
-  Printer,
   UserRound,
 } from "lucide-react";
 import Link from "next/link";
@@ -45,16 +44,6 @@ const demoAppointments = [
     status: "Confirmado" as const,
   },
 ] as const;
-
-const printables = [
-  {
-    name: "Historia clínica odontológica",
-    detail: "Cuatro páginas para completar a mano",
-    href: "/app/imprimibles",
-  },
-  { name: "Odontograma", detail: "Adulto y odontopediátrico" },
-  { name: "Indicaciones generales", detail: "Organizadas por especialidad" },
-];
 
 const statusStyles: Record<
   DashboardData["upcomingAppointments"][number]["status"],
@@ -235,7 +224,7 @@ export function DashboardHome({
         </article>
       </section>
 
-      <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(18rem,0.8fr)]">
+      <div className="mt-4">
         <section
           className="rounded-[var(--radius-large)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-card)]"
           aria-labelledby="agenda-title"
@@ -323,70 +312,6 @@ export function DashboardHome({
           </div>
         </section>
 
-        <section
-          className="rounded-[var(--radius-large)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-card)]"
-          aria-labelledby="printables-title"
-        >
-          <div className="flex min-h-11 items-center justify-between gap-4">
-            <div>
-              <p className="mb-2 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
-                Accesos rápidos
-              </p>
-              <h2
-                className="m-0 text-lg font-semibold tracking-[-0.025em]"
-                id="printables-title"
-              >
-                Imprimibles
-              </h2>
-            </div>
-            <span
-              className="grid size-10 place-items-center rounded-xl bg-[var(--color-brand-soft)] text-[var(--color-brand)]"
-              aria-hidden="true"
-            >
-              <Printer size={20} />
-            </span>
-          </div>
-
-          <div className="mt-4 flex flex-col">
-            {printables.map((printable) => {
-              const href = demoMode ? undefined : printable.href;
-              const content = (
-                <>
-                  <span className="flex flex-col gap-1">
-                    <strong className="text-[0.8rem]">{printable.name}</strong>
-                    <small className="text-[0.67rem] leading-5 text-[var(--color-muted)]">
-                      {printable.detail}
-                    </small>
-                  </span>
-                  <span className="text-[0.58rem] font-bold tracking-[0.05em] text-[var(--color-muted)] uppercase">
-                    {href ? "Abrir" : "Próximamente"}
-                  </span>
-                </>
-              );
-
-              return href ? (
-                <Link
-                  className="flex min-h-17.5 items-center justify-between gap-4 border-t border-[var(--color-border)] text-left text-[var(--color-foreground)] no-underline hover:bg-[var(--color-brand-subtle)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand)]"
-                  href={href}
-                  key={printable.name}
-                >
-                  {content}
-                </Link>
-              ) : (
-                <button
-                  aria-disabled="true"
-                  className="flex min-h-17.5 cursor-not-allowed items-center justify-between gap-4 border-0 border-t border-[var(--color-border)] bg-transparent p-0 text-left text-[var(--color-foreground)] opacity-60"
-                  disabled
-                  key={printable.name}
-                  title={`${printable.name}: próximamente`}
-                  type="button"
-                >
-                  {content}
-                </button>
-              );
-            })}
-          </div>
-        </section>
       </div>
 
       {demoMode ? (

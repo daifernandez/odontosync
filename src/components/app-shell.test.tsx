@@ -23,7 +23,7 @@ describe("AppShell", () => {
     pathname = "/app";
   });
 
-  it("links every available authenticated section to its route", () => {
+  it("links every available authenticated section and omits retired printables", () => {
     const markup = renderToStaticMarkup(
       <AppShell user={user}>Contenido</AppShell>,
     );
@@ -31,9 +31,10 @@ describe("AppShell", () => {
     expect(markup).toContain('href="/app"');
     expect(markup).toContain('href="/app/agenda"');
     expect(markup).toContain('href="/app/pacientes"');
-    expect(markup).toContain('href="/app/imprimibles"');
     expect(markup).toContain('href="/app/indicaciones"');
     expect(markup).toContain('href="/app/configuracion"');
+    expect(markup).not.toContain('href="/app/imprimibles"');
+    expect(markup).not.toContain(">Imprimibles</span>");
   });
 
   it("groups account actions below the user and keeps the shell control last", () => {
@@ -86,7 +87,7 @@ describe("AppShell", () => {
     expect(markup).toContain('href="/demo/agenda"');
     expect(markup).toContain('href="/demo/pacientes"');
     expect(markup).not.toContain('href="/demo/imprimibles"');
-    expect(markup).toContain('title="Imprimibles: próximamente"');
+    expect(markup).not.toContain('title="Imprimibles: próximamente"');
   });
 
   it("keeps only the current demo section active", () => {
