@@ -2503,3 +2503,81 @@ eliminar el módulo independiente `Indicaciones` ni su vista de impresión.
   y queda explícitamente superado por este sprint.
 - Las planillas estáticas pueden reevaluarse más adelante sólo si aparece una
   necesidad concreta y validada; no permanecen como deuda activa del MVP.
+
+## Sprint 037 — Unificar Inicio y Agenda
+
+- **Fecha:** 8 de septiembre de 2026
+- **Estado:** publicado y mergeado
+- **Issue:** [#109](https://github.com/daifernandez/odontosync/issues/109)
+- **Rama:** `codex/sprint-037-agenda-principal`
+- **Publicación:** [PR #110](https://github.com/daifernandez/odontosync/pull/110),
+  merge commit `91b7f7a`
+
+### Objetivo
+
+Unificar Inicio y Agenda en una sola pantalla operativa para evitar información
+repetida y permitir que el profesional comience su jornada directamente en el
+día actual.
+
+### Resultado
+
+- `/app` y `/demo` conducen a sus respectivas agendas y la navegación privada
+  conserva un único acceso `Agenda`.
+- La agenda privada abre en la vista diaria sobre la fecha actual cuando no se
+  solicita otra vista explícitamente.
+- Día, Semana y Mes comparten encabezado, descripción, acciones principales,
+  selector, navegación temporal y aviso académico en una jerarquía estable.
+- La vista diaria integra un resumen compacto e identifica el próximo turno
+  dentro de la secuencia cronológica, sin tarjetas ni listados duplicados.
+- En Mes, `Nuevo turno` y `Bloquear horario` actúan sobre el día seleccionado y
+  permanecen visibles pero deshabilitados cuando la fecha está en el pasado.
+- Se retiraron el dashboard anterior, la preferencia de vista y el dominio que
+  quedaron sin uso, sin modificar reglas de negocio ni persistencia.
+
+### Criterios verificados
+
+- Ingresar a `/app` o `/demo` abre la agenda correspondiente sin una pantalla
+  de Inicio intermedia.
+- Alternar entre Día, Semana y Mes conserva el orden y la ubicación de la
+  estructura compartida; cambia únicamente el contenido de cada vista.
+- La jornada diaria muestra fecha, cantidad de turnos, confirmados y pendientes
+  e identifica el próximo turno futuro en contexto.
+- Las acciones mensuales responden al día elegido y comunican su
+  indisponibilidad para fechas pasadas.
+- Crear y gestionar turnos, usar espacios libres, bloquear horarios y acceder a
+  la configuración conserva el comportamiento existente.
+- Los estados sin turnos o sin horarios configurados continúan explicando qué
+  ocurre y qué acción está disponible.
+- La aplicación y la demo se revisaron en escritorio y mobile sin
+  desplazamiento horizontal accidental ni errores de navegador.
+
+### Skills aplicadas
+
+- `project-sprint-workflow` para mantener definición, implementación,
+  publicación y cierre como etapas separadas.
+- `usability-review` para evaluar claridad, jerarquía estable, navegación,
+  acciones y comportamiento responsive.
+- Next.js y React Best Practices para las redirecciones, composición de vistas
+  y eliminación de componentes sin uso.
+- Browser para verificar los recorridos de Día, Semana y Mes en escritorio y
+  mobile.
+
+### Verificaciones
+
+- Pruebas: 56 archivos y 271 casos aprobados.
+- TypeScript, ESLint y build de producción: aprobados.
+- `npm audit --audit-level=low`: 0 vulnerabilidades después de integrar la
+  corrección de dependencias del Sprint 038.
+- GitHub Actions: aprobado en 1 minuto y 4 segundos en el PR funcional.
+- Revisión visual y funcional aprobada por Dai antes de publicar el sprint.
+- No aplicaron verificaciones de Prisma, Supabase ni RLS porque el sprint no
+  modificó esquema, persistencia, autenticación ni permisos.
+
+### Riesgo residual y próximos pasos
+
+- La grilla semanal conserva su desplazamiento horizontal interno en mobile;
+  rediseñar las grillas quedó fuera del alcance.
+- La propuesta visual `Agenda operativa` puede evaluarse en un sprint futuro,
+  sin considerarse parte de esta entrega.
+- Stock, compras, proveedores, laboratorios y nuevas formas de edición de
+  turnos permanecen fuera de alcance y requieren sprints independientes.
