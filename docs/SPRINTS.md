@@ -2336,3 +2336,92 @@ persistir datos clínicos ni modificar la experiencia de demostración.
   definirán en otro sprint sin ampliar retroactivamente este alcance.
 - El almacenamiento de PDFs, los datos clínicos persistidos y la vinculación
   con pacientes permanecen fuera de alcance.
+
+## Sprint 035 — Agenda diaria «Mi jornada»
+
+- **Fecha:** 8 de septiembre de 2026
+- **Estado:** publicado y mergeado
+- **Issue:** [#103](https://github.com/daifernandez/odontosync/issues/103)
+- **Rama:** `codex/agenda-mi-jornada`
+- **Publicación:** [PR #104](https://github.com/daifernandez/odontosync/pull/104),
+  merge commit `fa95f44`
+
+### Objetivo
+
+Permitir que un odontólogo independiente encuentre disponibilidad y cree o
+reprograme turnos rápidamente desde la vista diaria, sin perder el contexto de
+fecha, duración ni estado.
+
+### Resultado
+
+- La vista diaria presenta turnos, acondicionamiento y huecos libres en orden
+  cronológico bajo el título `Mi jornada`, con una cabecera más compacta.
+- Cada hueco ofrece un acceso directo que conserva fecha y hora al abrir el
+  formulario. Los horarios alternativos permanecen disponibles bajo demanda.
+- En escritorio, la creación y la gestión muestran la jornada junto al
+  formulario; en mobile utilizan un panel de ancho completo.
+- Cambiar duración o acondicionamiento conserva la hora elegida cuando la
+  reserva completa todavía cabe. Si deja de ser válida, se explica el motivo y
+  no se envía el horario incompatible.
+- La creación comunica antes y después del guardado que el turno queda
+  pendiente de confirmación, evita el doble envío y conserva los valores ante
+  errores o reintentos.
+- La reprogramación muestra horario original y destino, prioriza los horarios
+  libres, separa los ocupados y conserva la confirmación adicional para una
+  superposición deliberada.
+- Las vistas semanal y mensual, el historial, los bloqueos y la preferencia de
+  vista existente se mantienen sin cambios de reglas de negocio.
+
+### Criterios verificados
+
+- En 390 × 844, el primer acceso de reserva queda dentro de la pantalla inicial,
+  mide 44 píxeles de alto y la jornada no presenta desplazamiento horizontal.
+- Abrir un hueco precarga la fecha y la hora correctas; cerrar con Escape
+  conserva el contexto y devuelve el foco al acceso de origen.
+- Una hora válida permanece seleccionada al ajustar duración o
+  acondicionamiento; una selección incompatible se invalida con explicación.
+- Los errores conservan paciente, horario y valores corregibles, y el botón de
+  guardado queda deshabilitado mientras la acción está pendiente.
+- Reprogramar conserva paciente, especialidad y duración, libera el origen y
+  crea el destino como pendiente. Salir sin guardar mantiene el turno original.
+- Los horarios ocupados permanecen ocultos inicialmente y requieren una segunda
+  confirmación explícita antes de aceptar una superposición.
+- Se verificaron jornadas sin horarios, bloqueos, pasado, navegación entre día,
+  semana y mes, creación, reprogramación, error y reintento.
+
+### Skills aplicadas
+
+- `project-sprint-workflow` para definir, implementar, revisar y publicar el
+  cambio como una unidad aislada y cerrar el issue mediante este PR documental.
+- `usability-review` para revisar jerarquía, navegación, formularios, feedback,
+  accesibilidad básica y comportamiento responsive.
+- Next.js y React Best Practices para los límites de componentes, Server
+  Components y formularios con acciones.
+- Browser para comprobar los recorridos reales en escritorio y mobile con datos
+  ficticios, navegación por teclado, foco, dimensiones y consola.
+- `odontosync-release-check` para revisar el diff, reproducir la instalación,
+  ejecutar los controles locales y comprobar GitHub Actions.
+
+### Verificaciones
+
+- Pruebas: 59 archivos y 301 casos aprobados.
+- TypeScript, ESLint y build de producción: aprobados.
+- Instalación reproducible con `npm ci` y 0 vulnerabilidades reportadas por
+  `npm audit --audit-level=low`.
+- GitHub Actions: aprobado en 1 minuto y 4 segundos en el PR funcional.
+- Creación, confirmación y reprogramación verificadas en Chrome con datos
+  ficticios; consola sin errores nuevos en el recorrido final.
+- No aplicaron verificaciones de Prisma, Supabase ni RLS porque el sprint no
+  modificó esquema, persistencia, autenticación ni permisos.
+
+### Riesgo residual y próximos pasos
+
+- La revisión heurística y técnica no mide la rapidez real con odontólogos. La
+  reducción de tiempo debe validarse con tareas observadas y datos comparables.
+- Una jornada cargada puede requerir más desplazamiento vertical que la grilla;
+  las vistas semanal y mensual continúan disponibles para planificación.
+- No se probaron un dispositivo físico, lector de pantalla, teclado virtual ni
+  una red lenta. Tampoco se provocó una carrera real entre dos sesiones.
+- La búsqueda de disponibilidad entre varios días, drag-and-drop,
+  notificaciones, lista de espera y alta rápida de pacientes permanecen fuera
+  de alcance y requieren un sprint independiente si se priorizan.
