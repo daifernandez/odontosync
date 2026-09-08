@@ -10,7 +10,6 @@ import {
   getAgendaWeekRange,
   parseOptionalAgendaView,
 } from "@/modules/agenda/domain/weekly-schedule";
-import { getLastAgendaView } from "@/modules/agenda/repository";
 import {
   formatArgentinaDateInput,
   isAppointmentClosureStatus,
@@ -77,8 +76,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
     redirect("/ingresar");
   }
 
-  const view =
-    explicitView ?? (await getLastAgendaView(userId).catch(() => "week" as const));
+  const view = explicitView ?? "day";
 
   if (view === "month") {
     const { from, to, month } = getAgendaMonthRange(

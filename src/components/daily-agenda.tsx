@@ -72,6 +72,15 @@ export function DailyAgenda({
       appointment.status !== "cancelled" &&
       appointment.status !== "rescheduled",
   );
+  const nextAppointmentId = dayAppointments
+    .filter(
+      (appointment) =>
+        new Date(appointment.startsAt) > now &&
+        (appointment.status === "confirmed" ||
+          appointment.status === "pending_confirmation"),
+    )
+    .toSorted((left, right) => left.startsAt.localeCompare(right.startsAt))[0]
+    ?.id;
   const blocks = exceptionalBlocks.flatMap((block) => {
     const segment = getExceptionalBlockSegmentForDate(block, date);
     return segment ? [{ block, segment }] : [];
@@ -222,9 +231,16 @@ export function DailyAgenda({
                 {row.time}
               </time>
               <div className="min-w-0 border-l-3 border-[var(--color-brand)] pl-3">
-                <h3 className="m-0 break-words text-base">
-                  {appointment.patientLastName}, {appointment.patientFirstName}
-                </h3>
+                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                  <h3 className="m-0 break-words text-base">
+                    {appointment.patientLastName}, {appointment.patientFirstName}
+                  </h3>
+                  {appointment.id === nextAppointmentId ? (
+                    <span className="text-[0.65rem] font-bold tracking-[0.08em] text-[var(--color-brand)] uppercase">
+                      Próximo turno
+                    </span>
+                  ) : null}
+                </div>
                 <p className="mt-1 mb-0 text-xs text-[var(--color-muted)]">
                   {getAppointmentSpecialtyLabel(appointment.specialty)} ·{" "}
                   {appointment.durationMinutes} min

@@ -80,7 +80,14 @@ describe("MonthlyAgenda", () => {
       />,
     );
 
-    expect(markup).toContain("Agenda mensual");
+    expect(markup).toContain(">Agenda</h1>");
+    expect(markup).toContain("Organizá tus turnos y horarios.");
+    expect(markup.indexOf("Nuevo turno")).toBeLessThan(
+      markup.indexOf("Prototipo académico"),
+    );
+    expect(markup.indexOf("Cambiar vista de agenda")).toBeLessThan(
+      markup.indexOf("Prototipo académico"),
+    );
     expect(markup).toContain("agosto de 2026");
     expect(markup).toContain("Operatoria · 1");
     expect(markup).toContain("Ortod. · 1");
@@ -88,7 +95,7 @@ describe("MonthlyAgenda", () => {
     expect(markup).toContain(
       "martes, 11 de agosto de 2026. 1 turno de Operatoria / restauradora. 1 turno de Ortodoncia. 0 bloqueos. Seleccionar día.",
     );
-    expect(markup).toContain("Día para gestionar");
+    expect(markup).toContain("Día seleccionado");
     expect(markup).toContain("sábado, 22 de agosto de 2026");
     expect(markup).toContain(
       "/app/agenda?semana=2026-08-17&amp;vista=dia&amp;fecha=2026-08-22&amp;nuevo=1#nuevo-turno",
@@ -99,9 +106,9 @@ describe("MonthlyAgenda", () => {
     expect(markup).toContain("Nuevo turno");
     expect(markup).toContain("Bloquear horario");
     expect(markup).toContain('aria-pressed="true"');
-    expect(markup).toContain("Vista semanal");
-    expect(markup).toContain("Vista diaria");
-    expect(markup).toContain("Vista mensual");
+    expect(markup).toContain(">Semana</a>");
+    expect(markup).toContain(">Día</a>");
+    expect(markup).toContain(">Mes</a>");
     expect(markup).toContain('aria-current="page"');
     expect(markup).toContain("Mes anterior");
     expect(markup).toContain("Mes siguiente");
@@ -119,7 +126,6 @@ describe("MonthlyAgenda", () => {
 
     expect(markup).toContain("@container/monthly-agenda");
     expect(markup).toContain("@4xl/monthly-agenda:flex-row");
-    expect(markup).toContain("@4xl/monthly-agenda:grid-cols-3");
     expect(markup).toContain("@lg/monthly-agenda:hidden");
     expect(markup).toContain("hidden @lg/monthly-agenda:inline");
     expect(markup).toContain("min-h-7 w-full shrink-0 items-start");
@@ -172,8 +178,9 @@ describe("MonthlyAgenda", () => {
     expect(markup).toContain(
       "Nota: en los días pasados podés consultar turnos y registrar resultados pendientes.",
     );
-    expect(markup).not.toContain("Nuevo turno");
-    expect(markup).not.toContain("Bloquear horario");
+    expect(markup).toContain("Nuevo turno");
+    expect(markup).toContain("Bloquear horario");
+    expect(markup).toContain('aria-disabled="true"');
     expect(markup).toContain(
       "/app/agenda?semana=2026-06-29&amp;vista=dia&amp;fecha=2026-07-01",
     );
