@@ -2425,3 +2425,81 @@ fecha, duración ni estado.
 - La búsqueda de disponibilidad entre varios días, drag-and-drop,
   notificaciones, lista de espera y alta rápida de pacientes permanecen fuera
   de alcance y requieren un sprint independiente si se priorizan.
+
+## Sprint 036 — Retirar Imprimibles del alcance actual
+
+- **Fecha:** 8 de septiembre de 2026
+- **Estado:** publicado y mergeado
+- **Issue:** [#106](https://github.com/daifernandez/odontosync/issues/106)
+- **Rama:** `codex/sprint-036-retirar-imprimibles`
+- **Publicación:** [PR #107](https://github.com/daifernandez/odontosync/pull/107),
+  merge commit `e74cabd`
+
+### Objetivo
+
+Retirar del MVP la biblioteca de planillas estáticas `Imprimibles` y conservar
+la aplicación enfocada en agenda, pacientes e indicaciones generales, sin
+eliminar el módulo independiente `Indicaciones` ni su vista de impresión.
+
+### Resultado
+
+- Se eliminaron la biblioteca, las rutas, los componentes, el dominio, los
+  estilos y las pruebas exclusivos de `Imprimibles`.
+- La navegación privada, el dashboard y la presentación pública dejaron de
+  mostrar accesos o referencias a las planillas estáticas.
+- El dashboard recuperó una composición de una sola columna para la agenda, sin
+  reservar un espacio vacío para la tarjeta retirada.
+- La landing, la metadata, la visión y las decisiones del producto quedaron
+  alineadas con el nuevo alcance administrativo.
+- `Indicaciones` conserva su biblioteca, edición, creación y vista individual
+  para imprimir.
+- Los issues #100, #101 y #102 se cerraron como no planificados debido al cambio
+  de dirección del MVP.
+- Durante el CI se actualizaron Next.js de `16.2.12` a `16.3.4` y Vitest de
+  `4.1.10` a `4.1.11` para resolver avisos de seguridad nuevos.
+
+### Criterios verificados
+
+- `Imprimibles` no aparece en landing, dashboard, navegación privada ni demo.
+- Las rutas `/app/imprimibles` y `/app/imprimibles/[printableId]` ya no forman
+  parte del build y una visita a la ruta anterior responde 404.
+- Las cuatro rutas de `Indicaciones` continúan presentes y su biblioteca carga
+  con los datos existentes.
+- El dashboard no presenta columnas ni espacios vacíos derivados de la tarjeta
+  eliminada.
+- Landing, demo, panel privado e Indicaciones se revisaron en escritorio y
+  mobile sin errores ni advertencias en la consola.
+- No se modificaron esquema, migraciones, persistencia, autenticación ni
+  permisos.
+
+### Skills aplicadas
+
+- `project-sprint-workflow` para separar definición, implementación, PR
+  funcional y cierre documental.
+- `usability-review` para comprobar que la eliminación no dejara navegación,
+  jerarquías ni espacios vacíos inconsistentes en escritorio o mobile.
+- Browser para revisar landing, demo, panel privado, Indicaciones y la respuesta
+  de las rutas retiradas.
+- `gh-fix-ci` para diagnosticar los avisos publicados por npm durante el CI y
+  validar la actualización mínima de dependencias.
+
+### Verificaciones
+
+- Pruebas: 57 archivos y 286 casos aprobados.
+- TypeScript, ESLint y build de producción: aprobados.
+- Instalación reproducible con `npm ci` usando Node.js 22.13.
+- `npm audit --audit-level=low`: 0 vulnerabilidades.
+- GitHub Actions: aprobado en 1 minuto y 11 segundos en el PR funcional.
+- El build confirmó la ausencia de rutas de `Imprimibles` y la presencia de las
+  rutas de `Indicaciones`.
+- Revisión visual aprobada por Dai antes de publicar el sprint.
+
+### Riesgo residual y próximos pasos
+
+- Los enlaces externos guardados hacia rutas antiguas de `Imprimibles`
+  responden 404; no se agregó una redirección porque no existe un reemplazo
+  equivalente dentro del MVP.
+- El historial del Sprint 031 se conserva como registro de una decisión anterior
+  y queda explícitamente superado por este sprint.
+- Las planillas estáticas pueden reevaluarse más adelante sólo si aparece una
+  necesidad concreta y validada; no permanecen como deuda activa del MVP.
