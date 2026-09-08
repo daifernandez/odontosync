@@ -3,7 +3,6 @@
 import {
   CalendarDays,
   ClipboardList,
-  FileText,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -41,11 +40,6 @@ const navigation: NavigationItem[] = [
     icon: UsersRound,
     href: "/app/pacientes",
     demoHref: "/demo/pacientes",
-  },
-  {
-    label: "Imprimibles",
-    icon: FileText,
-    href: "/app/imprimibles",
   },
   {
     label: "Indicaciones",

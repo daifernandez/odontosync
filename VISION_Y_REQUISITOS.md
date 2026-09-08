@@ -2,11 +2,11 @@
 
 ## Visión y requisitos del primer MVP
 
-**Estado:** alcance inicial definido
+**Estado:** alcance vigente en revisión incremental
 
-**Versión:** 0.2
+**Versión:** 0.3
 
-**Fecha:** 30 de julio de 2026
+**Fecha:** 8 de septiembre de 2026
 
 ---
 
@@ -22,9 +22,9 @@ revisión específica de aspectos legales, de privacidad y de seguridad.
 
 ## 2. Problema
 
-Los odontólogos que trabajan de forma independiente suelen organizar su agenda,
-los datos de contacto de sus pacientes y distintos materiales impresos entre
-calendarios, mensajes, planillas y anotaciones.
+Los odontólogos que trabajan de forma independiente suelen organizar su agenda
+y los datos de contacto de sus pacientes entre calendarios, mensajes, planillas
+y anotaciones.
 
 OdontoSync busca reducir esa fragmentación mediante una herramienta sencilla
 que permita:
@@ -33,7 +33,7 @@ que permita:
 - calcular disponibilidad respetando horarios y tiempos de
   acondicionamiento;
 - encontrar opciones de turnos mediante lenguaje natural;
-- imprimir indicaciones generales y papelería odontológica vacía.
+- crear y reutilizar indicaciones generales.
 
 La idea surge de problemas cotidianos observados durante doce años de trabajo
 como asistente dental.
@@ -203,23 +203,6 @@ No se asociarán con pacientes ni turnos y no tendrán espacios para nombre,
 fecha o firma. Su contenido será redactado o aprobado por un odontólogo
 responsable, nunca por inteligencia artificial.
 
-### 4.8. Papelería odontológica vacía
-
-El MVP permitirá imprimir formularios sin completar:
-
-- hoja de planificación profesional;
-- hoja administrativa para cálculos;
-- odontograma de adultos con dentición permanente;
-- odontograma pediátrico para dentición temporal y mixta.
-
-La aplicación no permitirá escribir en ellos nombres, tratamientos, importes,
-cálculos ni otros datos clínicos. Tampoco los asociará con pacientes o turnos,
-ni guardará versiones, archivos o copias completadas.
-
-Después de imprimirlos, su cumplimentación y conservación quedarán fuera de
-OdontoSync. Antes de presentarlos como documentación apta para uso real se
-revisarán profesionalmente y conforme a los requisitos aplicables.
-
 ## 5. Fuera del alcance del MVP
 
 Quedan expresamente fuera:
@@ -231,6 +214,7 @@ Quedan expresamente fuera:
 - presupuestos, cobros, pagos y facturación;
 - consentimientos informados y firmas digitales;
 - adjuntos o copias de documentos completados;
+- papelería clínica estática y odontogramas vacíos para imprimir;
 - proveedores, laboratorios, compras, insumos y stock;
 - equipos de trabajo, invitaciones y roles adicionales;
 - recordatorios automáticos por WhatsApp, SMS o correo;
@@ -289,9 +273,8 @@ El MVP académico se considerará funcional cuando sea posible verificar que:
 7. La IA interpreta una búsqueda y propone solamente opciones disponibles.
 8. Crear o modificar un turno sugerido requiere confirmación humana.
 9. Se pueden consultar e imprimir indicaciones genéricas.
-10. Se pueden imprimir las hojas y odontogramas vacíos definidos.
-11. Los datos de un usuario no resultan accesibles para otro.
-12. La interfaz advierte que el prototipo admite únicamente datos ficticios.
+10. Los datos de un usuario no resultan accesibles para otro.
+11. La interfaz advierte que el prototipo admite únicamente datos ficticios.
 
 ## 9. Entregables académicos
 

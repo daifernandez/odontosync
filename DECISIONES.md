@@ -20,6 +20,8 @@ cerrado el alcance del primer MVP.
 
 ## D-002. Papelería odontológica imprimible
 
+**Estado:** reemplazada por D-026 el 8 de septiembre de 2026.
+
 - El MVP ofrecerá formularios vacíos para imprimir y completar enteramente a
   mano.
 - La papelería inicial incluirá una hoja de planificación profesional, una hoja
@@ -314,8 +316,9 @@ cerrado el alcance del primer MVP.
   disponibilidad y gestión de turnos.
 - Incluirá búsqueda de turnos asistida por inteligencia artificial, siempre
   sujeta a las reglas determinísticas y a confirmación humana.
-- Incluirá indicaciones genéricas imprimibles, papelería odontológica vacía y
-  odontogramas imprimibles.
+- Incluirá indicaciones genéricas imprimibles.
+- La papelería odontológica vacía y los odontogramas imprimibles fueron retirados
+  del alcance por D-026.
 - Proveedores, laboratorios, compras, stock y equipos de trabajo quedarán para
   etapas posteriores.
 
@@ -331,7 +334,7 @@ cerrado el alcance del primer MVP.
 - El producto habilitado para datos reales se desplegará en un entorno separado
   únicamente después de completar esas revisiones.
 
-## D-025. Modo demostración y protección de imprimibles
+## D-025. Modo demostración y protección de materiales
 
 - El acceso «Entrar como demo» abrirá una ruta pública aislada y no una cuenta
   compartida de Supabase.
@@ -350,3 +353,17 @@ cerrado el alcance del primer MVP.
 - Si el demo necesitara persistencia en el futuro, se evaluarán usuarios
   anónimos aislados, RLS específica, CAPTCHA, limpieza periódica y, de ser
   necesario, un proyecto Supabase separado.
+
+## D-026. Retiro de la papelería odontológica estática
+
+- El 8 de septiembre de 2026 se decidió retirar del alcance actual las fichas
+  clínicas estáticas y los odontogramas vacíos de la sección `Imprimibles`.
+- Las rutas, opciones de navegación y el código exclusivo de esa biblioteca se
+  eliminan de la aplicación para evitar mantener una función que no aporta valor
+  a la dirección actual del producto.
+- El historial de los sprints que la implementaron se conserva en Git y en
+  `docs/SPRINTS.md`; no se mantiene una copia inactiva dentro del código actual.
+- `Indicaciones` continúa como módulo independiente, con plantillas editables y
+  persistencia propia. Esta decisión no modifica sus datos ni sus migraciones.
+- Reincorporar papelería estática requerirá una nueva decisión y una validación
+  previa de su utilidad, contenido y composición.
