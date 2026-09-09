@@ -2581,3 +2581,68 @@ día actual.
   sin considerarse parte de esta entrega.
 - Stock, compras, proveedores, laboratorios y nuevas formas de edición de
   turnos permanecen fuera de alcance y requieren sprints independientes.
+
+## Sprint 038 — Corregir dependencias vulnerables
+
+- **Fecha:** 8 de septiembre de 2026
+- **Estado:** publicado y mergeado
+- **Issue:** [#111](https://github.com/daifernandez/odontosync/issues/111)
+- **Rama:** `codex/sprint-038-dependencies`
+- **Publicación:** [PR #112](https://github.com/daifernandez/odontosync/pull/112),
+  merge commit `39caff6`
+
+### Objetivo
+
+Corregir las dos vulnerabilidades altas detectadas en dependencias transitivas
+sin reducir el alcance de la auditoría de CI ni actualizar paquetes ajenos al
+hallazgo.
+
+### Resultado
+
+- El override de `js-yaml` se actualizó de `4.3.1` a `4.3.2`.
+- El override de `sharp` se actualizó de `0.35.3` a `0.35.4`.
+- El lockfile regeneró únicamente las resoluciones relacionadas, incluidos los
+  paquetes multiplataforma de `sharp`.
+- No se modificaron código de aplicación, base de datos, interfaz, workflow de
+  CI ni el umbral de `npm audit`.
+
+### Criterios verificados
+
+- La instalación ya no resuelve las versiones vulnerables de `js-yaml` ni
+  `sharp`.
+- El módulo nativo de `sharp` carga y procesa una imagen correctamente.
+- `npm audit --audit-level=low` informa 0 vulnerabilidades.
+- La suite completa, TypeScript, ESLint y el build de producción continúan
+  aprobados.
+- GitHub Actions conserva la auditoría existente y finaliza en verde.
+
+### Skills aplicadas
+
+- `project-sprint-workflow` para mantener la corrección, publicación y cierre
+  documental como etapas auditables.
+- `security-sprint-review` para limitar el cambio a los hallazgos confirmados y
+  verificar que la auditoría no fuera debilitada.
+
+### Verificaciones
+
+- Instalación reproducible con `npm ci`: 587 paquetes instalados y 588
+  auditados.
+- `npm ls js-yaml sharp --all`: `js-yaml@4.3.2` y `sharp@0.35.4` resueltos con
+  overrides válidos.
+- Smoke test nativo de `sharp`: aprobado con una imagen de salida de 91 bytes.
+- Pruebas: 57 archivos y 286 casos aprobados.
+- TypeScript, ESLint y build de producción con Webpack: aprobados localmente.
+- GitHub Actions: aprobado en 1 minuto en el PR funcional, incluido el build
+  normal con Turbopack.
+
+### Incidencias y riesgo residual
+
+- Node.js 23.5 local no era una versión compatible con Prisma; la verificación
+  se repitió con Node.js 24.19 y el resultado fue satisfactorio. Conviene usar
+  una versión LTS soportada para futuros trabajos locales.
+- El build local con Turbopack no pudo abrir un proceso interno por la
+  restricción de puertos del sandbox; el mismo build fue aprobado en GitHub
+  Actions.
+- Los overrides deberán revisarse cuando las dependencias principales permitan
+  retirar o actualizar estas resoluciones, sin que eso constituya una tarea
+  activa de este sprint.
