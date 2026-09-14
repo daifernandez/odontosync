@@ -2,6 +2,7 @@
 
 import {
   CalendarDays,
+  ContactRound,
   ClipboardList,
   LogOut,
   Menu,
@@ -38,6 +39,11 @@ const navigation: NavigationItem[] = [
     icon: UsersRound,
     href: "/app/pacientes",
     demoHref: "/demo/pacientes",
+  },
+  {
+    label: "Contactos",
+    icon: ContactRound,
+    href: "/app/contactos",
   },
   {
     label: "Indicaciones",
