@@ -74,6 +74,7 @@ model Profile {
   additionalInformation String?       @map("additional_information")
   agendaSettings      AgendaSettings?
   patients            Patient[]
+  businessContacts    BusinessContact[]
   appointments        Appointment[]
   exceptionalAvailabilityBlocks ExceptionalAvailabilityBlock[]
   instructionTemplates InstructionTemplate[]
@@ -111,6 +112,25 @@ model Patient {
   @@index([userId, isActive, lastName, firstName])
   @@unique([id, userId], map: "patients_id_user_id_key")
   @@map("patients")
+}
+
+model BusinessContact {
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String  @map("user_id") @db.Uuid
+  name        String
+  type        String
+  contactName String? @map("contact_name")
+  phone       String?
+  email       String?
+  address     String?
+  hours       String?
+  specialty   String?
+  notes       String?
+  isActive    Boolean @default(true) @map("is_active")
+  profile     Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isActive, name])
+  @@map("business_contacts")
 }
 
 model Appointment {
