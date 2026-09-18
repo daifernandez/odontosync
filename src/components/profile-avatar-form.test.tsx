@@ -20,9 +20,10 @@ describe("ProfileAvatarForm", () => {
 
     expect(markup).toContain('name="avatar"');
     expect(markup).toContain('accept="image/jpeg,image/png,image/webp"');
-    expect(markup).toContain("JPEG, PNG o WebP, hasta 2 MB");
-    expect(markup).toContain("Guardar foto");
-    expect(markup).toContain("Quitar foto y usar iniciales");
+    expect(markup).toContain("Cambiar foto");
+    expect(markup).toContain("Podés reemplazarla o volver a tus iniciales.");
+    expect(markup).toContain("Volver a mis iniciales");
+    expect(markup).not.toContain("Guardar cambio");
   });
 
   it("does not offer removal when the user has no photo", () => {
@@ -30,7 +31,10 @@ describe("ProfileAvatarForm", () => {
       <ProfileAvatarForm avatarUrl={null} fullName="Ana Pérez" />,
     );
 
-    expect(markup).not.toContain("Quitar foto y usar iniciales");
+    expect(markup).toContain("Elegir foto");
+    expect(markup).toContain("JPG, PNG o WebP · Máximo 2 MB.");
+    expect(markup).not.toContain("Volver a mis iniciales");
+    expect(markup).not.toContain("Guardar cambio");
     expect(markup).toContain("AP");
   });
 });

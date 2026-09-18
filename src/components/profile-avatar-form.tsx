@@ -1,5 +1,6 @@
 "use client";
 
+import { Camera } from "lucide-react";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 
@@ -136,13 +137,11 @@ export function ProfileAvatarForm({
             </p>
           ) : null}
 
-          <form action={uploadAction} className="grid gap-3" noValidate>
-            <label className="text-sm font-semibold" htmlFor="profile-avatar">
-              Elegir imagen
-            </label>
+          <form action={uploadAction} noValidate>
             <input
+              aria-describedby="profile-avatar-help"
               accept="image/jpeg,image/png,image/webp"
-              className="min-h-11 w-full rounded-xl border border-[var(--color-border)] bg-white px-3 py-2 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-[var(--color-brand-soft)] file:px-3 file:py-2 file:font-semibold file:text-[var(--color-brand-dark)]"
+              className="peer sr-only"
               id="profile-avatar"
               name="avatar"
               onChange={handleAvatarChange}
@@ -150,34 +149,50 @@ export function ProfileAvatarForm({
               required
               type="file"
             />
-            <p
-              aria-live="polite"
-              className="m-0 text-xs text-[var(--color-muted)]"
-            >
-              {previewUrl
-                ? "Vista previa de la imagen seleccionada."
-                : "JPEG, PNG o WebP, hasta 2 MB."}
-            </p>
             <div className="flex flex-wrap gap-2">
-              <ActionButton pendingLabel="Guardando…">
-                Guardar foto
-              </ActionButton>
+              <label
+                className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-[var(--color-border)] bg-white px-4 text-sm font-semibold text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-brand-subtle)] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--color-brand)]"
+                htmlFor="profile-avatar"
+              >
+                <Camera aria-hidden="true" size={17} strokeWidth={1.8} />
+                {previewUrl
+                  ? "Elegir otra"
+                  : avatarUrl
+                    ? "Cambiar foto"
+                    : "Elegir foto"}
+              </label>
               {previewUrl ? (
-                <button
-                  className="min-h-11 cursor-pointer rounded-xl border border-[var(--color-border)] bg-white px-4 text-sm font-semibold text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-brand-subtle)]"
-                  onClick={clearPreview}
-                  type="button"
-                >
-                  Cancelar selección
-                </button>
+                <>
+                  <ActionButton pendingLabel="Guardando…">
+                    Guardar cambio
+                  </ActionButton>
+                  <button
+                    className="min-h-11 cursor-pointer rounded-xl border-0 bg-transparent px-3 text-sm font-semibold text-[var(--color-muted)] transition-colors hover:bg-[var(--color-brand-subtle)] hover:text-[var(--color-brand-dark)]"
+                    onClick={clearPreview}
+                    type="button"
+                  >
+                    Cancelar
+                  </button>
+                </>
               ) : null}
             </div>
+            <p
+              aria-live="polite"
+              className="mt-2 mb-0 text-xs text-[var(--color-muted)]"
+              id="profile-avatar-help"
+            >
+              {previewUrl
+                ? "Así se verá tu foto. Guardala para aplicar el cambio."
+                : avatarUrl
+                  ? "Podés reemplazarla o volver a tus iniciales."
+                  : "JPG, PNG o WebP · Máximo 2 MB."}
+            </p>
           </form>
 
-          {avatarUrl ? (
+          {avatarUrl && !previewUrl ? (
             <form action={removeAction} className="mt-2">
               <ActionButton pendingLabel="Restaurando…" secondary>
-                Quitar foto y usar iniciales
+                Volver a mis iniciales
               </ActionButton>
             </form>
           ) : null}

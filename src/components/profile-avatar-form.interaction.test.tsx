@@ -30,7 +30,7 @@ describe("ProfileAvatarForm interactions", () => {
     const { container } = render(
       <ProfileAvatarForm avatarUrl={null} fullName="Dra. Valentina Rossi" />,
     );
-    const input = screen.getByLabelText("Elegir imagen");
+    const input = screen.getByLabelText("Elegir foto");
     const file = new File(["preview"], "avatar.png", {
       type: "image/png",
     });
@@ -40,21 +40,26 @@ describe("ProfileAvatarForm interactions", () => {
     expect(container.querySelector("img")?.getAttribute("src")).toBe(
       "blob:avatar-preview",
     );
-    expect(screen.getByText("Vista previa de la imagen seleccionada.")).toBeTruthy();
+    expect(
+      screen.getByText("Así se verá tu foto. Guardala para aplicar el cambio."),
+    ).toBeTruthy();
+    expect(screen.getByText("Elegir otra")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Guardar cambio" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Cancelar" })).toBeTruthy();
   });
 
   it("cancels an unsaved selection and restores the initials", () => {
     const { container } = render(
       <ProfileAvatarForm avatarUrl={null} fullName="Dra. Valentina Rossi" />,
     );
-    const input = screen.getByLabelText<HTMLInputElement>("Elegir imagen");
+    const input = screen.getByLabelText<HTMLInputElement>("Elegir foto");
 
     fireEvent.change(input, {
       target: {
         files: [new File(["preview"], "avatar.png", { type: "image/png" })],
       },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Cancelar selección" }));
+    fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
 
     expect(container.querySelector("img")).toBeNull();
     expect(screen.getByRole("img", { name: "Dra. Valentina Rossi" }).textContent).toBe(
