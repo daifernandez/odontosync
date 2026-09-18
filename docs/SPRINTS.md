@@ -2735,3 +2735,79 @@ operativos sin sumar todavía inventario, compras ni seguimiento de trabajos.
   priorizan.
 - La propuesta definitiva del MVP académico y el asistente para encontrar
   turnos permanecen fuera de este cierre y requieren definición propia.
+
+## Sprint 040 — Foto de perfil y menú de cuenta
+
+- **Fecha:** 18 de septiembre de 2026
+- **Estado:** publicado y mergeado
+- **Issue:** [#118](https://github.com/daifernandez/odontosync/issues/118)
+- **Rama:** `codex/sprint-040-foto-perfil`
+- **Publicación:** [PR #119](https://github.com/daifernandez/odontosync/pull/119),
+  merge commit `496fa59`
+
+### Objetivo
+
+Personalizar la identidad visible de cada cuenta mediante iniciales derivadas
+del nombre y una foto de perfil opcional, sin reemplazar ni degradar la
+Configuración existente.
+
+### Resultado
+
+- El menú lateral y el encabezado móvil calculan las iniciales desde el nombre
+  del usuario e ignoran títulos profesionales como `Dr.` y `Dra.`.
+- Configuración permite elegir una foto, verla antes de guardar, reemplazarla,
+  cancelar una selección y volver a las iniciales.
+- Las acciones se muestran según el estado: elegir sin foto, cambiar o quitar
+  una foto guardada, y guardar o cancelar sólo cuando existe una selección.
+- Las imágenes JPEG, PNG y WebP se validan por tamaño, MIME y firma, con un
+  máximo de 2 MB.
+- La foto se almacena en un bucket privado, se entrega mediante una URL firmada
+  y conserva las iniciales como respaldo si no puede mostrarse.
+- La migración agrega `profiles.avatar_path`, el bucket `profile-avatars` y
+  políticas RLS limitadas al directorio del usuario autenticado.
+
+### Criterios verificados
+
+- Una cuenta sin foto muestra sus propias iniciales y no una abreviatura fija.
+- La vista previa aparece antes de guardar y cancelar restaura el estado
+  anterior sin persistir el archivo.
+- Quitar una foto guardada vuelve a las iniciales.
+- Una sesión ausente no puede subir ni eliminar imágenes.
+- La aplicación sigue cargando mientras la migración esté pendiente; en ese
+  estado no ofrece una URL de avatar.
+- La pantalla original de Configuración conserva sus secciones de perfil,
+  documentos y agenda.
+
+### Skills aplicadas
+
+- `project-sprint-workflow` para separar definición, implementación,
+  publicación y cierre documental.
+- `usability-review` para la jerarquía de acciones, vista previa, feedback,
+  accesibilidad básica y comportamiento responsive.
+- `security-sprint-review` y Supabase para validar archivos, almacenamiento
+  privado, URLs firmadas y aislamiento por cuenta.
+- Browser para revisar Configuración y los estados con foto, selección e
+  iniciales.
+- `odontosync-release-check` para la revisión del diff y la batería previa a
+  publicación.
+
+### Verificaciones
+
+- Pruebas: 70 archivos y 314 casos aprobados.
+- TypeScript, ESLint, validación de Prisma y build de producción con Webpack:
+  aprobados localmente.
+- `npm audit --audit-level=low`: 0 vulnerabilidades.
+- GitHub Actions: aprobado, incluido el build normal con Turbopack.
+- El dry-run de Supabase reconoció únicamente
+  `20260918021918_add_profile_avatar.sql` y no aplicó cambios.
+- El asesor de seguridad no informó errores; permanece la advertencia externa
+  conocida por protección de contraseñas filtradas desactivada.
+
+### Riesgo residual y próximos pasos
+
+- La migración de Supabase no se aplicó durante el sprint. La carga de fotos
+  requiere aplicarla y repetir después las pruebas RLS enlazadas.
+- El test RLS nuevo se detuvo, como era esperable, al comprobar que
+  `avatar_path` aún no existe en la base enlazada.
+- La revisión visual no sustituye una prueba con lector de pantalla ni en un
+  dispositivo móvil físico.
