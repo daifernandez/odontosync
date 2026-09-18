@@ -2646,3 +2646,92 @@ hallazgo.
 - Los overrides deberán revisarse cuando las dependencias principales permitan
   retirar o actualizar estas resoluciones, sin que eso constituya una tarea
   activa de este sprint.
+
+## Sprint 039 — Directorio de proveedores y laboratorios
+
+- **Fecha:** 17 de septiembre de 2026
+- **Estado:** publicado y mergeado
+- **Issue:** [#115](https://github.com/daifernandez/odontosync/issues/115)
+- **Rama:** `codex/sprint-039-directorio`
+- **Publicación:** [PR #116](https://github.com/daifernandez/odontosync/pull/116),
+  merge commit `4f73149`
+
+### Objetivo
+
+Incorporar un directorio privado de proveedores y laboratorios para que el
+odontólogo independiente pueda guardar, encontrar y mantener sus contactos
+operativos sin sumar todavía inventario, compras ni seguimiento de trabajos.
+
+### Resultado
+
+- Se agregó un único directorio privado por cuenta para contactos de tipo
+  proveedor, laboratorio o ambos.
+- Cada contacto admite nombre y tipo obligatorios, además de persona de
+  contacto, teléfono, email, dirección, horarios, rubro o especialidad y notas
+  opcionales.
+- La pantalla permite buscar por nombre, filtrar por tipo y estado, consultar
+  detalles, crear, editar, desactivar y reactivar sin borrar información.
+- Los datos esenciales aparecen primero y `Más datos` revela únicamente los
+  campos opcionales cargados.
+- Crear y editar conservan la búsqueda y los filtros. Editar lleva el foco al
+  formulario y cancelar devuelve al contacto de origen.
+- La tabla `business_contacts`, el modelo Prisma, los privilegios mínimos y las
+  políticas RLS aíslan los contactos por propietario.
+- La navegación privada incorpora `Contactos`; el módulo no se expone en la
+  demo pública.
+
+### Criterios verificados
+
+- Las validaciones exigen nombre y al menos un tipo, y explican cómo corregir
+  entradas inválidas.
+- Las pruebas cubren alta, consulta, búsqueda, filtros, edición, desactivación,
+  reactivación y conservación de los datos.
+- El directorio distingue el estado vacío de una búsqueda sin coincidencias y
+  presenta carga, éxito, error y reintento según corresponde.
+- Un usuario anónimo no puede acceder y una cuenta no puede leer ni modificar
+  contactos pertenecientes a otra.
+- El recorrido se revisó en escritorio y en 390 × 844 con teclado, retorno de
+  foco y Escape, sin acciones esenciales dependientes de hover ni desborde
+  horizontal.
+- Agenda, pacientes e Indicaciones conservaron sus recorridos y la migración es
+  aditiva.
+
+### Skills aplicadas
+
+- `project-sprint-workflow` para separar definición, implementación,
+  publicación y cierre documental.
+- `usability-review` para revisar jerarquía, formularios, feedback, estados,
+  accesibilidad básica y comportamiento responsive.
+- `security-sprint-review` y Supabase para revisar autorización, privilegios,
+  RLS y aislamiento por cuenta.
+- Browser para comprobar el flujo real con datos ficticios en escritorio y
+  mobile.
+- `odontosync-release-check` para revisar el diff, ejecutar los controles
+  locales y comprobar GitHub Actions.
+
+### Verificaciones
+
+- Pruebas: 64 archivos y 298 casos aprobados.
+- TypeScript, ESLint, validación de Prisma y build de producción con Webpack:
+  aprobados localmente.
+- Build predeterminado con Turbopack: aprobado en GitHub Actions; el intento
+  local no pudo abrir un puerto interno por la restricción del sandbox.
+- `npm audit --audit-level=low`: 0 vulnerabilidades.
+- Estado de migraciones de la base enlazada: al día; no se aplicaron
+  migraciones durante la verificación de publicación.
+- Seis suites SQL de RLS aprobadas dentro de transacciones con `ROLLBACK`, con
+  casos de usuario anónimo, propietario, usuario ajeno y privilegios.
+- Asesor de seguridad de Supabase: sin hallazgos.
+- Chrome, escritorio y 390 × 844: alta, detalles, edición, búsqueda sin
+  resultados, menú y diálogo de estado, sin errores de consola.
+- GitHub Actions: aprobado en 1 minuto y 14 segundos en el PR funcional.
+
+### Riesgo residual y próximos pasos
+
+- La emulación mobile no sustituye una prueba en dispositivo físico ni con
+  lector de pantalla.
+- El directorio no gestiona inventario, compras, movimientos ni trabajos de
+  laboratorio; esas capacidades requieren sprints independientes si se
+  priorizan.
+- La propuesta definitiva del MVP académico y el asistente para encontrar
+  turnos permanecen fuera de este cierre y requieren definición propia.
