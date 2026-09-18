@@ -57,7 +57,7 @@ it("returns to editing and focuses the invalid field after saving from preview",
   fireEvent.click(screen.getByRole("button", {name:"Guardar datos"}));
   await waitFor(() => expect(screen.getByText("Ingresá un email válido.")).toBeTruthy());
   expect(screen.getByRole("button", {name:"Editar datos"}).getAttribute("aria-pressed")).toBe("true");
-  expect(document.activeElement).toBe(email);
+  await waitFor(() => expect(document.activeElement).toBe(email));
   fireEvent.click(screen.getByRole("button", {name:"Descartar cambios"}));
   expect(screen.queryByText("Ingresá un email válido.")).toBeNull();
   expect(screen.getByText("Todos los cambios están guardados")).toBeTruthy();
