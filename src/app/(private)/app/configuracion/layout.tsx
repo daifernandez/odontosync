@@ -16,10 +16,10 @@ export default function ConfigurationLayout({
         <p className="mb-2 text-xs font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">Tu espacio</p>
         <h1 className="m-0 text-[clamp(1.8rem,3vw,2.55rem)] leading-[1.1] tracking-[-0.045em]">Configuración</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--color-muted)]">
-          Administrá tu cuenta, la información de tus documentos y la forma en que organizás la agenda.
+          Administrá tu cuenta, los datos de tu consultorio y la forma en que organizás la agenda.
         </p>
       </header>
-      <div className="grid gap-5 xl:grid-cols-[14rem_minmax(0,1fr)] xl:items-start xl:gap-6">
+      <div className="grid gap-5 xl:gap-7">
         <ConfigurationNavigation />
         <div className="min-w-0">{children}</div>
       </div>
