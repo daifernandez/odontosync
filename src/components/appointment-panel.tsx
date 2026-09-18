@@ -186,7 +186,7 @@ export function AppointmentPanel({
 
             <Link
               className="mt-5 flex min-h-11 items-center justify-center gap-2 rounded-xl text-sm font-semibold text-[var(--color-muted)] no-underline hover:text-[var(--color-brand-dark)]"
-              href="/app/configuracion#agenda"
+              href="/app/configuracion/agenda"
             >
               <Settings2 aria-hidden="true" size={16} />
               Ajustar duración y acondicionamiento habituales

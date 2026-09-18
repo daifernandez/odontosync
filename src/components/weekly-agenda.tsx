@@ -272,7 +272,7 @@ export function WeeklyAgenda({
             />
             <Link
               className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] bg-white px-4 text-sm font-bold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-subtle)]"
-              href="/app/configuracion#agenda"
+              href="/app/configuracion/horarios"
             >
               <Settings2 aria-hidden="true" size={17} />
               Ajustar horarios

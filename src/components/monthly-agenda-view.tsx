@@ -119,7 +119,7 @@ export function MonthlyAgendaView({
             )}
             <Link
               className={secondaryActionClassName}
-              href="/app/configuracion#agenda"
+              href="/app/configuracion/horarios"
             >
               <Settings2 aria-hidden="true" size={17} />
               Ajustar horarios

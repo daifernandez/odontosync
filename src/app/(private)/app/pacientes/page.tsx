@@ -51,7 +51,7 @@ export default async function PatientsPage({
   ]);
 
   if (!configuration || configuration.availability.length === 0) {
-    redirect("/app/configuracion");
+    redirect("/app/configuracion/horarios");
   }
 
   const feedback =

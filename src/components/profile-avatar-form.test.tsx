@@ -21,8 +21,8 @@ describe("ProfileAvatarForm", () => {
     expect(markup).toContain('name="avatar"');
     expect(markup).toContain('accept="image/jpeg,image/png,image/webp"');
     expect(markup).toContain("Cambiar foto");
-    expect(markup).toContain("Podés reemplazarla o volver a tus iniciales.");
-    expect(markup).toContain("Volver a mis iniciales");
+    expect(markup).toContain("Podés reemplazarla o quitarla para volver a tus iniciales.");
+    expect(markup).toContain("Quitar foto");
     expect(markup).not.toContain("Guardar cambio");
   });
 
@@ -33,7 +33,7 @@ describe("ProfileAvatarForm", () => {
 
     expect(markup).toContain("Elegir foto");
     expect(markup).toContain("JPG, PNG o WebP · Máximo 2 MB.");
-    expect(markup).not.toContain("Volver a mis iniciales");
+    expect(markup).not.toContain("Quitar foto");
     expect(markup).not.toContain("Guardar cambio");
     expect(markup).toContain("AP");
   });

@@ -1,15 +1,21 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 
 import {
-  type InitialConfigurationFormState,
-  validateInitialConfiguration,
+  type ConfigurationFormState,
+  type InitialConfiguration,
+  validateAgendaPreferences,
+  validateAvailability,
+  validateDocumentSettings,
+  validateProfileSettings,
 } from "./domain/initial-configuration";
-import { saveInitialConfiguration } from "./repository";
+import {
+  getInitialConfiguration,
+  saveInitialConfiguration,
+} from "./repository";
 
 function readText(formData: FormData, field: string) {
   const value = formData.get(field);
@@ -24,36 +30,19 @@ function readAvailability(formData: FormData) {
   }
 }
 
-export async function saveInitialConfigurationAction(
-  _previousState: InitialConfigurationFormState,
-  formData: FormData,
-): Promise<InitialConfigurationFormState> {
-  const validation = validateInitialConfiguration({
-    fullName: readText(formData, "fullName"),
-    licenseNumber: readText(formData, "licenseNumber"),
-    licenseJurisdiction: readText(formData, "licenseJurisdiction"),
-    clinicName: readText(formData, "clinicName"),
-    officeAddress: readText(formData, "officeAddress"),
-    contactPhone: readText(formData, "contactPhone"),
-    contactEmail: readText(formData, "contactEmail"),
-    additionalInformation: readText(formData, "additionalInformation"),
-    gridIntervalMinutes: readText(formData, "gridIntervalMinutes"),
-    defaultAppointmentDurationMinutes: readText(
-      formData,
-      "defaultAppointmentDurationMinutes",
-    ),
-    defaultCleanupMinutes: readText(formData, "defaultCleanupMinutes"),
-    availability: readAvailability(formData),
-  });
+function validationError(
+  fieldErrors: ConfigurationFormState["fieldErrors"],
+): ConfigurationFormState {
+  return {
+    status: "error",
+    message: "Revisá los campos marcados.",
+    fieldErrors,
+  };
+}
 
-  if (!validation.success) {
-    return {
-      status: "error",
-      message: "Revisá los campos marcados.",
-      fieldErrors: validation.fieldErrors,
-    };
-  }
-
+async function saveConfigurationSection(
+  update: (current: InitialConfiguration) => InitialConfiguration,
+): Promise<ConfigurationFormState> {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
 
@@ -66,16 +55,108 @@ export async function saveInitialConfigurationAction(
   }
 
   try {
-    await saveInitialConfiguration(validation.data);
+    const current = await getInitialConfiguration();
+
+    if (!current) {
+      throw new Error("Missing initial configuration");
+    }
+
+    await saveInitialConfiguration(update(current));
   } catch {
     return {
       status: "error",
       message:
-        "No pudimos guardar la configuración. Intentá nuevamente en unos minutos.",
+        "No pudimos guardar los cambios. Intentá nuevamente en unos minutos.",
       fieldErrors: {},
     };
   }
 
   revalidatePath("/app", "layout");
-  redirect("/app");
+
+  return {
+    status: "success",
+    message: "Cambios guardados.",
+    fieldErrors: {},
+  };
+}
+
+export async function saveProfileSettingsAction(
+  _previousState: ConfigurationFormState,
+  formData: FormData,
+): Promise<ConfigurationFormState> {
+  const validation = validateProfileSettings({
+    fullName: readText(formData, "fullName"),
+    licenseNumber: readText(formData, "licenseNumber"),
+    licenseJurisdiction: readText(formData, "licenseJurisdiction"),
+  });
+
+  if (!validation.success) {
+    return validationError(validation.fieldErrors);
+  }
+
+  return saveConfigurationSection((current) => ({
+    ...current,
+    ...validation.data,
+  }));
+}
+
+export async function saveDocumentSettingsAction(
+  _previousState: ConfigurationFormState,
+  formData: FormData,
+): Promise<ConfigurationFormState> {
+  const validation = validateDocumentSettings({
+    clinicName: readText(formData, "clinicName"),
+    officeAddress: readText(formData, "officeAddress"),
+    contactPhone: readText(formData, "contactPhone"),
+    contactEmail: readText(formData, "contactEmail"),
+    additionalInformation: readText(formData, "additionalInformation"),
+  });
+
+  if (!validation.success) {
+    return validationError(validation.fieldErrors);
+  }
+
+  return saveConfigurationSection((current) => ({
+    ...current,
+    ...validation.data,
+  }));
+}
+
+export async function saveAgendaPreferencesAction(
+  _previousState: ConfigurationFormState,
+  formData: FormData,
+): Promise<ConfigurationFormState> {
+  const validation = validateAgendaPreferences({
+    gridIntervalMinutes: readText(formData, "gridIntervalMinutes"),
+    defaultAppointmentDurationMinutes: readText(
+      formData,
+      "defaultAppointmentDurationMinutes",
+    ),
+    defaultCleanupMinutes: readText(formData, "defaultCleanupMinutes"),
+  });
+
+  if (!validation.success) {
+    return validationError(validation.fieldErrors);
+  }
+
+  return saveConfigurationSection((current) => ({
+    ...current,
+    ...validation.data,
+  }));
+}
+
+export async function saveAvailabilityAction(
+  _previousState: ConfigurationFormState,
+  formData: FormData,
+): Promise<ConfigurationFormState> {
+  const validation = validateAvailability(readAvailability(formData));
+
+  if (!validation.success) {
+    return validationError(validation.fieldErrors);
+  }
+
+  return saveConfigurationSection((current) => ({
+    ...current,
+    availability: validation.data,
+  }));
 }
