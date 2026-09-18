@@ -17,6 +17,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 
+import { AccountAvatar } from "@/components/account-avatar";
 import { BrandMark } from "@/components/brand-mark";
 import { logoutAction } from "@/modules/auth/actions";
 
@@ -52,15 +53,6 @@ const navigation: NavigationItem[] = [
   },
 ];
 
-function getInitials(fullName: string) {
-  const words = fullName.trim().split(/\s+/).filter(Boolean);
-
-  return words
-    .slice(0, 2)
-    .map((word) => word[0]?.toUpperCase())
-    .join("");
-}
-
 export function AppShell({
   children,
   mode = "authenticated",
@@ -68,12 +60,11 @@ export function AppShell({
 }: Readonly<{
   children: ReactNode;
   mode?: "authenticated" | "demo";
-  user: { fullName: string; email: string };
+  user: { fullName: string; email: string; avatarUrl?: string | null };
 }>) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const pathname = usePathname();
-  const initials = getInitials(user.fullName);
   const isConfigurationActive = pathname.startsWith("/app/configuracion");
   const configurationClassName = `flex h-11.5 w-full items-center gap-3.5 rounded-xl border-0 px-3 text-left no-underline transition-colors ${
     mode === "demo"
@@ -226,12 +217,10 @@ export function AppShell({
               isCollapsed ? "md:justify-center md:px-0" : ""
             }`}
           >
-            <span
-              className="grid size-9.5 shrink-0 place-items-center rounded-full bg-[var(--color-foreground)] text-[0.68rem] font-bold text-white"
-              aria-hidden="true"
-            >
-              {initials}
-            </span>
+            <AccountAvatar
+              avatarUrl={user.avatarUrl}
+              fullName={user.fullName}
+            />
             <span
               className={`flex min-w-0 flex-col whitespace-nowrap ${
                 isCollapsed ? "md:hidden" : ""
@@ -308,7 +297,7 @@ export function AppShell({
           <div className="mt-2 hidden border-t border-[var(--color-border)] pt-3 md:block">
             <button
               aria-label={isCollapsed ? "Expandir menú" : "Contraer menú"}
-              className={`flex h-11.5 w-full cursor-pointer items-center gap-3.5 rounded-xl border border-[var(--color-border)] bg-transparent px-3 text-left text-[var(--color-muted)] transition-colors hover:bg-[var(--color-brand-subtle)] hover:text-[var(--color-brand-dark)] ${
+              className={`flex h-11.5 w-full cursor-pointer items-center gap-3.5 rounded-xl border-0 bg-transparent px-3 text-left text-xs text-[var(--color-muted)] transition-colors hover:bg-[var(--color-brand-subtle)] hover:text-[var(--color-brand-dark)] ${
                 isCollapsed ? "justify-center px-0" : ""
               }`}
               onClick={() => setIsCollapsed((current) => !current)}
@@ -352,12 +341,11 @@ export function AppShell({
               Odonto<span className="text-[var(--color-brand)]">Sync</span>
             </strong>
           </div>
-          <span
-            className="grid size-8.5 place-items-center rounded-full bg-[var(--color-foreground)] text-[0.68rem] font-bold text-white"
-            aria-label={user.fullName}
-          >
-            {initials}
-          </span>
+          <AccountAvatar
+            avatarUrl={user.avatarUrl}
+            className="size-8.5 text-[0.68rem]"
+            fullName={user.fullName}
+          />
         </header>
         {children}
       </div>

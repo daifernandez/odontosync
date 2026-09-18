@@ -1,6 +1,10 @@
 import { AppShell } from "@/components/app-shell";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile } from "@/modules/initial-configuration/repository";
+import {
+  getProfileAvatarPath,
+  getProfileAvatarUrl,
+} from "@/modules/profile-avatar/repository";
 import { redirect } from "next/navigation";
 
 function readFullName(
@@ -33,13 +37,21 @@ export default async function PrivateLayout({
     redirect("/ingresar");
   }
 
-  const profile = await getProfile();
+  const [profile, avatarPath] = await Promise.all([
+    getProfile(),
+    getProfileAvatarPath(),
+  ]);
+  const avatarUrl = await getProfileAvatarUrl(avatarPath);
   const email =
     typeof claims.email === "string" ? claims.email : "Cuenta individual";
 
   return (
     <AppShell
-      user={{ fullName: profile?.fullName ?? readFullName(claims, email), email }}
+      user={{
+        fullName: profile?.fullName ?? readFullName(claims, email),
+        email,
+        avatarUrl,
+      }}
     >
       {children}
     </AppShell>

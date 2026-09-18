@@ -16,6 +16,7 @@ vi.mock("@/modules/auth/actions", () => ({
 const user = {
   fullName: "Evaluación OdontoSync",
   email: "evaluacion@odontosync.test",
+  avatarUrl: null,
 };
 
 describe("AppShell", () => {
@@ -50,6 +51,18 @@ describe("AppShell", () => {
     expect(configurationPosition).toBeGreaterThan(userPosition);
     expect(logoutPosition).toBeGreaterThan(configurationPosition);
     expect(collapsePosition).toBeGreaterThan(logoutPosition);
+  });
+
+  it("shows a user photo when one is available", () => {
+    const markup = renderToStaticMarkup(
+      <AppShell
+        user={{ ...user, avatarUrl: "https://example.test/avatar.png" }}
+      >
+        Contenido
+      </AppShell>,
+    );
+
+    expect(markup).toContain('src="https://example.test/avatar.png"');
   });
 
   it("keeps a section active on its nested routes", () => {
