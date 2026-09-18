@@ -72,6 +72,7 @@ model Profile {
   contactPhone        String?         @map("contact_phone")
   contactEmail        String?         @map("contact_email")
   additionalInformation String?       @map("additional_information")
+  avatarPath          String?         @map("avatar_path")
   agendaSettings      AgendaSettings?
   patients            Patient[]
   businessContacts    BusinessContact[]

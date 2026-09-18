@@ -74,6 +74,41 @@ BEGIN
         RAISE EXCEPTION 'Print-only preference must not be persisted in profiles';
     END IF;
 
+    IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'profiles'
+          AND column_name = 'avatar_path'
+          AND is_nullable = 'YES'
+    ) THEN
+        RAISE EXCEPTION 'The optional profile avatar path is missing';
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM storage.buckets
+        WHERE id = 'profile-avatars'
+          AND NOT public
+          AND file_size_limit = 2097152
+          AND allowed_mime_types @> ARRAY['image/jpeg', 'image/png', 'image/webp']
+    ) THEN
+        RAISE EXCEPTION 'The private profile avatar bucket is misconfigured';
+    END IF;
+
+    IF (
+        SELECT count(*)
+        FROM pg_policy
+        WHERE polrelid = 'storage.objects'::regclass
+          AND polname IN (
+              'profile_avatars_select_own',
+              'profile_avatars_insert_own',
+              'profile_avatars_delete_own'
+          )
+    ) <> 3 THEN
+        RAISE EXCEPTION 'Profile avatar storage policies are incomplete';
+    END IF;
+
     IF has_function_privilege(
         'authenticated',
         'private.handle_new_auth_user()',
@@ -188,6 +223,13 @@ SELECT owner_id, 7, TIME '23:58', TIME '23:59'
 FROM rls_test_context
 ON CONFLICT (user_id, day_of_week, start_time) DO UPDATE SET end_time = EXCLUDED.end_time;
 
+INSERT INTO storage.objects (bucket_id, name, owner_id)
+SELECT
+    'profile-avatars',
+    owner_id::text || '/00000000-0000-4000-8000-000000000001.png',
+    owner_id::text
+FROM rls_test_context;
+
 -- Unauthenticated requests must fail at the grant boundary, before RLS.
 DO $$
 BEGIN
@@ -258,6 +300,32 @@ BEGIN
        OR EXISTS (SELECT 1 FROM public.weekly_availability_blocks) THEN
         RAISE EXCEPTION 'RLS exposed another user data';
     END IF;
+
+    IF EXISTS (
+        SELECT 1
+        FROM storage.objects
+        WHERE bucket_id = 'profile-avatars'
+    ) THEN
+        RAISE EXCEPTION 'RLS exposed another user avatar';
+    END IF;
+
+    DELETE FROM storage.objects WHERE bucket_id = 'profile-avatars';
+    GET DIAGNOSTICS affected_rows = ROW_COUNT;
+    IF affected_rows <> 0 THEN
+        RAISE EXCEPTION 'RLS allowed a cross-user avatar deletion';
+    END IF;
+
+    BEGIN
+        INSERT INTO storage.objects (bucket_id, name, owner_id)
+        SELECT
+            'profile-avatars',
+            owner_id::text || '/00000000-0000-4000-8000-000000000002.png',
+            other_id::text
+        FROM rls_test_context;
+        RAISE EXCEPTION 'RLS accepted an avatar in another user folder';
+    EXCEPTION
+        WHEN insufficient_privilege THEN NULL;
+    END;
 
     UPDATE public.profiles SET full_name = 'Cross-user update';
     GET DIAGNOSTICS affected_rows = ROW_COUNT;
@@ -356,6 +424,25 @@ BEGIN
        OR NOT EXISTS (SELECT 1 FROM public.weekly_availability_blocks) THEN
         RAISE EXCEPTION 'The owner cannot read their complete configuration';
     END IF;
+
+    IF (
+        SELECT count(*)
+        FROM storage.objects
+        WHERE bucket_id = 'profile-avatars'
+    ) <> 1 THEN
+        RAISE EXCEPTION 'The owner cannot read their profile avatar';
+    END IF;
+
+    INSERT INTO storage.objects (bucket_id, name, owner_id)
+    SELECT
+        'profile-avatars',
+        owner_id::text || '/00000000-0000-4000-8000-000000000003.webp',
+        owner_id::text
+    FROM rls_test_context;
+
+    DELETE FROM storage.objects
+    WHERE bucket_id = 'profile-avatars'
+      AND name LIKE '%00000000-0000-4000-8000-000000000003.webp';
 
     PERFORM public.save_initial_configuration(
         'RLS owner RPC verification',

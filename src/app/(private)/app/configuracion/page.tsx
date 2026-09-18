@@ -2,7 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { InitialConfigurationForm } from "@/components/initial-configuration-form";
+import { ProfileAvatarForm } from "@/components/profile-avatar-form";
 import { getInitialConfiguration } from "@/modules/initial-configuration/repository";
+import {
+  getProfileAvatarPath,
+  getProfileAvatarUrl,
+} from "@/modules/profile-avatar/repository";
 
 export const metadata: Metadata = {
   title: "Configuración | OdontoSync",
@@ -10,7 +15,11 @@ export const metadata: Metadata = {
 };
 
 export default async function ConfigurationPage() {
-  const configuration = await getInitialConfiguration();
+  const [configuration, avatarPath] = await Promise.all([
+    getInitialConfiguration(),
+    getProfileAvatarPath(),
+  ]);
+  const avatarUrl = await getProfileAvatarUrl(avatarPath);
   const isInitialSetup =
     !configuration || configuration.availability.length === 0;
 
@@ -36,6 +45,12 @@ export default async function ConfigurationPage() {
       >
         <Link
           className="rounded-full border border-[var(--color-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-subtle)]"
+          href="#foto"
+        >
+          Foto de perfil
+        </Link>
+        <Link
+          className="rounded-full border border-[var(--color-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-brand-subtle)]"
           href="#perfil"
         >
           Perfil profesional
@@ -53,6 +68,11 @@ export default async function ConfigurationPage() {
           Configuración de agenda
         </Link>
       </nav>
+
+      <ProfileAvatarForm
+        avatarUrl={avatarUrl}
+        fullName={configuration?.fullName ?? "Cuenta OdontoSync"}
+      />
 
       <InitialConfigurationForm
         initialConfiguration={

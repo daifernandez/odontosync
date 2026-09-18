@@ -14,6 +14,9 @@ describe("buildContentSecurityPolicy", () => {
       "connect-src 'self' https://project-ref.supabase.co wss://project-ref.supabase.co",
     );
     expect(policy).toContain(
+      "img-src 'self' blob: data: https://project-ref.supabase.co",
+    );
+    expect(policy).toContain(
       "script-src 'self' 'nonce-nonce-de-prueba' 'strict-dynamic'",
     );
     expect(policy).toContain("frame-ancestors 'none'");
