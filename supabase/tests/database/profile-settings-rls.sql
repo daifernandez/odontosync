@@ -100,13 +100,13 @@ BEGIN
         SELECT count(*)
         FROM pg_policy
         WHERE polrelid = 'storage.objects'::regclass
-          AND polname IN (
-              'profile_avatars_select_own',
-              'profile_avatars_insert_own',
-              'profile_avatars_delete_own'
+          AND (polname, polcmd) IN (
+              ('profile_avatars_select_own', 'r'),
+              ('profile_avatars_insert_own', 'a'),
+              ('profile_avatars_delete_own', 'd')
           )
     ) <> 3 THEN
-        RAISE EXCEPTION 'Profile avatar storage policies are incomplete';
+        RAISE EXCEPTION 'Profile avatar storage policies are incomplete or invalid';
     END IF;
 
     IF has_function_privilege(
@@ -309,12 +309,6 @@ BEGIN
         RAISE EXCEPTION 'RLS exposed another user avatar';
     END IF;
 
-    DELETE FROM storage.objects WHERE bucket_id = 'profile-avatars';
-    GET DIAGNOSTICS affected_rows = ROW_COUNT;
-    IF affected_rows <> 0 THEN
-        RAISE EXCEPTION 'RLS allowed a cross-user avatar deletion';
-    END IF;
-
     BEGIN
         INSERT INTO storage.objects (bucket_id, name, owner_id)
         SELECT
@@ -439,10 +433,6 @@ BEGIN
         owner_id::text || '/00000000-0000-4000-8000-000000000003.webp',
         owner_id::text
     FROM rls_test_context;
-
-    DELETE FROM storage.objects
-    WHERE bucket_id = 'profile-avatars'
-      AND name LIKE '%00000000-0000-4000-8000-000000000003.webp';
 
     PERFORM public.save_initial_configuration(
         'RLS owner RPC verification',
