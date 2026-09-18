@@ -2812,3 +2812,85 @@ Configuración existente.
   enlazadas finalizaron correctamente.
 - La revisión visual no sustituye una prueba con lector de pantalla ni en un
   dispositivo móvil físico.
+
+
+## Sprint 041 — Nueva experiencia de Configuración
+
+- **Fecha:** 18 de septiembre de 2026
+- **Estado:** publicado y mergeado
+- **Issue:** [#122](https://github.com/daifernandez/odontosync/issues/122)
+- **Rama:** `codex/sprint-041-configuracion-ux`
+- **Publicación:** [PR #123](https://github.com/daifernandez/odontosync/pull/123),
+  merge commit `ca0ceeb`
+
+### Objetivo
+
+Reorganizar Configuración en pantallas independientes y mejorar la edición de
+cuenta y perfil, datos para pacientes, preferencias de agenda y horarios
+habituales en escritorio y mobile.
+
+### Resultado
+
+- Se incorporaron un resumen con estados descriptivos y navegación lateral en
+  escritorio, con selector compacto de sección en pantallas pequeñas.
+- Cada sección guarda por separado y comunica cambios pendientes, guardado y
+  errores. Los campos se bloquean durante el envío.
+- Los borradores se conservan en memoria al navegar, incluso con Atrás, se
+  aíslan por cuenta y se pueden descartar. Se advierte antes de abandonar la
+  aplicación con cambios pendientes.
+- Cuenta y perfil agrupa identidad visual e información profesional. La foto
+  opcional admite vista previa, validación de archivos y restauración de
+  iniciales, con feedback de la última operación.
+- Datos para pacientes separa consultorio, contacto y nota. En pantallas
+  pequeñas alterna edición y vista previa; el visor se amplía al 150 %, cierra
+  con Escape y devuelve el foco. Los errores de guardado regresan a edición y
+  enfocan el campo inválido.
+- Las preferencias de agenda ofrecen opciones rápidas, duraciones
+  personalizadas y un ejemplo del próximo turno disponible.
+- Los horarios se resumen en días plegables con varios bloques. Copiar avisa
+  cuando reemplazará horarios y permite deshacer; una semana vacía explica por
+  qué no se puede guardar.
+- La escala tipográfica utiliza títulos de sección de 24/28 px, títulos de
+  tarjeta de 20 px, subtítulos de 18 px, campos de 16 px y ayudas/errores de
+  14 px. Los formularios aprovechan mejor el ancho intermedio.
+- Se conserva el esquema de datos, las reglas de negocio y el flujo de
+  configuración inicial; no se agregaron migraciones ni permisos.
+
+### Skills aplicadas
+
+- `project-sprint-workflow` para definición, revisión local, publicación y
+  cierre documental.
+- `usability-review` para jerarquía, formularios, feedback, navegación,
+  accesibilidad básica y mobile, con revisión final de Astra.
+- React y Browser para revisar componentes e interacciones reales.
+- `odontosync-release-check` para verificar el diff, los controles locales y
+  GitHub Actions.
+
+### Verificaciones
+
+- Pruebas: 75 archivos y 339 casos aprobados.
+- TypeScript, ESLint y builds de producción con Turbopack y Webpack: aprobados.
+- `npm audit --audit-level=low`: 0 vulnerabilidades.
+- Prisma y las suites RLS/asesores fueron verificados en la implementación
+  inicial; los ajustes finales modificaron interfaz y estado local.
+- Revisión visual y funcional a 320, 390, 1024, 1280 y 1440 px, sin desborde
+  horizontal de página ni errores de consola. La revisión de tipografía
+  incluyó las cuatro secciones en mobile y el visor ampliado en escritorio.
+- Pruebas de navegación con Atrás, restauración y descarte de borradores,
+  aislamiento por cuenta, bloqueo durante el guardado, errores de archivo y
+  validación, copia de horarios y retorno del foco.
+- GitHub Actions del commit `77c6902`: aprobado en 1 minuto y 6 segundos,
+  incluidos instalación, tipos, lint, pruebas, build y auditoría.
+
+### Incidencias y límites
+
+- Turbopack había retenido en caché un error local de permisos al abrir un
+  puerto. El build estándar pasó tras apartar esa caché y repetirlo.
+- Los borradores viven sólo en memoria y no sobreviven a una recarga. El
+  navegador advierte si hay cambios pendientes.
+- En mobile, el documento ampliado se recorre dentro del visor.
+- Permanece la advertencia preexistente de Supabase sobre protección contra
+  contraseñas filtradas desactivada.
+- La revisión responsive no sustituye pruebas en dispositivos físicos ni con
+  lector de pantalla. No se incorporan funcionalidades nuevas como parte del
+  cierre documental.
