@@ -25,7 +25,7 @@ export default async function ConfigurationPage() {
     },
     {
       href: "/app/configuracion/documentos",
-      title: "Datos para pacientes",
+      title: "Datos del consultorio",
       description: "Información reutilizable en indicaciones.",
       status: hasDocumentData ? "Con datos" : "Sin datos · opcional",
       icon: FileText,
