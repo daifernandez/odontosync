@@ -7,7 +7,7 @@ export default async function AgendaConfigurationPage() {
 
   return (
     <section aria-labelledby="agenda-configuration-title">
-      <h2 className="m-0 text-xl tracking-[-0.03em] sm:text-2xl" id="agenda-configuration-title">Preferencias de agenda</h2>
+      <h2 className="m-0 text-2xl leading-tight tracking-[-0.03em] sm:text-[1.75rem]" id="agenda-configuration-title">Preferencias de agenda</h2>
       <p className="mt-1.5 mb-4 text-sm leading-6 text-[var(--color-muted)] sm:mt-2 sm:mb-5">
         Definí los valores que se completan automáticamente al crear turnos.
       </p>

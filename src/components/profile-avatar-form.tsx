@@ -5,6 +5,7 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { AccountAvatar } from "@/components/account-avatar";
+import { useConfigurationDraft } from "@/components/configuration-drafts";
 import { useUnsavedChanges } from "@/components/use-unsaved-changes";
 import {
   profileAvatarFormState,
@@ -47,64 +48,68 @@ export function ProfileAvatarForm({
   embedded?: boolean;
   fullName: string;
 }>) {
-  const [uploadState, uploadAction] = useActionState(
-    uploadProfileAvatarAction,
+  const inputRef = useRef<HTMLInputElement>(null);
+  const { value: file, setDraft: setFile, discardDraft, restored } = useConfigurationDraft<File | null>("avatar", null, profileAvatarFormState);
+  const [uploadState, uploadAction, uploading] = useActionState(
+    async (previous: typeof profileAvatarFormState, data: FormData) => {
+      if (file) data.set("avatar", file);
+      const result = await uploadProfileAvatarAction(previous, data);
+      if (result.status === "success") {
+        discardDraft(null);
+        if (inputRef.current) inputRef.current.value = "";
+      }
+      return result;
+    },
     profileAvatarFormState,
   );
-  const [removeState, removeAction] = useActionState(
+  const [removeState, removeAction, removing] = useActionState(
     removeProfileAvatarAction,
     profileAvatarFormState,
   );
-  const inputRef = useRef<HTMLInputElement>(null);
-  const previewUrlRef = useRef<string | null>(null);
+  const { clearDirty, markDirty } = useUnsavedChanges(uploadState, restored);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const { clearDirty, markDirty } = useUnsavedChanges(uploadState);
-  const feedback =
-    removeState.status !== "idle" ? removeState : uploadState;
-  const displayedAvatarUrl =
-    previewUrl ?? (removeState.status === "success" ? null : avatarUrl);
+  const [fileError, setFileError] = useState("");
+  const [lastOperation, setLastOperation] = useState<"upload" | "remove" | null>(null);
+  const feedback = lastOperation === "remove" ? removeState : lastOperation === "upload" ? uploadState : profileAvatarFormState;
+  const hasPhoto = lastOperation === "remove" && removeState.status === "success" ? false : Boolean(avatarUrl);
+  const displayedAvatarUrl = file ? previewUrl : hasPhoto ? avatarUrl : null;
+  const pending = uploading || removing;
 
-  useEffect(
-    () => () => {
-      if (previewUrlRef.current) {
-        URL.revokeObjectURL(previewUrlRef.current);
-      }
-    },
-    [],
-  );
+  useEffect(() => {
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    // Synchronize the browser-owned object URL and release it when the file changes.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
 
   function handleAvatarChange(event: React.ChangeEvent<HTMLInputElement>) {
-    if (previewUrlRef.current) {
-      URL.revokeObjectURL(previewUrlRef.current);
-      previewUrlRef.current = null;
-    }
-
-    const file = event.target.files?.[0];
+    const selected = event.target.files?.[0];
+    if (!selected) return;
     const acceptedTypes = ["image/jpeg", "image/png", "image/webp"];
-
-    if (!file || !acceptedTypes.includes(file.type) || file.size > 2_000_000) {
-      setPreviewUrl(null);
+    const error = selected.size > 2 * 1024 * 1024
+      ? "La imagen debe pesar 2 MB o menos."
+      : !acceptedTypes.includes(selected.type)
+        ? "Usá una imagen JPEG, PNG o WebP."
+        : selected.size === 0 ? "Elegí una imagen que no esté vacía." : "";
+    setFileError(error);
+    setLastOperation(null);
+    if (error) {
+      discardDraft(null);
       clearDirty();
+      event.target.value = "";
       return;
     }
-
-    const nextPreviewUrl = URL.createObjectURL(file);
-    previewUrlRef.current = nextPreviewUrl;
-    setPreviewUrl(nextPreviewUrl);
+    setFile(selected);
     markDirty();
   }
 
   function clearPreview() {
-    if (previewUrlRef.current) {
-      URL.revokeObjectURL(previewUrlRef.current);
-      previewUrlRef.current = null;
-    }
-
-    if (inputRef.current) {
-      inputRef.current.value = "";
-    }
-
-    setPreviewUrl(null);
+    if (inputRef.current) inputRef.current.value = "";
+    discardDraft(null);
+    setFileError("");
+    setLastOperation(null);
     clearDirty();
   }
 
@@ -124,76 +129,80 @@ export function ProfileAvatarForm({
           fullName={fullName}
         />
         <div className="min-w-0 flex-1">
-          {feedback.message ? (
+          {fileError || feedback.message ? (
             <p
               className={`mt-0 mb-4 rounded-xl border px-4 py-3 text-sm ${
-                feedback.status === "error"
+                fileError || feedback.status === "error"
                   ? "border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] text-[var(--color-warning-foreground)]"
                   : "border-[var(--color-border)] bg-[var(--color-brand-subtle)] text-[var(--color-brand-dark)]"
               }`}
-              role={feedback.status === "error" ? "alert" : "status"}
+              role={fileError || feedback.status === "error" ? "alert" : "status"}
             >
-              {feedback.message}
+              {fileError || feedback.message}
             </p>
           ) : null}
 
-          <form action={uploadAction} noValidate>
-            <input
-              aria-describedby="profile-avatar-help"
-              accept="image/jpeg,image/png,image/webp"
-              className="peer sr-only"
-              id="profile-avatar"
-              name="avatar"
-              onChange={handleAvatarChange}
-              ref={inputRef}
-              required
-              type="file"
-            />
-            <div className="flex flex-wrap gap-2">
-              <label
-                className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-[var(--color-border)] bg-white px-4 text-sm font-semibold text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-brand-subtle)] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--color-brand)]"
-                htmlFor="profile-avatar"
+          <form action={uploadAction} noValidate onSubmit={() => setLastOperation("upload")}>
+            <fieldset disabled={pending} className="m-0 min-w-0 border-0 p-0">
+              <div className="flex flex-wrap gap-2">
+                <label
+                  className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-[var(--color-border)] bg-white px-4 text-sm font-semibold text-[var(--color-foreground)] transition-colors hover:bg-[var(--color-brand-subtle)] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--color-brand)]"
+                  htmlFor="profile-avatar"
+                >
+                  <input
+                    aria-describedby="profile-avatar-help"
+                    aria-invalid={Boolean(fileError)}
+                    accept="image/jpeg,image/png,image/webp"
+                    className="sr-only"
+                    id="profile-avatar"
+                    name="avatar"
+                    onChange={handleAvatarChange}
+                    ref={inputRef}
+                    required
+                    type="file"
+                  />
+                  <Camera aria-hidden="true" size={17} strokeWidth={1.8} />
+                  {file
+                    ? "Elegir otra"
+                    : hasPhoto
+                      ? "Cambiar foto"
+                      : "Elegir foto"}
+                </label>
+                {file ? (
+                  <>
+                    <ActionButton pendingLabel="Guardando…">
+                      Guardar cambio
+                    </ActionButton>
+                    <button
+                      className="min-h-11 cursor-pointer rounded-xl border-0 bg-transparent px-3 text-sm font-semibold text-[var(--color-muted)] transition-colors hover:bg-[var(--color-brand-subtle)] hover:text-[var(--color-brand-dark)]"
+                      onClick={clearPreview}
+                      type="button"
+                    >
+                      Cancelar
+                    </button>
+                  </>
+                ) : null}
+              </div>
+              <p
+                aria-live="polite"
+                className="mt-2 mb-0 text-sm text-[var(--color-muted)]"
+                id="profile-avatar-help"
               >
-                <Camera aria-hidden="true" size={17} strokeWidth={1.8} />
-                {previewUrl
-                  ? "Elegir otra"
-                  : avatarUrl
-                    ? "Cambiar foto"
-                    : "Elegir foto"}
-              </label>
-              {previewUrl ? (
-                <>
-                  <ActionButton pendingLabel="Guardando…">
-                    Guardar cambio
-                  </ActionButton>
-                  <button
-                    className="min-h-11 cursor-pointer rounded-xl border-0 bg-transparent px-3 text-sm font-semibold text-[var(--color-muted)] transition-colors hover:bg-[var(--color-brand-subtle)] hover:text-[var(--color-brand-dark)]"
-                    onClick={clearPreview}
-                    type="button"
-                  >
-                    Cancelar
-                  </button>
-                </>
-              ) : null}
-            </div>
-            <p
-              aria-live="polite"
-              className="mt-2 mb-0 text-xs text-[var(--color-muted)]"
-              id="profile-avatar-help"
-            >
-              {previewUrl
-                ? "Así se verá tu foto. Guardala para aplicar el cambio."
-                  : avatarUrl
-                    ? "Podés reemplazarla o quitarla para volver a tus iniciales."
-                  : "JPG, PNG o WebP · Máximo 2 MB."}
-            </p>
+                {file
+                  ? "Así se verá tu foto. Guardala para aplicar el cambio."
+                  : hasPhoto ? "Podés reemplazarla o quitarla para volver a tus iniciales." : null}
+                <span className="block">JPG, PNG o WebP · Máximo 2 MB.</span>
+              </p>
+            </fieldset>
           </form>
 
-          {avatarUrl && !previewUrl ? (
-            <form action={removeAction} className="mt-2">
-              <ActionButton pendingLabel="Restaurando…" secondary>
-                Quitar foto
-              </ActionButton>
+          {hasPhoto && !file ? (
+            <form action={removeAction} className="mt-2" onSubmit={() => setLastOperation("remove")}>
+              <fieldset disabled={pending} className="m-0 min-w-0 border-0 p-0">
+                <ActionButton pendingLabel="Restaurando…" secondary>
+                  Quitar foto
+                </ActionButton>
+              </fieldset>
             </form>
           ) : null}
         </div>
@@ -212,11 +221,11 @@ export function ProfileAvatarForm({
   return (
     <section
       aria-labelledby="profile-avatar-title"
-      className="mb-5 scroll-mt-5 rounded-[var(--radius-large)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-card)] md:p-7"
+      className="scroll-mt-5 rounded-[var(--radius-large)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-card)] md:p-7"
       id="foto"
     >
-      <p className="mb-2 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
-        Cuenta
+      <p className="mb-2 text-xs font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
+        Identidad visual
       </p>
       {content}
     </section>

@@ -23,10 +23,10 @@ describe("WeeklyAvailabilityForm", () => {
     );
 
     expect(
-      within(screen.getByRole("group", { name: "Lunes" })).getByText(
-        "2 bloques",
-      ),
-    ).toBeTruthy();
+      within(screen.getByRole("group", { name: "Lunes" })).getByRole("button", {
+        name: "Editar horarios de Lunes",
+      }).textContent,
+    ).toContain("09:00–13:00 · 14:00–18:00");
     expect(
       within(screen.getByRole("group", { name: "Domingo" })).getByText(
         "No atiendo",
@@ -59,6 +59,8 @@ describe("WeeklyAvailabilityForm", () => {
     );
 
     const monday = screen.getByRole("group", { name: "Lunes" });
+    fireEvent.click(within(monday).getByRole("button", {name:"Editar horarios de Lunes"}));
+    fireEvent.click(within(monday).getByText("Copiar estos horarios"));
     fireEvent.change(within(monday).getByLabelText("Copiar horarios de Lunes a"), {
       target: { value: "2" },
     });
@@ -93,4 +95,21 @@ describe("WeeklyAvailabilityForm", () => {
       }) as HTMLButtonElement).disabled,
     ).toBe(true);
   });
+});
+
+it("explains why an empty week cannot be saved", () => {
+  render(<WeeklyAvailabilityForm initialAvailability={[{dayOfWeek:1,startTime:"09:00",endTime:"13:00"}]} />);
+  fireEvent.click(screen.getByRole("checkbox", {name:"Atiendo los lunes"}));
+  expect(screen.getByText("Agregá al menos un bloque de atención para guardar." )).toBeTruthy();
+});
+it("warns before replacing a day and offers undo", () => {
+  render(<WeeklyAvailabilityForm initialAvailability={[{dayOfWeek:1,startTime:"09:00",endTime:"13:00"},{dayOfWeek:2,startTime:"10:00",endTime:"12:00"}]} />);
+  const monday = screen.getByRole("group", {name:"Lunes"});
+  fireEvent.click(within(monday).getByRole("button", {name:"Editar horarios de Lunes"}));
+  fireEvent.click(within(monday).getByText("Copiar estos horarios"));
+  expect(within(monday).getByText("Se reemplazarán los horarios de Martes.")).toBeTruthy();
+  fireEvent.click(within(monday).getByRole("button", {name:"Reemplazar"}));
+  expect(screen.getByText("Horarios copiados de Lunes a Martes.")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button",{name:"Deshacer copia"}));
+  expect(screen.getByText("10:00–12:00")).toBeTruthy();
 });

@@ -7,7 +7,7 @@ export default async function DocumentConfigurationPage() {
 
   return (
     <section aria-labelledby="documents-configuration-title">
-      <h2 className="m-0 text-xl tracking-[-0.03em] sm:text-2xl" id="documents-configuration-title">Datos para pacientes</h2>
+      <h2 className="m-0 text-2xl leading-tight tracking-[-0.03em] sm:text-[1.75rem]" id="documents-configuration-title">Datos para pacientes</h2>
       <p className="mt-1.5 mb-4 text-sm leading-6 text-[var(--color-muted)] sm:mt-2 sm:mb-5">
         Prepará los datos que podés incluir al imprimir una indicación.
       </p>

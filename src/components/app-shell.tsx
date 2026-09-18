@@ -18,6 +18,7 @@ import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 
 import { AccountAvatar } from "@/components/account-avatar";
+import { ConfigurationDraftProvider } from "@/components/configuration-drafts";
 import { BrandMark } from "@/components/brand-mark";
 import { logoutAction } from "@/modules/auth/actions";
 
@@ -347,7 +348,7 @@ export function AppShell({
             fullName={user.fullName}
           />
         </header>
-        {children}
+        <ConfigurationDraftProvider key={user.email}>{children}</ConfigurationDraftProvider>
       </div>
     </div>
   );

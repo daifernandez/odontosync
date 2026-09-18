@@ -9,14 +9,17 @@ export function ConfigurationSaveBar({
   disabled = false,
   isDirty,
   label,
+  onDiscard,
   state,
 }: Readonly<{
   disabled?: boolean;
   isDirty: boolean;
   label: string;
+  onDiscard?: () => void;
   state: ConfigurationFormState;
 }>) {
   const { pending } = useFormStatus();
+  const hasError = isDirty && state.status === "error";
   const saved = !isDirty && state.status === "success";
 
   return (
@@ -30,30 +33,38 @@ export function ConfigurationSaveBar({
       <p
         aria-live="polite"
         className={`m-0 flex items-center gap-2 text-sm ${
-          state.status === "error"
+          hasError
             ? "text-red-700"
             : saved
               ? "text-[var(--color-brand-dark)]"
               : "text-[var(--color-muted)]"
         }`}
-        role={state.status === "error" ? "alert" : "status"}
+        role={hasError ? "alert" : "status"}
       >
         {saved ? <CheckCircle2 aria-hidden="true" size={17} /> : null}
         {pending
           ? "Guardando…"
-          : state.status === "error"
+          : hasError
             ? state.message
             : isDirty
             ? "Tenés cambios sin guardar"
-            : state.message || "Todos los cambios están guardados"}
+            : (state.status === "success" ? state.message : "") || "Todos los cambios están guardados"}
       </p>
-      <button
-        className="min-h-11 w-full shrink-0 whitespace-nowrap rounded-xl border-0 bg-[var(--color-brand)] px-5 text-sm font-bold text-white shadow-[0_0.65rem_1.8rem_rgb(20_125_115/18%)] transition-colors hover:bg-[var(--color-brand-dark)] disabled:cursor-not-allowed disabled:opacity-50 md:w-auto"
-        disabled={!isDirty || disabled || pending}
-        type="submit"
-      >
-        {pending ? "Guardando…" : label}
-      </button>
+      <div className="flex flex-col gap-2 md:items-end">
+        <button
+          className="min-h-11 w-full shrink-0 whitespace-nowrap rounded-xl border-0 bg-[var(--color-brand)] px-5 text-sm font-bold text-white shadow-[0_0.65rem_1.8rem_rgb(20_125_115/18%)] transition-colors hover:bg-[var(--color-brand-dark)] disabled:cursor-not-allowed disabled:opacity-50 md:w-auto"
+          disabled={!isDirty || disabled || pending}
+          type="submit"
+        >
+          {pending ? "Guardando…" : label}
+        </button>
+        {isDirty && onDiscard ? <button
+          className="min-h-11 rounded-xl border-0 bg-transparent px-3 text-sm font-semibold text-[var(--color-muted)] hover:bg-[var(--color-brand-subtle)]"
+          disabled={pending}
+          onClick={onDiscard}
+          type="button"
+        >Descartar cambios</button> : null}
+      </div>
     </div>
   );
 }

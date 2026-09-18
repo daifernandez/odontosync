@@ -1,6 +1,7 @@
 /** @vitest-environment jsdom */
 
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -84,4 +85,17 @@ describe("ProfileSettingsForm", () => {
       }) as HTMLButtonElement).disabled,
     ).toBe(false);
   });
+});
+
+it("locks edits while saving and keeps the submitted name after success", async () => {
+  let finish!: (value: {status: "success"; message: string; fieldErrors: Record<string, string>}) => void;
+  vi.mocked(saveProfileSettingsAction).mockImplementation(() => new Promise(resolve => { finish = resolve; }));
+  render(<ProfileSettingsForm initialProfile={{fullName: "Ana Pérez", licenseNumber: null, licenseJurisdiction: null}} />);
+  const name = screen.getByLabelText("Nombre completo") as HTMLInputElement;
+  fireEvent.change(name, {target: {value: "Ana García"}});
+  fireEvent.click(screen.getByRole("button", {name: "Guardar perfil"}));
+  await waitFor(() => expect(name.matches(":disabled")).toBe(true));
+  await act(async () => finish({status: "success", message: "Perfil guardado.", fieldErrors: {}}));
+  expect(name.matches(":disabled")).toBe(false);
+  expect(name.value).toBe("Ana García");
 });

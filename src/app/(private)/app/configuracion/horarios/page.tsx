@@ -7,7 +7,7 @@ export default async function AvailabilityConfigurationPage() {
 
   return (
     <section aria-labelledby="availability-configuration-title">
-      <h2 className="m-0 text-xl tracking-[-0.03em] sm:text-2xl" id="availability-configuration-title">Horarios habituales</h2>
+      <h2 className="m-0 text-2xl leading-tight tracking-[-0.03em] sm:text-[1.75rem]" id="availability-configuration-title">Horarios habituales</h2>
       <p className="mt-1.5 mb-4 text-sm leading-6 text-[var(--color-muted)] sm:mt-2 sm:mb-5">
         Esta semana base determina qué horarios aparecen disponibles en la agenda.
       </p>

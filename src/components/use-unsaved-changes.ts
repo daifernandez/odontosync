@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 
 const warningMessage =
-  "Tenés cambios sin guardar. Si salís ahora, vas a perderlos.";
+  "Tenés cambios sin guardar. ¿Querés salir de esta sección sin guardarlos?";
 const confirmedNavigationEvents = new WeakSet<Event>();
 
-export function useUnsavedChanges(saveState: { status: string }) {
-  const [editedState, setEditedState] = useState<object | null>(null);
+export function useUnsavedChanges(saveState: { status: string }, restored = false) {
+  const [editedState, setEditedState] = useState<object | null>(restored ? saveState : null);
   const isDirty =
     editedState !== null &&
     (editedState === saveState || saveState.status === "error");

@@ -44,15 +44,15 @@ export function ConfigurationNavigation() {
   return (
     <nav
       aria-label="Secciones de configuración"
-      className="lg:sticky lg:top-6 lg:self-start"
+      className="xl:sticky xl:top-6 xl:self-start"
     >
-      <details className="group lg:hidden">
+      <details className="group xl:hidden">
         <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 rounded-[var(--radius-large)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-[var(--color-foreground)] shadow-[var(--shadow-card)] [&::-webkit-details-marker]:hidden">
           <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[var(--color-brand-soft)] text-[var(--color-brand-dark)]">
             <CurrentIcon aria-hidden="true" size={18} strokeWidth={1.8} />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-[0.65rem] font-bold tracking-[0.1em] text-[var(--color-muted)] uppercase">
+            <span className="block text-xs font-bold tracking-[0.1em] text-[var(--color-muted)] uppercase">
               Sección
             </span>
             <span className="block truncate text-sm font-semibold">
@@ -94,7 +94,7 @@ export function ConfigurationNavigation() {
         </div>
       </details>
 
-      <div className="hidden gap-2 lg:flex lg:flex-col lg:rounded-[var(--radius-large)] lg:border lg:border-[var(--color-border)] lg:bg-[var(--color-surface)] lg:p-3 lg:shadow-[var(--shadow-card)]">
+      <div className="hidden gap-2 xl:flex xl:flex-col xl:rounded-[var(--radius-large)] xl:border xl:border-[var(--color-border)] xl:bg-[var(--color-surface)] xl:p-3 xl:shadow-[var(--shadow-card)]">
         {items.map(({ href, label, icon: Icon }) => {
           const isActive =
             pathname === href ||
