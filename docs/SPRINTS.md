@@ -2798,16 +2798,17 @@ Configuración existente.
   aprobados localmente.
 - `npm audit --audit-level=low`: 0 vulnerabilidades.
 - GitHub Actions: aprobado, incluido el build normal con Turbopack.
-- El dry-run de Supabase reconoció únicamente
-  `20260918021918_add_profile_avatar.sql` y no aplicó cambios.
+- La migración `20260918021918_add_profile_avatar.sql` se aplicó al Supabase
+  enlazado y quedó registrada en el historial remoto.
+- Cinco suites SQL de RLS aprobaron dentro de transacciones con `ROLLBACK`,
+  incluidos los casos de avatar propio, usuario ajeno y directorio inválido.
 - El asesor de seguridad no informó errores; permanece la advertencia externa
   conocida por protección de contraseñas filtradas desactivada.
 
 ### Riesgo residual y próximos pasos
 
-- La migración de Supabase no se aplicó durante el sprint. La carga de fotos
-  requiere aplicarla y repetir después las pruebas RLS enlazadas.
-- El test RLS nuevo se detuvo, como era esperable, al comprobar que
-  `avatar_path` aún no existe en la base enlazada.
+- La CLI no pudo actualizar su caché local del catálogo después de aplicar la
+  migración porque Docker no está instalado; el cambio remoto y las pruebas
+  enlazadas finalizaron correctamente.
 - La revisión visual no sustituye una prueba con lector de pantalla ni en un
   dispositivo móvil físico.
