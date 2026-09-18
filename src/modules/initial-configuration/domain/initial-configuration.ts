@@ -21,6 +21,21 @@ export type InitialConfiguration = {
   availability: AvailabilityBlock[];
 };
 
+export const defaultInitialConfiguration: InitialConfiguration = {
+  fullName: "",
+  licenseNumber: null,
+  licenseJurisdiction: null,
+  clinicName: null,
+  officeAddress: null,
+  contactPhone: null,
+  contactEmail: null,
+  additionalInformation: null,
+  gridIntervalMinutes: 15,
+  defaultAppointmentDurationMinutes: 30,
+  defaultCleanupMinutes: 5,
+  availability: [],
+};
+
 export type InitialConfigurationFieldErrors = Partial<
   Record<
     | "fullName"
@@ -39,34 +54,40 @@ export type InitialConfigurationFieldErrors = Partial<
   >
 >;
 
-export type InitialConfigurationFormState = {
-  status: "idle" | "error";
+export type ConfigurationFormState = {
+  status: "idle" | "success" | "error";
   message?: string;
   fieldErrors: InitialConfigurationFieldErrors;
 };
 
-export const initialConfigurationFormState: InitialConfigurationFormState = {
+export const configurationFormState: ConfigurationFormState = {
   status: "idle",
   fieldErrors: {},
 };
 
-type InitialConfigurationInput = {
-  fullName: unknown;
-  licenseNumber: unknown;
-  licenseJurisdiction: unknown;
-  clinicName: unknown;
-  officeAddress: unknown;
-  contactPhone: unknown;
-  contactEmail: unknown;
-  additionalInformation: unknown;
-  gridIntervalMinutes: unknown;
-  defaultAppointmentDurationMinutes: unknown;
-  defaultCleanupMinutes: unknown;
-  availability: unknown;
-};
+export type ProfileSettings = Pick<
+  InitialConfiguration,
+  "fullName" | "licenseNumber" | "licenseJurisdiction"
+>;
 
-type ValidationResult =
-  | { success: true; data: InitialConfiguration }
+export type DocumentSettings = Pick<
+  InitialConfiguration,
+  | "clinicName"
+  | "officeAddress"
+  | "contactPhone"
+  | "contactEmail"
+  | "additionalInformation"
+>;
+
+export type AgendaPreferences = Pick<
+  InitialConfiguration,
+  | "gridIntervalMinutes"
+  | "defaultAppointmentDurationMinutes"
+  | "defaultCleanupMinutes"
+>;
+
+type SectionValidationResult<T> =
+  | { success: true; data: T }
   | { success: false; fieldErrors: InitialConfigurationFieldErrors };
 
 function normalizeText(value: unknown) {
@@ -167,23 +188,14 @@ function parseAvailability(value: unknown): AvailabilityBlock[] | null {
   }));
 }
 
-export function validateInitialConfiguration(
-  input: InitialConfigurationInput,
-): ValidationResult {
+export function validateProfileSettings(input: {
+  fullName: unknown;
+  licenseNumber: unknown;
+  licenseJurisdiction: unknown;
+}): SectionValidationResult<ProfileSettings> {
   const fullName = normalizeText(input.fullName);
   const licenseNumber = normalizeText(input.licenseNumber);
   const licenseJurisdiction = normalizeText(input.licenseJurisdiction);
-  const clinicName = normalizeText(input.clinicName);
-  const officeAddress = normalizeText(input.officeAddress);
-  const contactPhone = normalizeText(input.contactPhone);
-  const contactEmail = normalizeText(input.contactEmail).toLowerCase();
-  const additionalInformation = normalizeText(input.additionalInformation);
-  const gridIntervalMinutes = parseInteger(input.gridIntervalMinutes);
-  const defaultAppointmentDurationMinutes = parseInteger(
-    input.defaultAppointmentDurationMinutes,
-  );
-  const defaultCleanupMinutes = parseInteger(input.defaultCleanupMinutes);
-  const availability = parseAvailability(input.availability);
   const fieldErrors: InitialConfigurationFieldErrors = {};
 
   if (fullName.length < 3 || fullName.length > 120) {
@@ -198,6 +210,34 @@ export function validateInitialConfiguration(
     fieldErrors.licenseJurisdiction =
       "La jurisdicción admite hasta 100 caracteres.";
   }
+
+  if (Object.keys(fieldErrors).length > 0) {
+    return { success: false, fieldErrors };
+  }
+
+  return {
+    success: true,
+    data: {
+      fullName,
+      licenseNumber: licenseNumber || null,
+      licenseJurisdiction: licenseJurisdiction || null,
+    },
+  };
+}
+
+export function validateDocumentSettings(input: {
+  clinicName: unknown;
+  officeAddress: unknown;
+  contactPhone: unknown;
+  contactEmail: unknown;
+  additionalInformation: unknown;
+}): SectionValidationResult<DocumentSettings> {
+  const clinicName = normalizeText(input.clinicName);
+  const officeAddress = normalizeText(input.officeAddress);
+  const contactPhone = normalizeText(input.contactPhone);
+  const contactEmail = normalizeText(input.contactEmail).toLowerCase();
+  const additionalInformation = normalizeText(input.additionalInformation);
+  const fieldErrors: InitialConfigurationFieldErrors = {};
 
   if (clinicName.length > 120) {
     fieldErrors.clinicName =
@@ -225,6 +265,34 @@ export function validateInitialConfiguration(
       "La información adicional admite hasta 160 caracteres.";
   }
 
+  if (Object.keys(fieldErrors).length > 0) {
+    return { success: false, fieldErrors };
+  }
+
+  return {
+    success: true,
+    data: {
+      clinicName: clinicName || null,
+      officeAddress: officeAddress || null,
+      contactPhone: contactPhone || null,
+      contactEmail: contactEmail || null,
+      additionalInformation: additionalInformation || null,
+    },
+  };
+}
+
+export function validateAgendaPreferences(input: {
+  gridIntervalMinutes: unknown;
+  defaultAppointmentDurationMinutes: unknown;
+  defaultCleanupMinutes: unknown;
+}): SectionValidationResult<AgendaPreferences> {
+  const gridIntervalMinutes = parseInteger(input.gridIntervalMinutes);
+  const defaultAppointmentDurationMinutes = parseInteger(
+    input.defaultAppointmentDurationMinutes,
+  );
+  const defaultCleanupMinutes = parseInteger(input.defaultCleanupMinutes);
+  const fieldErrors: InitialConfigurationFieldErrors = {};
+
   if (
     gridIntervalMinutes === null ||
     !gridIntervalOptions.some((option) => option === gridIntervalMinutes)
@@ -250,14 +318,6 @@ export function validateInitialConfiguration(
       "Ingresá un margen de entre 0 y 1440 minutos.";
   }
 
-  if (availability === null) {
-    fieldErrors.availability =
-      "Agregá al menos un bloque con un día y horario válidos.";
-  } else if (availability.length === 0) {
-    fieldErrors.availability =
-      "Los bloques de un mismo día no pueden superponerse.";
-  }
-
   if (Object.keys(fieldErrors).length > 0) {
     return { success: false, fieldErrors };
   }
@@ -265,19 +325,37 @@ export function validateInitialConfiguration(
   return {
     success: true,
     data: {
-      fullName,
-      licenseNumber: licenseNumber || null,
-      licenseJurisdiction: licenseJurisdiction || null,
-      clinicName: clinicName || null,
-      officeAddress: officeAddress || null,
-      contactPhone: contactPhone || null,
-      contactEmail: contactEmail || null,
-      additionalInformation: additionalInformation || null,
       gridIntervalMinutes: gridIntervalMinutes as number,
       defaultAppointmentDurationMinutes:
         defaultAppointmentDurationMinutes as number,
       defaultCleanupMinutes: defaultCleanupMinutes as number,
-      availability: availability as AvailabilityBlock[],
     },
   };
+}
+
+export function validateAvailability(
+  input: unknown,
+): SectionValidationResult<AvailabilityBlock[]> {
+  const availability = parseAvailability(input);
+
+  if (availability === null) {
+    return {
+      success: false,
+      fieldErrors: {
+        availability:
+          "Agregá al menos un bloque con un día y horario válidos.",
+      },
+    };
+  }
+
+  if (availability.length === 0) {
+    return {
+      success: false,
+      fieldErrors: {
+        availability: "Los bloques de un mismo día no pueden superponerse.",
+      },
+    };
+  }
+
+  return { success: true, data: availability };
 }

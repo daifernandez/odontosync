@@ -90,7 +90,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
       ]);
 
     if (!configuration || configuration.availability.length === 0) {
-      redirect("/app/configuracion");
+      redirect("/app/configuracion/horarios");
     }
 
     return (
@@ -125,7 +125,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
     ]);
 
   if (!configuration || configuration.availability.length === 0) {
-    redirect("/app/configuracion");
+    redirect("/app/configuracion/horarios");
   }
 
   const selectedAppointment =

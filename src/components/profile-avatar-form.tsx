@@ -5,6 +5,7 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { AccountAvatar } from "@/components/account-avatar";
+import { useUnsavedChanges } from "@/components/use-unsaved-changes";
 import {
   profileAvatarFormState,
   removeProfileAvatarAction,
@@ -39,9 +40,11 @@ function ActionButton({
 
 export function ProfileAvatarForm({
   avatarUrl,
+  embedded = false,
   fullName,
 }: Readonly<{
   avatarUrl: string | null;
+  embedded?: boolean;
   fullName: string;
 }>) {
   const [uploadState, uploadAction] = useActionState(
@@ -55,6 +58,7 @@ export function ProfileAvatarForm({
   const inputRef = useRef<HTMLInputElement>(null);
   const previewUrlRef = useRef<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const { clearDirty, markDirty } = useUnsavedChanges(uploadState);
   const feedback =
     removeState.status !== "idle" ? removeState : uploadState;
   const displayedAvatarUrl =
@@ -80,12 +84,14 @@ export function ProfileAvatarForm({
 
     if (!file || !acceptedTypes.includes(file.type) || file.size > 2_000_000) {
       setPreviewUrl(null);
+      clearDirty();
       return;
     }
 
     const nextPreviewUrl = URL.createObjectURL(file);
     previewUrlRef.current = nextPreviewUrl;
     setPreviewUrl(nextPreviewUrl);
+    markDirty();
   }
 
   function clearPreview() {
@@ -99,17 +105,11 @@ export function ProfileAvatarForm({
     }
 
     setPreviewUrl(null);
+    clearDirty();
   }
 
-  return (
-    <section
-      aria-labelledby="profile-avatar-title"
-      className="mb-5 scroll-mt-5 rounded-[var(--radius-large)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-card)] md:p-7"
-      id="foto"
-    >
-      <p className="mb-2 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
-        Cuenta
-      </p>
+  const content = (
+    <>
       <h2 className="m-0 text-xl" id="profile-avatar-title">
         Foto de perfil
       </h2>
@@ -117,10 +117,10 @@ export function ProfileAvatarForm({
         Es opcional. Si no agregás una foto, mostraremos tus iniciales.
       </p>
 
-      <div className="mt-5 flex flex-col gap-5 sm:flex-row sm:items-center">
+      <div className="mt-4 grid grid-cols-[4rem_minmax(0,1fr)] items-start gap-4 sm:mt-5 sm:flex sm:items-center sm:gap-5">
         <AccountAvatar
           avatarUrl={displayedAvatarUrl}
-          className="size-20 text-lg"
+          className="size-16 text-base sm:size-20 sm:text-lg"
           fullName={fullName}
         />
         <div className="min-w-0 flex-1">
@@ -183,8 +183,8 @@ export function ProfileAvatarForm({
             >
               {previewUrl
                 ? "Así se verá tu foto. Guardala para aplicar el cambio."
-                : avatarUrl
-                  ? "Podés reemplazarla o volver a tus iniciales."
+                  : avatarUrl
+                    ? "Podés reemplazarla o quitarla para volver a tus iniciales."
                   : "JPG, PNG o WebP · Máximo 2 MB."}
             </p>
           </form>
@@ -192,12 +192,33 @@ export function ProfileAvatarForm({
           {avatarUrl && !previewUrl ? (
             <form action={removeAction} className="mt-2">
               <ActionButton pendingLabel="Restaurando…" secondary>
-                Volver a mis iniciales
+                Quitar foto
               </ActionButton>
             </form>
           ) : null}
         </div>
       </div>
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <div aria-labelledby="profile-avatar-title" className="pb-6" id="foto">
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <section
+      aria-labelledby="profile-avatar-title"
+      className="mb-5 scroll-mt-5 rounded-[var(--radius-large)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-card)] md:p-7"
+      id="foto"
+    >
+      <p className="mb-2 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
+        Cuenta
+      </p>
+      {content}
     </section>
   );
 }

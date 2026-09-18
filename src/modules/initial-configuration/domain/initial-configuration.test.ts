@@ -1,88 +1,100 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  initialConfigurationFormState,
-  validateInitialConfiguration,
+  configurationFormState,
+  validateAgendaPreferences,
+  validateAvailability,
+  validateDocumentSettings,
+  validateProfileSettings,
 } from "./initial-configuration";
 
-const validInput = {
-  fullName: "  Daiana   Fernández ",
-  licenseNumber: "  MP 1234 ",
-  licenseJurisdiction: " Buenos Aires ",
-  clinicName: "  Clínica   del Parque ",
-  officeAddress: " Av. Siempre Viva 742 ",
-  contactPhone: " 11 4444 5555 ",
-  contactEmail: " TURNOS@CLINICA.COM ",
-  additionalInformation: " Atención con turno previo ",
-  gridIntervalMinutes: "15",
-  defaultAppointmentDurationMinutes: "30",
-  defaultCleanupMinutes: "5",
-  availability: [
-    { dayOfWeek: 2, startTime: "14:00", endTime: "18:00" },
-    { dayOfWeek: 1, startTime: "09:00", endTime: "13:00" },
-  ],
-};
-
-describe("validateInitialConfiguration", () => {
-  it("provides a serializable initial form state", () => {
-    expect(initialConfigurationFormState).toEqual({
+describe("section configuration validators", () => {
+  it("provides a serializable state for independent forms", () => {
+    expect(configurationFormState).toEqual({
       status: "idle",
       fieldErrors: {},
     });
   });
 
-  it("normalizes a complete valid configuration", () => {
-    expect(validateInitialConfiguration(validInput)).toEqual({
+  it("normalizes profile fields independently", () => {
+    expect(
+      validateProfileSettings({
+        fullName: "  Dra.   Valentina Rossi ",
+        licenseNumber: " MN 12345 ",
+        licenseJurisdiction: " CABA ",
+      }),
+    ).toEqual({
       success: true,
       data: {
-        fullName: "Daiana Fernández",
-        licenseNumber: "MP 1234",
-        licenseJurisdiction: "Buenos Aires",
-        clinicName: "Clínica del Parque",
-        officeAddress: "Av. Siempre Viva 742",
-        contactPhone: "11 4444 5555",
-        contactEmail: "turnos@clinica.com",
-        additionalInformation: "Atención con turno previo",
-        gridIntervalMinutes: 15,
-        defaultAppointmentDurationMinutes: 30,
-        defaultCleanupMinutes: 5,
-        availability: [
-          { dayOfWeek: 1, startTime: "09:00", endTime: "13:00" },
-          { dayOfWeek: 2, startTime: "14:00", endTime: "18:00" },
-        ],
+        fullName: "Dra. Valentina Rossi",
+        licenseNumber: "MN 12345",
+        licenseJurisdiction: "CABA",
       },
     });
   });
 
-  it("normalizes blank optional profile values to null", () => {
-    const result = validateInitialConfiguration({
-      ...validInput,
-      licenseNumber: " ",
-      licenseJurisdiction: "",
-      clinicName: " ",
-      officeAddress: "",
-      contactPhone: " ",
-      contactEmail: "",
-      additionalInformation: " ",
+  it("rejects an invalid profile without depending on another section", () => {
+    expect(
+      validateProfileSettings({
+        fullName: " ",
+        licenseNumber: "M".repeat(51),
+        licenseJurisdiction: "J".repeat(101),
+      }),
+    ).toEqual({
+      success: false,
+      fieldErrors: {
+        fullName: "Ingresá un nombre de entre 3 y 120 caracteres.",
+        licenseNumber: "La matrícula admite hasta 50 caracteres.",
+        licenseJurisdiction: "La jurisdicción admite hasta 100 caracteres.",
+      },
     });
-
-    expect(result.success).toBe(true);
-
-    if (result.success) {
-      expect(result.data.licenseNumber).toBeNull();
-      expect(result.data.licenseJurisdiction).toBeNull();
-      expect(result.data.clinicName).toBeNull();
-      expect(result.data.officeAddress).toBeNull();
-      expect(result.data.contactPhone).toBeNull();
-      expect(result.data.contactEmail).toBeNull();
-      expect(result.data.additionalInformation).toBeNull();
-    }
   });
 
-  it("rejects invalid or oversized public professional data", () => {
+  it("normalizes blank optional document values to null", () => {
     expect(
-      validateInitialConfiguration({
-        ...validInput,
+      validateDocumentSettings({
+        clinicName: " ",
+        officeAddress: "",
+        contactPhone: " ",
+        contactEmail: "",
+        additionalInformation: " ",
+      }),
+    ).toEqual({
+      success: true,
+      data: {
+        clinicName: null,
+        officeAddress: null,
+        contactPhone: null,
+        contactEmail: null,
+        additionalInformation: null,
+      },
+    });
+  });
+
+  it("validates and normalizes patient document data independently", () => {
+    expect(
+      validateDocumentSettings({
+        clinicName: " Consultorio Central ",
+        officeAddress: " Calle 123 ",
+        contactPhone: " 11 5555 5555 ",
+        contactEmail: "TURNOS@EJEMPLO.COM",
+        additionalInformation: " Sólo con turno ",
+      }),
+    ).toEqual({
+      success: true,
+      data: {
+        clinicName: "Consultorio Central",
+        officeAddress: "Calle 123",
+        contactPhone: "11 5555 5555",
+        contactEmail: "turnos@ejemplo.com",
+        additionalInformation: "Sólo con turno",
+      },
+    });
+  });
+
+  it("rejects invalid or oversized public document data", () => {
+    expect(
+      validateDocumentSettings({
         clinicName: "C".repeat(121),
         officeAddress: "A".repeat(161),
         contactPhone: "1".repeat(51),
@@ -102,19 +114,26 @@ describe("validateInitialConfiguration", () => {
     });
   });
 
-  it("requires at least one availability block", () => {
+  it("validates agenda preferences with their units independently", () => {
     expect(
-      validateInitialConfiguration({ ...validInput, availability: [] }),
-    ).toMatchObject({
-      success: false,
-      fieldErrors: { availability: expect.any(String) },
+      validateAgendaPreferences({
+        gridIntervalMinutes: "15",
+        defaultAppointmentDurationMinutes: "30",
+        defaultCleanupMinutes: "5",
+      }),
+    ).toEqual({
+      success: true,
+      data: {
+        gridIntervalMinutes: 15,
+        defaultAppointmentDurationMinutes: 30,
+        defaultCleanupMinutes: 5,
+      },
     });
   });
 
   it("rejects unsupported or out-of-range agenda values", () => {
     expect(
-      validateInitialConfiguration({
-        ...validInput,
+      validateAgendaPreferences({
         gridIntervalMinutes: "17",
         defaultAppointmentDurationMinutes: "0",
         defaultCleanupMinutes: "1441",
@@ -131,30 +150,27 @@ describe("validateInitialConfiguration", () => {
     });
   });
 
-  it("rejects invalid time ranges", () => {
+  it("requires at least one valid availability block", () => {
+    expect(validateAvailability([])).toMatchObject({
+      success: false,
+      fieldErrors: { availability: expect.any(String) },
+    });
     expect(
-      validateInitialConfiguration({
-        ...validInput,
-        availability: [
-          { dayOfWeek: 1, startTime: "18:00", endTime: "09:00" },
-          { dayOfWeek: 8, startTime: "9:00", endTime: "13:00" },
-        ],
-      }),
+      validateAvailability([
+        { dayOfWeek: 1, startTime: "18:00", endTime: "09:00" },
+      ]),
     ).toMatchObject({
       success: false,
       fieldErrors: { availability: expect.any(String) },
     });
   });
 
-  it("rejects overlapping blocks on the same day", () => {
+  it("reports overlapping availability independently", () => {
     expect(
-      validateInitialConfiguration({
-        ...validInput,
-        availability: [
-          { dayOfWeek: 1, startTime: "09:00", endTime: "13:00" },
-          { dayOfWeek: 1, startTime: "12:30", endTime: "18:00" },
-        ],
-      }),
+      validateAvailability([
+        { dayOfWeek: 1, startTime: "09:00", endTime: "13:00" },
+        { dayOfWeek: 1, startTime: "12:30", endTime: "18:00" },
+      ]),
     ).toEqual({
       success: false,
       fieldErrors: {
@@ -163,16 +179,20 @@ describe("validateInitialConfiguration", () => {
     });
   });
 
-  it("allows adjacent blocks and equal hours on different days", () => {
-    const result = validateInitialConfiguration({
-      ...validInput,
-      availability: [
+  it("sorts valid blocks and allows adjacent hours", () => {
+    expect(
+      validateAvailability([
+        { dayOfWeek: 2, startTime: "09:00", endTime: "13:00" },
+        { dayOfWeek: 1, startTime: "13:00", endTime: "18:00" },
+        { dayOfWeek: 1, startTime: "09:00", endTime: "13:00" },
+      ]),
+    ).toEqual({
+      success: true,
+      data: [
         { dayOfWeek: 1, startTime: "09:00", endTime: "13:00" },
         { dayOfWeek: 1, startTime: "13:00", endTime: "18:00" },
         { dayOfWeek: 2, startTime: "09:00", endTime: "13:00" },
       ],
     });
-
-    expect(result.success).toBe(true);
   });
 });
