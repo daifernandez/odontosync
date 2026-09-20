@@ -117,7 +117,7 @@ export function DocumentSettingsForm({
     <form ref={formRef} action={action} className={configurationCardClassName} noValidate>
       <fieldset disabled={pending} className="m-0 min-w-0 border-0 p-0">
         <div
-          aria-label="Vista de datos para pacientes"
+          aria-label="Vista de datos del consultorio"
           className="mb-5 grid grid-cols-2 rounded-xl bg-[var(--color-background)] p-1 min-[1440px]:hidden"
           role="group"
         >
