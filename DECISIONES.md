@@ -361,9 +361,22 @@ cerrado el alcance del primer MVP.
 - Las rutas, opciones de navegación y el código exclusivo de esa biblioteca se
   eliminan de la aplicación para evitar mantener una función que no aporta valor
   a la dirección actual del producto.
-- El historial de los sprints que la implementaron se conserva en Git y en
-  `docs/SPRINTS.md`; no se mantiene una copia inactiva dentro del código actual.
+- El historial de los cambios que la implementaron se conserva en Git, issues y
+  pull requests; no se mantiene una copia inactiva dentro del código actual.
 - `Indicaciones` continúa como módulo independiente, con plantillas editables y
   persistencia propia. Esta decisión no modifica sus datos ni sus migraciones.
 - Reincorporar papelería estática requerirá una nueva decisión y una validación
   previa de su utilidad, contenido y composición.
+
+## D-027. Documentación y trazabilidad
+
+- El 20 de septiembre de 2026 se retiró `docs/SPRINTS.md` de la documentación
+  activa porque duplicaba información disponible en GitHub y Git.
+- El README describe el producto actual, su puesta en marcha y sus controles.
+- `VISION_Y_REQUISITOS.md` mantiene el alcance acordado y `DECISIONES.md`
+  conserva únicamente decisiones duraderas y sus motivos.
+- Los issues, pull requests y commits constituyen el historial detallado de la
+  evolución del proyecto.
+- Un cambio actualizará la documentación del repositorio solamente cuando
+  modifique su estado actual, alcance, arquitectura, operación o una decisión;
+  no requiere un segundo PR dedicado a narrar el sprint.
