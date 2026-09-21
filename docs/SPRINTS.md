@@ -2894,3 +2894,81 @@ habituales en escritorio y mobile.
 - La revisión responsive no sustituye pruebas en dispositivos físicos ni con
   lector de pantalla. No se incorporan funcionalidades nuevas como parte del
   cierre documental.
+
+## Sprint 042 — Navegación horizontal de Configuración
+
+- **Fecha:** 20 de septiembre de 2026
+- **Estado:** publicado y mergeado
+- **Issue:** [#125](https://github.com/daifernandez/odontosync/issues/125)
+- **Rama:** `codex/sprint-042-config-navigation`
+- **Publicación:** [PR #126](https://github.com/daifernandez/odontosync/pull/126),
+  merge commit `46b3a97`
+
+### Objetivo
+
+Eliminar la columna de navegación interna de Configuración para aprovechar
+mejor el ancho disponible y mantener un acceso directo y consistente a sus
+cinco secciones en web, tablet y mobile.
+
+### Resultado
+
+- La navegación lateral interna se reemplazó por pestañas horizontales en
+  tablet y web, dejando una sola columna de contenido junto al menú global.
+- En mobile, las cinco secciones aparecen en una única fila de iconos con
+  etiquetas breves, sin carrusel ni opciones ocultas.
+- La sección activa usa un subrayado en tablet y web y un fondo teal suave en
+  mobile. Los enlaces conservan foco visible y `aria-current="page"`.
+- La sección antes presentada como Documentos se identifica como
+  `Consultorio` en la navegación y `Datos del consultorio` en su contenido y
+  accesibilidad, manteniendo la ruta `/app/configuracion/documentos`.
+- El contenido de Configuración ocupa el ancho liberado sin modificar los
+  formularios, el guardado, las reglas de negocio ni la persistencia.
+- Los borradores y las advertencias por cambios sin guardar se conservan al
+  cambiar de sección.
+
+### Criterios verificados
+
+- Las cinco secciones son visibles sin desplazamiento horizontal ni cortes de
+  texto en los tamaños previstos para tablet y web.
+- En mobile, cada acceso mantiene icono, etiqueta y un área táctil mínima de
+  44 px en una sola fila.
+- La navegación por teclado conserva un orden lógico, foco visible y retorno
+  de foco después de cambios de sección asíncronos.
+- Las rutas existentes continúan funcionando y los borradores se preservan al
+  navegar entre secciones.
+- No se observó desborde horizontal de página a 320, 390, 768, 1024, 1280 ni
+  1440 px.
+- La interfaz se revisó sin errores de consola en los recorridos responsive.
+
+### Skills aplicadas
+
+- `project-sprint-workflow` para separar definición, implementación,
+  publicación y cierre documental.
+- `usability-review` para revisar densidad de navegación, jerarquía, áreas
+  táctiles, foco, accesibilidad básica y comportamiento responsive.
+- React Best Practices para mantener una composición simple y estable de la
+  navegación compartida.
+- Browser para comprobar las rutas, el estado activo, el foco y los tamaños
+  objetivo en la aplicación real.
+- `odontosync-release-check` para revisar el diff y ejecutar la batería previa
+  a publicación.
+
+### Verificaciones
+
+- Pruebas: 76 archivos y 340 casos aprobados.
+- TypeScript, ESLint y build de producción con Webpack: aprobados localmente.
+- Build predeterminado con Turbopack: aprobado en GitHub Actions.
+- `npm audit --audit-level=low`: 0 vulnerabilidades.
+- GitHub Actions del PR funcional: aprobado después de estabilizar la prueba
+  de restauración asíncrona del foco.
+- Revisión visual y funcional a 320, 390, 768, 1024, 1280 y 1440 px, sin
+  desborde horizontal de página ni errores de consola.
+
+### Límites
+
+- El sprint no rediseñó los formularios ni cambió datos, permisos, reglas de
+  guardado o esquema de base de datos.
+- La ruta interna `/app/configuracion/documentos` se conserva por
+  compatibilidad aunque la interfaz utilice el nombre Datos del consultorio.
+- La revisión responsive no sustituye pruebas en dispositivos físicos ni con
+  lector de pantalla.
