@@ -55,3 +55,11 @@ luego consulta los asesores de seguridad de Supabase.
 
 - [Visión y requisitos](./VISION_Y_REQUISITOS.md)
 - [Registro de decisiones](./DECISIONES.md)
+
+## Evolución y trazabilidad
+
+El estado actual del producto se explica en este README y en los documentos
+anteriores. El detalle histórico de cada cambio se conserva en los
+[issues](https://github.com/daifernandez/odontosync/issues), los
+[pull requests](https://github.com/daifernandez/odontosync/pulls) y el historial
+de Git. No se mantiene un registro cronológico duplicado dentro del repositorio.
