@@ -118,4 +118,51 @@ describe("updateSession", () => {
     );
     expect(response.headers.get("cache-control")).toBe("private, no-store");
   });
+
+  it("holds a first-time Google user at the academic-use acknowledgement", async () => {
+    mocks.createServerClient.mockReturnValue({
+      auth: {
+        getClaims: vi.fn(async () => ({ data: { claims: {
+          sub: "google-user",
+          app_metadata: { provider: "google" },
+          user_metadata: {},
+        } } })),
+        getUser: vi.fn(async () => ({ data: { user: {
+          app_metadata: { provider: "google" },
+          user_metadata: {},
+        } } })),
+      },
+    });
+
+    const response = await updateSession(
+      new NextRequest("http://localhost:3000/app/agenda"),
+    );
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe(
+      "http://localhost:3000/uso-academico",
+    );
+  });
+
+  it("allows a just-accepted Google user despite stale token metadata", async () => {
+    mocks.createServerClient.mockReturnValue({
+      auth: {
+        getClaims: vi.fn(async () => ({ data: { claims: {
+          sub: "google-user",
+          app_metadata: { provider: "google" },
+          user_metadata: {},
+        } } })),
+        getUser: vi.fn(async () => ({ data: { user: {
+          app_metadata: { provider: "google" },
+          user_metadata: { academic_use_accepted_at: "2026-09-23T12:00:00.000Z" },
+        } } })),
+      },
+    });
+
+    const response = await updateSession(
+      new NextRequest("http://localhost:3000/app/agenda"),
+    );
+
+    expect(response.status).toBe(200);
+  });
 });

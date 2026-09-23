@@ -10,6 +10,8 @@ import {
   validateLogin,
   validateRegistration,
 } from "./domain/auth-form";
+import { needsAcademicUseAcceptance } from "./domain/academic-use";
+import { isEmailAuthEnabled } from "./email-auth";
 
 function readText(formData: FormData, field: string) {
   const value = formData.get(field);
@@ -20,6 +22,14 @@ export async function registerAction(
   _previousState: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> {
+  if (!isEmailAuthEnabled()) {
+    return {
+      status: "error",
+      message: "Por ahora, continuá con Google.",
+      fieldErrors: {},
+    };
+  }
+
   const validation = validateRegistration({
     fullName: readText(formData, "fullName"),
     email: readText(formData, "email"),
@@ -69,6 +79,14 @@ export async function loginAction(
   _previousState: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> {
+  if (!isEmailAuthEnabled()) {
+    return {
+      status: "error",
+      message: "Por ahora, continuá con Google.",
+      fieldErrors: {},
+    };
+  }
+
   const validation = validateLogin({
     email: readText(formData, "email"),
     password: readText(formData, "password"),
@@ -101,4 +119,32 @@ export async function logoutAction() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/ingresar");
+}
+
+export async function acceptAcademicUseAction(formData: FormData) {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getUser();
+  const user = data.user;
+
+  if (!user) {
+    redirect("/ingresar");
+  }
+
+  if (!needsAcademicUseAcceptance(user)) {
+    redirect("/app");
+  }
+
+  if (formData.get("academicUse") !== "on") {
+    redirect("/uso-academico?error=aceptacion");
+  }
+
+  const { error } = await supabase.auth.updateUser({
+    data: { academic_use_accepted_at: new Date().toISOString() },
+  });
+
+  if (error) {
+    redirect("/uso-academico?error=guardado");
+  }
+
+  redirect("/app");
 }

@@ -36,6 +36,18 @@ Reemplazá las variables de ejemplo por las del proyecto de Supabase. `APP_URL`
 debe contener el origen público canónico de cada entorno autorizado; en
 desarrollo se utiliza `http://localhost:3000`.
 
+Para habilitar **Continuar con Google**, creá un cliente OAuth de tipo web en
+Google Cloud y usá como URI de redirección autorizada la URL de callback que
+muestra Supabase Auth para el proveedor Google
+(`https://<project-ref>.supabase.co/auth/v1/callback`). Activá Google en
+Supabase Auth > Providers con el ID y secreto del cliente. Agregá
+`${APP_URL}/auth/callback` a las URL de redirección permitidas en Supabase
+para cada entorno. Mantené el secreto sólo en la configuración del proveedor,
+fuera de Git. En esta etapa la interfaz ofrece solo Google. El registro por
+correo y el ingreso con contraseña quedan deshabilitados hasta configurar y
+verificar SMTP propio; entonces se pueden habilitar con
+`EMAIL_AUTH_ENABLED="true"`.
+
 ## Verificaciones
 
 ```bash

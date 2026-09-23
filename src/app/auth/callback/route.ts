@@ -21,6 +21,6 @@ export async function GET(request: NextRequest) {
   }
 
   return NextResponse.redirect(
-    new URL("/ingresar?error=confirmacion", `${appOrigin}/`),
+    new URL("/ingresar?error=acceso", `${appOrigin}/`),
   );
 }
