@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { BrandMark } from "@/components/brand-mark";
+import { isEmailAuthEnabled } from "@/modules/auth/email-auth";
 
 export function AuthShell({
   children,
@@ -51,7 +52,9 @@ export function AuthShell({
                 className="mt-0.5 shrink-0 text-[#91d8d0]"
                 size={19}
               />
-              Acceso individual protegido mediante correo y contraseña.
+              {isEmailAuthEnabled()
+                ? "Acceso individual protegido mediante correo, contraseña o Google."
+                : "Acceso individual protegido con Google."}
             </li>
             <li className="flex items-start gap-3">
               <FileText
@@ -69,10 +72,10 @@ export function AuthShell({
         </p>
       </section>
 
-      <section className="flex min-h-screen items-center justify-center px-5 py-10 sm:px-8">
-        <div className="w-full max-w-md">
+      <section className="flex min-h-screen items-start justify-center px-4 pt-8 pb-6 sm:items-center sm:px-8 sm:py-10">
+        <div className="flex min-h-[calc(100svh-3.5rem)] w-full max-w-md flex-col sm:min-h-0 sm:block">
           <Link
-            className="mb-10 flex items-center gap-3 text-[var(--color-foreground)] no-underline lg:hidden"
+            className="mx-auto mb-6 flex min-h-11 w-fit items-center gap-3 text-[var(--color-foreground)] no-underline sm:mb-10 lg:hidden"
             href="/"
           >
             <BrandMark aria-hidden="true" className="size-10" />
@@ -81,16 +84,18 @@ export function AuthShell({
             </strong>
           </Link>
 
-          <p className="mb-3 text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase">
-            {eyebrow}
-          </p>
-          <h1 className="m-0 text-3xl tracking-[-0.045em] sm:text-4xl">
-            {title}
-          </h1>
-          <p className="mt-4 mb-8 text-sm leading-6 text-[var(--color-muted)]">
-            {description}
-          </p>
-          {children}
+          <div className="flex flex-1 flex-col justify-center sm:block">
+            <p className="mb-2 text-center text-[0.7rem] font-bold tracking-[0.12em] text-[var(--color-brand)] uppercase sm:mb-3 lg:text-left">
+              {eyebrow}
+            </p>
+            <h1 className="m-0 text-center text-3xl tracking-[-0.045em] sm:text-4xl lg:text-left">
+              {title}
+            </h1>
+            <p className="mt-3 mb-6 text-center text-sm leading-6 text-[var(--color-muted)] sm:mt-4 sm:mb-8 lg:text-left">
+              {description}
+            </p>
+            {children}
+          </div>
         </div>
       </section>
     </main>

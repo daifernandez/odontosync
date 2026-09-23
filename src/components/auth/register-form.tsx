@@ -4,13 +4,14 @@ import Link from "next/link";
 import { useActionState } from "react";
 
 import { SubmitButton } from "@/components/auth/submit-button";
+import { GoogleLoginButton } from "@/components/auth/google-login-button";
 import { registerAction } from "@/modules/auth/actions";
 import { initialAuthFormState } from "@/modules/auth/domain/auth-form";
 
 const inputClassName =
   "mt-2 min-h-12 w-full rounded-xl border border-[var(--color-border)] bg-white px-3.5 text-sm text-[var(--color-foreground)] outline-none transition-colors focus:border-[var(--color-brand)] focus:ring-3 focus:ring-[rgb(20_125_115/12%)]";
 
-export function RegisterForm() {
+export function RegisterForm({ googleRedirectTo }: Readonly<{ googleRedirectTo: string }>) {
   const [state, action] = useActionState(
     registerAction,
     initialAuthFormState,
@@ -135,6 +136,14 @@ export function RegisterForm() {
       <SubmitButton pendingLabel="Creando cuenta…">
         Crear cuenta
       </SubmitButton>
+
+      <div className="flex items-center gap-3" aria-hidden="true">
+        <span className="h-px flex-1 bg-[var(--color-border)]" />
+        <span className="text-xs text-[var(--color-muted)]">o</span>
+        <span className="h-px flex-1 bg-[var(--color-border)]" />
+      </div>
+
+      <GoogleLoginButton redirectTo={googleRedirectTo} />
 
       <p className="m-0 text-center text-sm text-[var(--color-muted)]">
         ¿Ya tenés una cuenta?{" "}

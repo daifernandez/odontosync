@@ -4,6 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getAppOrigin } from "@/lib/app-url";
 import { buildContentSecurityPolicy } from "@/lib/security/content-security-policy";
 import { getAuthRedirect } from "@/modules/auth/domain/auth-routing";
+import { needsAcademicUseAcceptance } from "@/modules/auth/domain/academic-use";
 
 import { getSupabaseConfig } from "./config";
 
@@ -95,6 +96,22 @@ export async function updateSession(request: NextRequest) {
       redirectPath,
       contentSecurityPolicy,
     );
+  }
+
+  if (
+    claims &&
+    (pathname === "/app" || pathname.startsWith("/app/")) &&
+    needsAcademicUseAcceptance(claims)
+  ) {
+    const { data: userData } = await supabase.auth.getUser();
+
+    if (!userData.user || needsAcademicUseAcceptance(userData.user)) {
+      return redirectWithCookies(
+        response,
+        "/uso-academico",
+        contentSecurityPolicy,
+      );
+    }
   }
 
   return response;

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 
 import { SubmitButton } from "@/components/auth/submit-button";
+import { GoogleLoginButton } from "@/components/auth/google-login-button";
 import { loginAction } from "@/modules/auth/actions";
 import { initialAuthFormState } from "@/modules/auth/domain/auth-form";
 
@@ -11,19 +12,19 @@ const inputClassName =
   "mt-2 min-h-12 w-full rounded-xl border border-[var(--color-border)] bg-white px-3.5 text-sm text-[var(--color-foreground)] outline-none transition-colors focus:border-[var(--color-brand)] focus:ring-3 focus:ring-[rgb(20_125_115/12%)]";
 
 export function LoginForm({
-  confirmationError = false,
-}: Readonly<{ confirmationError?: boolean }>) {
+  callbackError = false,
+  googleRedirectTo,
+}: Readonly<{ callbackError?: boolean; googleRedirectTo: string }>) {
   const [state, action] = useActionState(loginAction, initialAuthFormState);
 
   return (
     <form action={action} className="flex flex-col gap-5" noValidate>
-      {confirmationError ? (
+      {callbackError ? (
         <p
           className="m-0 rounded-xl border border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] px-4 py-3 text-sm leading-6 text-[var(--color-warning-foreground)]"
           role="alert"
         >
-          El enlace de confirmación no es válido o venció. Intentá registrarte
-          nuevamente.
+          No pudimos completar el acceso. Volvé a intentarlo.
         </p>
       ) : null}
 
@@ -90,6 +91,8 @@ export function LoginForm({
         <span className="text-xs text-[var(--color-muted)]">o</span>
         <span className="h-px flex-1 bg-[var(--color-border)]" />
       </div>
+
+      <GoogleLoginButton redirectTo={googleRedirectTo} />
 
       <Link
         className="inline-flex min-h-12 items-center justify-center rounded-xl border border-[var(--color-border)] bg-white px-5 text-sm font-bold text-[var(--color-brand-dark)] no-underline transition-colors hover:border-[var(--color-brand)]"
