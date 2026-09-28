@@ -1,11 +1,13 @@
 "use client";
 
 import { ChevronDown, Copy, Plus, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { useActionState, useMemo, useState } from "react";
 
 import { configurationCardClassName } from "@/components/configuration-form-ui";
 import { ConfigurationSaveBar } from "@/components/configuration-save-bar";
 import { useConfigurationDraft } from "@/components/configuration-drafts";
+import { preserveFormValues } from "@/components/preserve-form-values";
 import { useUnsavedChanges } from "@/components/use-unsaved-changes";
 import { saveAvailabilityAction } from "@/modules/initial-configuration/actions";
 import {
@@ -68,6 +70,7 @@ export function WeeklyAvailabilityForm({
   const [expandedDays, setExpandedDays] = useState<number[]>([]);
   const [lastCopy, setLastCopy] = useState<{ previous: AvailabilityBlock[]; message: string } | null>(null);
   const [copyTargets, setCopyTargets] = useState<Record<number, number>>({});
+  const [startedWithoutSchedule] = useState(initialAvailability.length === 0);
   const dayErrors = useMemo(() => findDayErrors(availability), [availability]);
   const activeDayCount = new Set(
     availability.map((block) => block.dayOfWeek),
@@ -145,8 +148,17 @@ export function WeeklyAvailabilityForm({
   }
 
   return (
-    <form action={action} className={configurationCardClassName} noValidate>
+    <form action={action} className={configurationCardClassName} noValidate ref={preserveFormValues}>
       <fieldset disabled={pending} className="m-0 min-w-0 border-0 p-0">
+        {startedWithoutSchedule && state.status !== "success" ? (
+          <section aria-labelledby="first-schedule-title" className="mb-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-brand-subtle)] p-4 sm:p-5">
+            <p className="m-0 text-xs font-bold tracking-[0.12em] text-[var(--color-brand-dark)]">PRIMEROS PASOS</p>
+            <h3 className="mt-2 mb-0 text-lg" id="first-schedule-title">Prepará tu agenda</h3>
+            <p className="mt-2 mb-0 text-sm leading-6 text-[var(--color-muted)]">
+              Activá los días y definí los bloques en los que atendés para mostrar horarios disponibles. La duración habitual de los turnos podés ajustarla después.
+            </p>
+          </section>
+        ) : null}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h2 className="m-0 text-xl">Tu semana de atención</h2>
@@ -353,6 +365,17 @@ export function WeeklyAvailabilityForm({
           <p className="mt-4 mb-0 text-sm font-semibold text-red-700" role="alert">
             {fieldErrors.availability}
           </p>
+        ) : null}
+
+        {startedWithoutSchedule && state.status === "success" && !isDirty ? (
+          <section aria-labelledby="first-schedule-saved-title" className="mt-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-brand-subtle)] p-4 sm:p-5">
+            <h3 className="m-0 text-lg" id="first-schedule-saved-title">Ya tenés horarios para empezar</h3>
+            <p className="mt-2 mb-0 text-sm leading-6 text-[var(--color-muted)]" role="status">Tus horarios se guardaron. Podés abrir la agenda o ajustar la duración habitual de los turnos.</p>
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+              <Link className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[var(--color-brand)] px-4 text-sm font-bold text-white no-underline hover:bg-[var(--color-brand-dark)]" href="/app/agenda">Abrir agenda</Link>
+              <Link className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[var(--color-border)] bg-white px-4 text-sm font-semibold text-[var(--color-brand-dark)] no-underline hover:bg-[var(--color-page)]" href="/app/configuracion/agenda">Preferencias de agenda</Link>
+            </div>
+          </section>
         ) : null}
 
         <ConfigurationSaveBar onDiscard={() => { discardDraft(initialAvailability); clearDirty(); setLastCopy(null); }}
