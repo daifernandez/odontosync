@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export default async function LoginPage({
   searchParams,
 }: Readonly<{
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; cuenta?: string }>;
 }>) {
   const params = await searchParams;
   const emailAuthEnabled = isEmailAuthEnabled();
@@ -26,6 +26,11 @@ export default async function LoginPage({
       eyebrow="Bienvenida"
       title="Ingresá a tu espacio"
     >
+      {params.cuenta === "eliminada" ? (
+        <p className="m-0 mb-5 rounded-xl border border-[var(--color-border)] bg-[var(--color-brand-subtle)] px-4 py-3 text-sm leading-6 text-[var(--color-brand-dark)]" role="status">
+          Tu cuenta y sus datos fueron eliminados.
+        </p>
+      ) : null}
       {emailAuthEnabled ? (
         <LoginForm callbackError={callbackError} googleRedirectTo={getAuthCallbackUrl()} />
       ) : (

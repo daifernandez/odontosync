@@ -1,5 +1,7 @@
+import { AccountDeletionPanel } from "@/components/account-deletion-panel";
 import { ProfileAvatarForm } from "@/components/profile-avatar-form";
 import { ProfileSettingsForm } from "@/components/profile-settings-form";
+import { createClient } from "@/lib/supabase/server";
 import { defaultInitialConfiguration } from "@/modules/initial-configuration/domain/initial-configuration";
 import { getInitialConfiguration } from "@/modules/initial-configuration/repository";
 import {
@@ -8,9 +10,11 @@ import {
 } from "@/modules/profile-avatar/repository";
 
 export default async function ProfileConfigurationPage() {
-  const [storedConfiguration, avatarPath] = await Promise.all([
+  const supabase = await createClient();
+  const [storedConfiguration, avatarPath, { data: { user } }] = await Promise.all([
     getInitialConfiguration(),
     getProfileAvatarPath(),
+    supabase.auth.getUser(),
   ]);
   const configuration = storedConfiguration ?? defaultInitialConfiguration;
   const avatarUrl = await getProfileAvatarUrl(avatarPath);
@@ -30,6 +34,7 @@ export default async function ProfileConfigurationPage() {
             licenseJurisdiction: configuration.licenseJurisdiction,
           }}
         />
+        {user?.email ? <AccountDeletionPanel email={user.email} /> : null}
       </div>
     </section>
   );
