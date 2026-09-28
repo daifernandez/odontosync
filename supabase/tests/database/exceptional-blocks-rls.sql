@@ -2,22 +2,24 @@ BEGIN;
 
 CREATE TEMP TABLE exceptional_blocks_rls_test_context ON COMMIT DROP AS
 SELECT
-    id AS owner_id,
+    gen_random_uuid() AS owner_id,
     gen_random_uuid() AS other_id,
     gen_random_uuid() AS patient_id,
     gen_random_uuid() AS appointment_id,
-    gen_random_uuid() AS reschedule_id
-FROM auth.users
-LIMIT 1;
+    gen_random_uuid() AS reschedule_id;
 
 GRANT SELECT ON exceptional_blocks_rls_test_context TO authenticated;
 
+INSERT INTO auth.users (id, raw_user_meta_data)
+SELECT owner_id, '{"fixture":"exceptional_blocks_rls"}'::jsonb
+FROM exceptional_blocks_rls_test_context;
+
+INSERT INTO public.profiles (id, full_name)
+SELECT owner_id, 'Exceptional blocks RLS fixture'
+FROM exceptional_blocks_rls_test_context;
+
 DO $$
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM exceptional_blocks_rls_test_context) THEN
-        RAISE EXCEPTION 'Exceptional block verification requires one Auth user';
-    END IF;
-
     IF NOT EXISTS (
         SELECT 1
         FROM pg_class AS tables
@@ -340,6 +342,7 @@ BEGIN
     IF (
         SELECT count(*)
         FROM public.exceptional_availability_blocks
+        WHERE starts_at IN ('2199-09-10 12:00:00+00', '2199-09-10 14:00:00+00')
     ) <> 2 THEN
         RAISE EXCEPTION 'Owner could not read their exceptional blocks';
     END IF;

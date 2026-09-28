@@ -2,21 +2,15 @@ BEGIN;
 
 CREATE TEMP TABLE rls_test_context ON COMMIT DROP AS
 SELECT
-    id AS owner_id,
+    gen_random_uuid() AS owner_id,
     gen_random_uuid() AS other_id,
-    gen_random_uuid() AS forged_id
-FROM auth.users
-LIMIT 1;
+    gen_random_uuid() AS forged_id;
 
 GRANT SELECT ON rls_test_context TO authenticated;
 
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM rls_test_context) THEN
-        RAISE EXCEPTION 'RLS verification requires one Supabase Auth user';
-    END IF;
-END;
-$$;
+INSERT INTO auth.users (id, raw_user_meta_data)
+SELECT owner_id, '{"fixture":"profile_settings_rls"}'::jsonb
+FROM rls_test_context;
 
 -- Security invariants must remain true even when later migrations add objects.
 DO $$

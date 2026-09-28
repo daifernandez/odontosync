@@ -4,6 +4,7 @@ import { useActionState, useRef } from "react";
 import { useFormStatus } from "react-dom";
 
 import { SubmitButton } from "@/components/auth/submit-button";
+import { preserveFormValues } from "@/components/preserve-form-values";
 import { createContactAction, setContactActiveAction, updateContactAction } from "@/modules/contacts/actions";
 import { type Contact, type ContactInput, type ContactStatus, type ContactTypeFilter, contactFormState } from "@/modules/contacts/domain/contact";
 
@@ -31,7 +32,7 @@ const fields: { name: keyof Omit<ContactInput, "name" | "type" | "notes">; label
 export function ContactForm({ contact, directory }: { contact?: Contact; directory: ContactDirectoryContext }) {
   const [state, action] = useActionState(contact ? updateContactAction.bind(null, contact.id) : createContactAction, contactFormState);
   return (
-    <form action={action} className="mt-5 grid gap-4" noValidate>
+    <form action={action} className="mt-5 grid gap-4" noValidate ref={preserveFormValues}>
       <ContextFields directory={directory} />
       {state.message ? <p className="m-0 rounded-xl border border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] px-4 py-3 text-sm" role="alert">{state.message}</p> : null}
       <label className="text-sm font-semibold">Nombre

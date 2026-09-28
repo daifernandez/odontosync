@@ -604,7 +604,7 @@ export function AppointmentManagementPanel({
             </section>
           ) : (
             <>
-          <form action={action} className="flex flex-col gap-4" noValidate>
+          <form action={action} className="flex flex-col gap-4" noValidate ref={preserveFormValues}>
             <input name="appointmentId" type="hidden" value={appointment.id} />
             <AgendaContextFields
               selectedDate={selectedDate ?? weekStartDate}
@@ -627,6 +627,10 @@ export function AppointmentManagementPanel({
                 className={inputClassName}
                 defaultValue={appointment.specialty}
                 name="specialty"
+                aria-invalid={Boolean(state.fieldErrors.specialty)}
+                aria-describedby={
+                  state.fieldErrors.specialty ? "edit-specialty-error" : undefined
+                }
               >
                 {specialtyOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -634,6 +638,11 @@ export function AppointmentManagementPanel({
                   </option>
                 ))}
               </select>
+              {state.fieldErrors.specialty ? (
+                <span className="mt-2 block text-xs text-red-700" id="edit-specialty-error">
+                  {state.fieldErrors.specialty}
+                </span>
+              ) : null}
             </label>
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -644,6 +653,10 @@ export function AppointmentManagementPanel({
                   max={1440}
                   min={1}
                   name="durationMinutes"
+                  aria-invalid={Boolean(state.fieldErrors.durationMinutes)}
+                  aria-describedby={
+                    state.fieldErrors.durationMinutes ? "edit-duration-error" : undefined
+                  }
                   onChange={(event) => {
                     setDurationMinutes(event.target.value);
                     setStartsAt("");
@@ -651,6 +664,11 @@ export function AppointmentManagementPanel({
                   type="number"
                   value={durationMinutes}
                 />
+                {state.fieldErrors.durationMinutes ? (
+                  <span className="mt-2 block text-xs text-red-700" id="edit-duration-error">
+                    {state.fieldErrors.durationMinutes}
+                  </span>
+                ) : null}
               </label>
               <label className="text-sm font-semibold">
                 Acondicionamiento
@@ -659,6 +677,10 @@ export function AppointmentManagementPanel({
                   max={1440}
                   min={0}
                   name="cleanupMinutes"
+                  aria-invalid={Boolean(state.fieldErrors.cleanupMinutes)}
+                  aria-describedby={
+                    state.fieldErrors.cleanupMinutes ? "edit-cleanup-error" : undefined
+                  }
                   onChange={(event) => {
                     setCleanupMinutes(event.target.value);
                     setStartsAt("");
@@ -666,6 +688,11 @@ export function AppointmentManagementPanel({
                   type="number"
                   value={cleanupMinutes}
                 />
+                {state.fieldErrors.cleanupMinutes ? (
+                  <span className="mt-2 block text-xs text-red-700" id="edit-cleanup-error">
+                    {state.fieldErrors.cleanupMinutes}
+                  </span>
+                ) : null}
               </label>
             </div>
 
@@ -683,10 +710,24 @@ export function AppointmentManagementPanel({
               />
             </label>
 
-            <fieldset className="border-0 p-0">
+            <fieldset
+              className="border-0 p-0"
+              aria-invalid={Boolean(state.fieldErrors.startsAt)}
+              aria-describedby={`edit-slots-help${state.fieldErrors.startsAt ? " edit-slots-error" : ""}`}
+            >
               <legend className="text-sm font-semibold">
                 Horarios disponibles
               </legend>
+              <p className="mt-2 mb-0 text-sm text-[var(--color-muted)]" id="edit-slots-help" role="status">
+                {!startsAt
+                  ? "Volvé a elegir un horario para la fecha y duración actuales."
+                  : "Si cambiás la fecha, la duración o el acondicionamiento, elegí nuevamente un horario."}
+              </p>
+              {state.fieldErrors.startsAt ? (
+                <p className="mt-2 mb-0 text-xs text-red-700" id="edit-slots-error">
+                  {state.fieldErrors.startsAt}
+                </p>
+              ) : null}
               <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4">
                 {availableSlots.map((time) => {
                   const value = `${date}T${time}`;

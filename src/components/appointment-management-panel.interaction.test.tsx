@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => ({
   reschedule: vi.fn(),
   replace: vi.fn(),
   cancel: vi.fn(),
+  update: vi.fn(),
 }));
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: mocks.replace }),
@@ -22,7 +23,7 @@ vi.mock("@/modules/appointments/actions", () => ({
   cancelAppointmentAction: mocks.cancel,
   closeAppointmentAction: vi.fn(),
   confirmAppointmentAction: vi.fn(),
-  updateAppointmentAction: vi.fn(),
+  updateAppointmentAction: mocks.update,
 }));
 
 import { AppointmentManagementPanel } from "./appointment-management-panel";
@@ -61,6 +62,7 @@ beforeEach(() => {
   mocks.reschedule.mockReset();
   mocks.replace.mockReset();
   mocks.cancel.mockReset();
+  mocks.update.mockReset();
   HTMLDialogElement.prototype.showModal = function () {
     this.setAttribute("open", "");
   };
@@ -70,6 +72,22 @@ beforeEach(() => {
   };
 });
 afterEach(cleanup);
+
+it("explains time reselection and shows the server error next to the slots", async () => {
+  mocks.update.mockResolvedValue({ status: "error", message: "Revisá los campos marcados.", fieldErrors: { startsAt: "Elegí una fecha y hora futuras válidas." } });
+  render(<AppointmentManagementPanel {...props} appointment={{ ...props.appointment, status: "pending_confirmation" }} />);
+  fireEvent.change(screen.getByRole("spinbutton", { name: "Duración estimada" }), { target: { value: "45" } });
+  expect(screen.getByText(/Volvé a elegir un horario/)).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Guardar cambios" }));
+  await screen.findByRole("alert");
+  expect(screen.getByText("Elegí una fecha y hora futuras válidas.")).toBeTruthy();
+  expect(screen.getByRole("group", { name: "Horarios disponibles" }).getAttribute("aria-invalid")).toBe("true");
+  fireEvent.click(screen.getByRole("radio", { name: "11:00" }));
+  fireEvent.click(screen.getByRole("button", { name: "Guardar cambios" }));
+  await waitFor(() => expect(mocks.update).toHaveBeenCalledTimes(2));
+  expect(mocks.update.mock.calls[1][1].get("startsAt")).toBe("2026-09-14T11:00");
+  expect(mocks.update.mock.calls[1][1].get("durationMinutes")).toBe("45");
+});
 
 describe("rescheduling from the daily agenda", () => {
   it("keeps occupied times behind disclosure and requires a second explicit confirmation", async () => {
