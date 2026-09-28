@@ -6,16 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 
 import { validateProfileAvatarFile } from "./domain/profile-avatar";
 import { deleteProfileAvatar, replaceProfileAvatar } from "./repository";
-
-export type ProfileAvatarFormState = {
-  status: "idle" | "error" | "success";
-  message: string;
-};
-
-export const profileAvatarFormState: ProfileAvatarFormState = {
-  status: "idle",
-  message: "",
-};
+import type { ProfileAvatarFormState } from "./form-state";
 
 async function readAuthenticatedUserId() {
   const supabase = await createClient();

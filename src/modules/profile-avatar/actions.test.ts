@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ensureServerEntryExports } from "next/dist/build/webpack/loaders/next-flight-loader/action-validate";
+import * as actionExports from "./actions";
 
 const mocks = vi.hoisted(() => ({
   deleteProfileAvatar: vi.fn(),
@@ -19,10 +21,10 @@ vi.mock("./repository", () => ({
 }));
 
 import {
-  profileAvatarFormState,
   removeProfileAvatarAction,
   uploadProfileAvatarAction,
 } from "./actions";
+import { profileAvatarFormState } from "./form-state";
 
 function validPng() {
   return new File(
@@ -33,6 +35,10 @@ function validPng() {
 }
 
 describe("profile avatar actions", () => {
+  it("loads through the Next.js server action runtime", () => {
+    expect(() => ensureServerEntryExports(Object.values(actionExports))).not.toThrow();
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.getClaims.mockResolvedValue({

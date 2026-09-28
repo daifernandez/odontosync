@@ -8,10 +8,10 @@ import { AccountAvatar } from "@/components/account-avatar";
 import { useConfigurationDraft } from "@/components/configuration-drafts";
 import { useUnsavedChanges } from "@/components/use-unsaved-changes";
 import {
-  profileAvatarFormState,
   removeProfileAvatarAction,
   uploadProfileAvatarAction,
 } from "@/modules/profile-avatar/actions";
+import { profileAvatarFormState } from "@/modules/profile-avatar/form-state";
 
 function ActionButton({
   children,

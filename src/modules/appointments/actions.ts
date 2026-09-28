@@ -176,6 +176,7 @@ export async function createAppointmentAction(
       formData,
       { creado: "1" },
       values.startsAt.slice(0, 10),
+      true,
     ),
   );
 }

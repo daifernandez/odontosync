@@ -110,6 +110,13 @@ describe("createAppointmentAction", () => {
     });
   });
 
+  it("shows the target week after creating an appointment from another week", async () => {
+    mocks.createAppointment.mockResolvedValue("created");
+    const data = new FormData();
+    Object.entries({ patientId: "00000000-0000-4000-8000-000000000001", startsAt: "2099-08-10T09:00", durationMinutes: "30", cleanupMinutes: "5", specialty: "control", weekStartDate: "2099-08-03" }).forEach(([key, value]) => data.set(key, value));
+    await expect(createAppointmentAction(appointmentFormState, data)).rejects.toThrow("redirect:/app/agenda?semana=2099-08-10&creado=1");
+  });
+
   it("rejects a valid-looking time outside configured availability", async () => {
     const formData = new FormData();
     formData.set("patientId", "00000000-0000-4000-8000-000000000001");

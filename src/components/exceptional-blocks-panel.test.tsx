@@ -50,5 +50,7 @@ describe("ExceptionalBlocksPanel", () => {
     expect(markup).toContain("El bloqueo se guardó correctamente");
     expect(markup).toContain("¿Eliminar este bloqueo?");
     expect(markup).toContain("Confirmar eliminación");
+    expect(markup).toContain("11/08/2099, 09:00");
+    expect(markup).toContain("11/08/2099, 12:00");
   });
 });

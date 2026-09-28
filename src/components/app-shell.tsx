@@ -193,6 +193,7 @@ export function AppShell({
                 className={className}
                 href={resolvedHref}
                 key={label}
+                onClick={() => setIsMobileOpen(false)}
                 title={isCollapsed ? label : undefined}
               >
                 {content}
@@ -251,6 +252,7 @@ export function AppShell({
               aria-current={isConfigurationActive ? "page" : undefined}
               className={configurationClassName}
               href="/app/configuracion"
+              onClick={() => setIsMobileOpen(false)}
               title={isCollapsed ? "Configuración" : undefined}
             >
               {configurationContent}

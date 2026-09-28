@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 
 import { SubmitButton } from "@/components/auth/submit-button";
+import { preserveFormValues } from "@/components/preserve-form-values";
 import {
   createPatientAction,
   setPatientActiveAction,
@@ -34,7 +35,7 @@ export function PatientForm({ patient }: { patient?: Patient }) {
   );
 
   return (
-    <form action={action} className="mt-5 flex flex-col gap-4" noValidate>
+    <form action={action} className="mt-5 flex flex-col gap-4" noValidate ref={preserveFormValues}>
       {state.message ? (
         <p
           className="m-0 rounded-xl border border-[var(--color-warning-border)] bg-[var(--color-warning-soft)] px-4 py-3 text-sm leading-6 text-[var(--color-warning-foreground)]"

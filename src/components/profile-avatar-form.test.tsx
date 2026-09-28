@@ -2,7 +2,6 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/modules/profile-avatar/actions", () => ({
-  profileAvatarFormState: { status: "idle", message: "" },
   removeProfileAvatarAction: vi.fn(),
   uploadProfileAvatarAction: vi.fn(),
 }));

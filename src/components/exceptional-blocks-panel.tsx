@@ -7,6 +7,7 @@ import { useFormStatus } from "react-dom";
 
 import { SubmitButton } from "@/components/auth/submit-button";
 import { AgendaContextFields } from "@/components/agenda-context-fields";
+import { getArgentinaDateTimeParts } from "@/modules/appointments/domain/appointment";
 import {
   buildAgendaPath,
   type AgendaView,
@@ -23,11 +24,12 @@ import {
 
 const inputClassName =
   "mt-2 min-h-11 w-full rounded-xl border border-[var(--color-border)] bg-white px-3.5 text-sm text-[var(--color-foreground)] outline-none transition-colors focus:border-[var(--color-brand)] focus:ring-3 focus:ring-[rgb(20_125_115/12%)]";
-const exceptionalBlockDateFormatter = new Intl.DateTimeFormat("es-AR", {
-  timeZone: "America/Argentina/Buenos_Aires",
-  dateStyle: "medium",
-  timeStyle: "short",
-});
+function formatExceptionalBlockDate(timestamp: string) {
+  const { day, month, year, hour, minute } = getArgentinaDateTimeParts(new Date(timestamp));
+  const date = [day, month, year].map((part) => String(part).padStart(2, "0")).join("/");
+  const time = [hour, minute].map((part) => String(part).padStart(2, "0")).join(":");
+  return `${date}, ${time}`;
+}
 
 function FieldError({ id, message }: { id: string; message?: string }) {
   return message ? (
@@ -300,15 +302,11 @@ export function ExceptionalBlocksPanel({
                         </strong>
                         <p className="mt-2 mb-0 text-xs leading-5 text-[var(--color-muted)]">
                           <time dateTime={block.startsAt}>
-                            {exceptionalBlockDateFormatter.format(
-                              new Date(block.startsAt),
-                            )}
+                            {formatExceptionalBlockDate(block.startsAt)}
                           </time>{" "}
                           —{" "}
                           <time dateTime={block.endsAt}>
-                            {exceptionalBlockDateFormatter.format(
-                              new Date(block.endsAt),
-                            )}
+                            {formatExceptionalBlockDate(block.endsAt)}
                           </time>
                         </p>
 

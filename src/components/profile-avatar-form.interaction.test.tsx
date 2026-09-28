@@ -3,7 +3,6 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/modules/profile-avatar/actions", () => ({
-  profileAvatarFormState: { status: "idle", message: "" },
   removeProfileAvatarAction: vi.fn(),
   uploadProfileAvatarAction: vi.fn(),
 }));
