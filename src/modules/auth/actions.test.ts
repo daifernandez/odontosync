@@ -43,13 +43,12 @@ describe("email authentication while SMTP is pending", () => {
     expect(mocks.signUp).not.toHaveBeenCalled();
   });
 
-  it("does not offer password login", async () => {
+  it("validates password login even while email registration is disabled", async () => {
     const result = await loginAction({ status: "idle", message: "", fieldErrors: {} }, new FormData());
 
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       status: "error",
-      message: "Por ahora, continuá con Google.",
-      fieldErrors: {},
+      message: "Revisá los campos marcados.",
     });
     expect(mocks.signInWithPassword).not.toHaveBeenCalled();
   });
@@ -72,8 +71,7 @@ describe("email authentication while SMTP is pending", () => {
     }));
   });
 
-  it("keeps password login available after SMTP is enabled", async () => {
-    process.env.EMAIL_AUTH_ENABLED = "true";
+  it("allows an existing account to sign in without SMTP", async () => {
     mocks.signInWithPassword.mockResolvedValue({ error: null });
     const data = new FormData();
     data.set("email", "qa@example.com");
@@ -83,6 +81,18 @@ describe("email authentication while SMTP is pending", () => {
     expect(mocks.signInWithPassword).toHaveBeenCalledWith({
       email: "qa@example.com",
       password: "Segura123456!",
+    });
+  });
+
+  it("shows a recoverable error for invalid credentials without SMTP", async () => {
+    mocks.signInWithPassword.mockResolvedValue({ error: new Error("invalid_credentials") });
+    const data = new FormData();
+    data.set("email", "qa@example.com");
+    data.set("password", "incorrecta");
+
+    await expect(loginAction({ status: "idle", fieldErrors: {} }, data)).resolves.toMatchObject({
+      status: "error",
+      message: expect.stringContaining("No pudimos iniciar sesión"),
     });
   });
 });
