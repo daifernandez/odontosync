@@ -22,3 +22,10 @@ it("shows password login when email registration is disabled", async () => {
   expect(html).toContain("Ingreso con correo");
   expect(html).not.toContain("Solo Google");
 });
+
+it("shows the account deletion confirmation alongside password login", async () => {
+  vi.stubEnv("EMAIL_AUTH_ENABLED", "false");
+  const html = renderToStaticMarkup(await LoginPage({ searchParams: Promise.resolve({ cuenta: "eliminada" }) }));
+  expect(html).toContain("Tu cuenta y sus datos fueron eliminados.");
+  expect(html).toContain("Ingreso con correo");
+});

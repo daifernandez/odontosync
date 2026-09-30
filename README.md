@@ -35,6 +35,8 @@ npm run dev
 Reemplazá las variables de ejemplo por las del proyecto de Supabase. `APP_URL`
 debe contener el origen público canónico de cada entorno autorizado; en
 desarrollo se utiliza `http://localhost:3000`.
+Para habilitar la eliminación de cuentas, configurá `SUPABASE_SECRET_KEY` sólo
+en el servidor y aplicá la migración de cascadas antes de publicar la función.
 
 Para habilitar **Continuar con Google**, creá un cliente OAuth de tipo web en
 Google Cloud y usá como URI de redirección autorizada la URL de callback que
