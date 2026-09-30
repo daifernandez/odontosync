@@ -3,7 +3,6 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { BrandMark } from "@/components/brand-mark";
-import { isEmailAuthEnabled } from "@/modules/auth/email-auth";
 
 export function AuthShell({
   children,
@@ -52,9 +51,7 @@ export function AuthShell({
                 className="mt-0.5 shrink-0 text-[#91d8d0]"
                 size={19}
               />
-              {isEmailAuthEnabled()
-                ? "Acceso individual protegido mediante correo, contraseña o Google."
-                : "Acceso individual protegido con Google."}
+              Acceso individual protegido mediante correo, contraseña o Google.
             </li>
             <li className="flex items-start gap-3">
               <FileText

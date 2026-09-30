@@ -79,14 +79,6 @@ export async function loginAction(
   _previousState: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> {
-  if (!isEmailAuthEnabled()) {
-    return {
-      status: "error",
-      message: "Por ahora, continuá con Google.",
-      fieldErrors: {},
-    };
-  }
-
   const validation = validateLogin({
     email: readText(formData, "email"),
     password: readText(formData, "password"),

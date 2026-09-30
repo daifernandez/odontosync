@@ -43,10 +43,9 @@ muestra Supabase Auth para el proveedor Google
 Supabase Auth > Providers con el ID y secreto del cliente. Agregá
 `${APP_URL}/auth/callback` a las URL de redirección permitidas en Supabase
 para cada entorno. Mantené el secreto sólo en la configuración del proveedor,
-fuera de Git. En esta etapa la interfaz ofrece solo Google. El registro por
-correo y el ingreso con contraseña quedan deshabilitados hasta configurar y
-verificar SMTP propio; entonces se pueden habilitar con
-`EMAIL_AUTH_ENABLED="true"`.
+fuera de Git. Las cuentas existentes pueden ingresar con correo y contraseña.
+El registro por correo queda deshabilitado hasta configurar y verificar SMTP
+propio; entonces se puede habilitar con `EMAIL_AUTH_ENABLED="true"`.
 
 ## Verificaciones
 
